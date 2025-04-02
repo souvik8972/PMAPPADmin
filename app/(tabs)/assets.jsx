@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, Modal, TextInput, ScrollView } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import "nativewind";
@@ -111,12 +111,13 @@ const Assets = () => {
           </TouchableOpacity>
         ))}
       </View>
-
+<ScrollView showsVerticalScrollIndicator={false}>
       <View className="flex-row flex-wrap justify-center mt-4">
         {filteredAssets.map((item) => (
           <RenderItem key={item.id} item={item} selectedAssets={selectedAssets} handlePress={handlePress} />
         ))}
-      </View>
+      </View >
+      </ScrollView>
 
       <Modal visible={modalVisible} transparent={true} animationType="fade">
         <View className="flex-1 justify-center items-center bg-black/50">

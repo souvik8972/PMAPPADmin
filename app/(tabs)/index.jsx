@@ -73,7 +73,7 @@ export default function TaskScreen() {
       />
 
       {/* Task List */}
-      <View><Text className="underline font-bold text-xl">Task List</Text></View>
+      <View><Text className="underline font-bold text-s">Task List</Text></View>
       <ScrollView showsVerticalScrollIndicator={false}>
         {filteredTasks.map((task, index) => (
           <Animated.View key={task.id} entering={SlideInDown.duration(300)} exiting={SlideOutUp.duration(300)} className="m-1 mb-4  mt-4">
@@ -97,11 +97,7 @@ export default function TaskScreen() {
                       <Text className="font-semibold pl-4">{task.owner}</Text>
                     </View>
                     <View className="flex-row space-x-2 gap-2">
-                      <TouchableOpacity className="rounded-lg">
-                        <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{borderRadius:50 ,padding:6}}  className="">
-                          <MaterialCommunityIcons name="plus" size={24} color="white" />
-                        </LinearGradient>
-                      </TouchableOpacity>
+                      
                       <TouchableOpacity>
                         <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{borderRadius:50 ,padding:6}}  className="p-2 rounded-lg">
                         <Feather name="edit" size={24} color="white" />

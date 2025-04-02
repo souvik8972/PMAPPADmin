@@ -14,7 +14,7 @@ import Ticket from "../(tabs)/ticket"
 import Assets from "../(tabs)/assets"
 import Project from "../(tabs)/project"
 import TimeSheet from "../(tabs)/timeSheet"
-import Finance from "../(tabs)/finance"
+import Finance from "./finance"
 
 
 const Drawer = createDrawerNavigator();
