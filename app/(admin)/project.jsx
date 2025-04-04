@@ -8,6 +8,8 @@ import Animated, { SlideInDown, SlideOutUp } from "react-native-reanimated";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Link } from "expo-router";
 import AntDesign from '@expo/vector-icons/AntDesign';
+import EvilIcons from '@expo/vector-icons/EvilIcons';
+
 
 export default function ProjectList() {
     const projectId = 123;
@@ -51,7 +53,7 @@ export default function ProjectList() {
       </View>
     <View className="flex flex-row justify-between items-center">
     <Text className="pl-2">Project List</Text>
-    <Text className="text-[10px]"><AntDesign name="exclamation" size={10} color="black" />Click on Project Name to View Tasks.</Text>
+    <Text className="text-[10px] text-red-400"><EvilIcons name="exclamation" size={10} color="red" /> Click on Project Name to View Tasks.</Text>
     </View>
    
 

@@ -14,8 +14,13 @@ const Login = () => {
 
 
   const handleLogin = () => {
+    if(email.toLocaleLowerCase()=="admin"){
+      router.replace('/(admin)'); 
+    }else{
+      router.replace('/(tabs)'); 
+    }
     
-    router.replace('/(tabs)'); 
+ 
     let newErrors = { email: '', password: '' };
     
     if (email.length <= 0) newErrors.email = 'Enter your email';
@@ -32,7 +37,7 @@ const Login = () => {
 
     setTimeout(() => {
       if (email === 'A' && password === '1') {
-        router.replace('/(tabs)'); 
+        router.replace('/(admin)'); 
       } else {
         setError({ email: 'Invalid email or password', password: 'Invalid email or password' });
       }

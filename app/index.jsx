@@ -22,7 +22,7 @@ const Index = () => {
         />
         
         <View style={styles.textContainer}>
-          <Text style={styles.title}>Welcome to Medtrix PM Tool for Admin</Text>
+          <Text style={styles.title}>Welcome to Medtrix PM Tool</Text>
           <Text style={styles.subtitle}>
             Streamline your project management with ease and efficiency.
           </Text>

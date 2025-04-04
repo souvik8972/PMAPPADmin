@@ -11,6 +11,8 @@ import TaskList from "../../components/TaskList/TaskList";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Modal } from "react-native-paper";
+import AddTask from "../../components/TaskList/AddTask";
+import Entypo from '@expo/vector-icons/Entypo';
 const ProjectDetails = () => {
 
 const [showModal,setShowModal]=useState(false)
@@ -28,7 +30,7 @@ const [showModal,setShowModal]=useState(false)
     projectId: projectId || "10356",
     projectName: "Stemline",
     task: "Frontend Team - Tech",
-    amountSpent: 783.0,
+    amountSpent: 783.00,
     totalValue: 1187.4,
     progress: 0.9, // 90%
   };
@@ -83,28 +85,71 @@ const [showModal,setShowModal]=useState(false)
       </View>
 
       {/* Scrollable Content */}
-      <ScrollView className="w-full h-full bg-gray-100 mt-10 p-4 rounded-t-[40]">
-        <View className="mt-4 mb-4 flex-row justify-between items-center"> 
-          <Text className="text-xl font-bold">Task List</Text>
-          <TouchableOpacity onPress={()=>(setShowModal(true))} className="w-12 h-12 flex justify-center items-center">
-          <LinearGradient colors={["#00D09E", "#76d8c2"]} style={{borderRadius:50 ,padding:6}}  className="p-2 rounded-lg">
-                        <Feather name="plus" size={24} color="white" />
-                        </LinearGradient>
-          </TouchableOpacity>
-        </View>
-        <TaskList taskData={taskData}/>
+      <LinearGradient
+  colors={["#01a47e", "white"]}
+  style={{
+    borderTopRightRadius: 30,
+    borderTopLeftRadius: 30,
+    marginTop: 25,
+    padding: 16,
+    width: "100%",
+    height: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 10,
+  }}
+  className="mt-10 rounded-t-[40]"
+>
+  <View className="w-full h-full p-4 relative">
+    {/* Header */}
+    <View className="mt-4 mb-4 flex-row justify-between items-center px-4">
+      <Text className="text-xl text-white underline font-bold">Task List</Text>
+      <TouchableOpacity onPress={() => setShowModal(true)} className="w-12 h-12 justify-center items-center">
+        <LinearGradient colors={["black", "black"]} style={{ borderRadius: 50 }} className="p-2 rounded-lg">
+          <Feather name="plus" size={24} color="white" />
+        </LinearGradient>
+      </TouchableOpacity>
+    </View>
 
+    {/* ScrollView wrapped in a View to apply fade effect */}
+    <View style={{ flex: 1 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
+        <TaskList taskData={taskData} />
       </ScrollView>
-      <Modal visible={showModal}  className="flex justify-center items-center">
-        <View className=" w-[100%] z-50 h-[100%] flex justify-center items-center">
+
+      {/* Fade effect at the bottom */}
+      <LinearGradient
+        colors={['transparent', '#01a47e']}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 40,
+        }}
+        pointerEvents="none"
+      />
+    </View>
+  </View>
+</LinearGradient>
+
+
+      <Modal visible={showModal}  className="flex bg-white justify-center items-center">
+        <View className=" w-[100%] z-50 h-[100%] rounded-md bg-white flex justify-center items-center">
           
-          <ScrollView className="w-full h-[95%] bg-white rounded-2xl">
-          <TouchableOpacity onPress={()=>(setShowModal(false))} className="w-12 h-12 flex justify-center items-center">
+          <View className="w-full h-[95%] rounded-2xl">
+          <View className="relative w-full  flex justify-end items-end">
+          <TouchableOpacity onPress={()=>(setShowModal(false))} className="w-12 mr-6  h-12 flex justify-center items-center">
           <LinearGradient colors={["#00D09E", "#76d8c2"]} style={{borderRadius:50 ,padding:6}}  className="p-2 rounded-lg">
-                        <Feather name="minus" size={24} color="white" />
+          <Entypo name="cross" size={24} color="white" />
                         </LinearGradient>
+                        
           </TouchableOpacity>
-          </ScrollView>
+          </View>
+          <AddTask/>
+          </View>
 
         </View>
 

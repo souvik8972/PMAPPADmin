@@ -13,12 +13,12 @@ const TaskList = ({ taskData }) => {
   return (
     <View>
       
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <View>
         {taskData.map((task, index) => (
           <Animated.View key={task.id} entering={SlideInDown.duration(300)} exiting={SlideOutUp.duration(300)} className="m-1 mb-4 mt-4">
             <TouchableOpacity
-              className={`p-3 h-[80px] flex-row justify-between items-center ${
-                activeIndex === index ? "bg-white rounded-none rounded-t-lg" : "bg-[#EBEBEB] rounded-lg shadow"
+              className={`p-3 h-[80px] flex-row justify-between bg-white items-center ${
+                activeIndex === index ? " rounded-none rounded-t-lg" : " rounded-lg shadow"
               }`}
               onPress={() => setActiveIndex(activeIndex === index ? null : index)}
             >
@@ -65,7 +65,7 @@ const TaskList = ({ taskData }) => {
             </Collapsible>
           </Animated.View>
         ))}
-      </ScrollView>
+      </View>
     </View>
   );
 };

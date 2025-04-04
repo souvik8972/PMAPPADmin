@@ -15,9 +15,9 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
   };
 
   return (
-    <SafeAreaView className="flex-row  justify-between ">
+    <SafeAreaView className="flex-row  justify-between items-center">
       {/* Hamburger Menu */}
-      <View className='flex-row w-full p-6  justify-between '>
+      <View className='flex-row w-full p-4  justify-between items-center '>
       <TouchableOpacity onPress={() => navigation.toggleDrawer()} className="p-2 pl-6"> 
         <Ionicons name="menu" size={28} color="black" />
       </TouchableOpacity>

@@ -1,9 +1,33 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, Modal, TextInput, ScrollView } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import "nativewind";
-import RenderItem from "../../components/Assets/RenderItem";
+
+const RenderItem = ({ item ,selectedAssets,handlePress}) => {
+  
+
+  
+  return ( <TouchableOpacity
+      onPress={() => !item.taken && handlePress(item.id)}
+      className={`w-28 h-36 m-2 p-3 rounded-xl items-center justify-between 
+      ${selectedAssets.includes(item.id) ? "bg-[#d0e4cd]" : item.taken ? "bg-red-400 opacity-50" : "bg-[#e3e6e3]"}`}
+      disabled={item.taken}
+    >
+      <MaterialIcons name={item.icon} size={40} color="black" />
+      <Text className="text-xs text-center mt-2">{item.name}</Text>
+      <TouchableOpacity onPress={() => !item.taken && handlePress(item.id)}>
+        {selectedAssets.includes(item.id) ? (
+          <MaterialIcons name="check-box" size={24} color="gray" />
+        ) : (
+          <MaterialIcons name="check-box-outline-blank" size={24} color="black" />
+        )}
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
+ 
+}
 
 const initialAssets = [
   { id: 1, name: "Samsung Tab S8", icon: "tablet", taken: false, category: "tablet" },
@@ -87,12 +111,13 @@ const Assets = () => {
           </TouchableOpacity>
         ))}
       </View>
-
+<ScrollView showsVerticalScrollIndicator={false}>
       <View className="flex-row flex-wrap justify-center mt-4">
         {filteredAssets.map((item) => (
           <RenderItem key={item.id} item={item} selectedAssets={selectedAssets} handlePress={handlePress} />
         ))}
-      </View>
+      </View >
+      </ScrollView>
 
       <Modal visible={modalVisible} transparent={true} animationType="fade">
         <View className="flex-1 justify-center items-center bg-black/50">
