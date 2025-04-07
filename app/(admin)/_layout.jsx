@@ -133,6 +133,18 @@ export default function DrawerLayout() {
   }}
 />
 <Drawer.Screen 
+  name="Time Sheet" 
+  component={TimeSheet} 
+  options={{
+    drawerIcon: ({ color }) => (
+      <View className="w-9">
+        <MaterialCommunityIcons name="timetable" size={26} color={color} />
+      
+      </View>
+    ),
+  }}
+/>
+<Drawer.Screen 
   name="Projects" 
   component={Project} 
   options={{
@@ -168,18 +180,7 @@ export default function DrawerLayout() {
     ),
   }}
 />
-<Drawer.Screen 
-  name="Time Sheet" 
-  component={TimeSheet} 
-  options={{
-    drawerIcon: ({ color }) => (
-      <View className="w-9">
-        <MaterialCommunityIcons name="timetable" size={26} color={color} />
-      
-      </View>
-    ),
-  }}
-/>
+
 <Drawer.Screen 
   name="Finance Module" 
   component={Finance} 

@@ -107,7 +107,7 @@ const [showModal,setShowModal]=useState(false)
     <View className="mt-4 mb-4 flex-row justify-between items-center px-4">
       <Text className="text-xl text-black underline font-bold">Task List</Text>
       
-      <Link href={`/(AddTask)/${projectId}`} className="w-12 h-12 justify-center items-center">
+      <Link href={`/(addTask)/${projectId}`} className="w-12 h-12 justify-center items-center">
         <LinearGradient colors={["black", "black"]} style={{ borderRadius: 50 }} className="p-2 rounded-lg">
          
             <Feather name="plus" size={24} color="white" />

@@ -8,10 +8,11 @@ import Animated, { SlideInDown, SlideOutUp } from "react-native-reanimated";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
 import Feather from '@expo/vector-icons/Feather';
+import { Link } from "expo-router";
 
 export default function TaskScreen() {
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
-
+const projectId = 123;
   const [searchQuery, setSearchQuery] = useState("");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [selectedRange, setSelectedRange] = useState({ startDate: new Date(), endDate: null });
@@ -98,11 +99,12 @@ export default function TaskScreen() {
                     </View>
                     <View className="flex-row space-x-2 gap-2">
                       
-                      <TouchableOpacity>
+                     <Link href={`/(updateTask)/123/222`} asChild>
+                    <TouchableOpacity>
                         <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{borderRadius:50 ,padding:6}}  className="p-2 rounded-lg">
                         <Feather name="edit" size={24} color="white" />
                         </LinearGradient>
-                      </TouchableOpacity>
+                      </TouchableOpacity></Link>
                       <TouchableOpacity>
                         <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{borderRadius:50 ,padding:6}}  className="p-2 rounded-lg">
                           <MaterialCommunityIcons name="delete"  size={24} color="white" />
