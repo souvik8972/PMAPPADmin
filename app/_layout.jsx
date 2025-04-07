@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 async function loadFonts() {
   await Font.loadAsync({
-    "Poppins-Regular": require("../assets/fonts/PublicSans-VariableFont_wght.ttf"),
+    "PubLicSans": require("../assets/fonts/PublicSans-VariableFont_wght.ttf"),
     "PlayFair":require("../assets/fonts/Aladin-Regular.ttf")
    
      

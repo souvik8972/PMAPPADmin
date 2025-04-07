@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StatusBar, TextInput } from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { ScrollView } from "react-native";
@@ -24,7 +24,7 @@ const [showModal,setShowModal]=useState(false)
   ]);
   const { projectId } = useLocalSearchParams();
   const router = useRouter();
-
+// make random
   // Mock JSON Data
   const projectData = {
     projectId: projectId || "10356",
@@ -86,7 +86,7 @@ const [showModal,setShowModal]=useState(false)
 
       {/* Scrollable Content */}
       <LinearGradient
-  colors={["#01a47e", "white"]}
+  colors={["white","#01a47e" ]}
   style={{
     borderTopRightRadius: 30,
     borderTopLeftRadius: 30,
@@ -102,15 +102,17 @@ const [showModal,setShowModal]=useState(false)
   }}
   className="mt-10 rounded-t-[40]"
 >
-  <View className="w-full h-full p-4 relative">
+  <View className="w-full h-full p-2 relative">
     {/* Header */}
     <View className="mt-4 mb-4 flex-row justify-between items-center px-4">
-      <Text className="text-xl text-white underline font-bold">Task List</Text>
-      <TouchableOpacity onPress={() => setShowModal(true)} className="w-12 h-12 justify-center items-center">
+      <Text className="text-xl text-black underline font-bold">Task List</Text>
+      
+      <Link href={`/(AddTask)/${projectId}`} className="w-12 h-12 justify-center items-center">
         <LinearGradient colors={["black", "black"]} style={{ borderRadius: 50 }} className="p-2 rounded-lg">
-          <Feather name="plus" size={24} color="white" />
+         
+            <Feather name="plus" size={24} color="white" />
         </LinearGradient>
-      </TouchableOpacity>
+        </Link>
     </View>
 
     {/* ScrollView wrapped in a View to apply fade effect */}
@@ -121,7 +123,7 @@ const [showModal,setShowModal]=useState(false)
 
       {/* Fade effect at the bottom */}
       <LinearGradient
-        colors={['transparent', '#01a47e']}
+        colors={['white ', '#01a47e']}
         style={{
           position: 'absolute',
           bottom: 0,
@@ -136,24 +138,7 @@ const [showModal,setShowModal]=useState(false)
 </LinearGradient>
 
 
-      <Modal visible={showModal}  className="flex bg-white justify-center items-center">
-        <View className=" w-[100%] z-50 h-[100%] rounded-md bg-white flex justify-center items-center">
-          
-          <View className="w-full h-[95%] rounded-2xl">
-          <View className="relative w-full  flex justify-end items-end">
-          <TouchableOpacity onPress={()=>(setShowModal(false))} className="w-12 mr-6  h-12 flex justify-center items-center">
-          <LinearGradient colors={["#00D09E", "#76d8c2"]} style={{borderRadius:50 ,padding:6}}  className="p-2 rounded-lg">
-          <Entypo name="cross" size={24} color="white" />
-                        </LinearGradient>
-                        
-          </TouchableOpacity>
-          </View>
-          <AddTask/>
-          </View>
-
-        </View>
-
-      </Modal>
+     
 
     </SafeAreaView>
 

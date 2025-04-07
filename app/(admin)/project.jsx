@@ -82,7 +82,7 @@ export default function ProjectList() {
                 <View className="p-4 pt-0 bg-white rounded-t-none rounded-xl">
                   <View className="flex-row justify-between items-center">
                     <View>
-                    <Link href={`/(details)/${projectId}`} asChild>
+                    <Link href={`/(details)/${projectId}`} >
   <TouchableOpacity >
     <View>
       <Text className="mb-1">Project Name:</Text>
