@@ -5,8 +5,7 @@ import * as Font from "expo-font";
 import "../global.css";
 import { AuthContext, AuthProvider } from "../context/AuthContext";
 import { Text } from "react-native";
-import {  QueryClientProvider } from "@tanstack/react-query";
-import {queryClient} from "../reactQuery/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 async function loadFonts() {
   await Font.loadAsync({
@@ -35,7 +34,7 @@ function ProtectedLayout() {
 }
 
 export default function RootLayout() {
-
+  const queryClient = new QueryClient();
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {

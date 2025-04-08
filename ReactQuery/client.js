@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 
-export const queryClient = new QueryClient({
+export default queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       // These are default options that work well for mobile
