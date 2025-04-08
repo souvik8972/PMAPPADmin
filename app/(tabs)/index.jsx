@@ -13,6 +13,14 @@ import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder'
 
 export default function TaskScreen() {
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient)
+  useEffect(() => {
+    setLoading(true); // Start with shimmer
+    const timer = setTimeout(() => {
+      setLoading(false); // Stop shimmer after 3 seconds
+    }, 3000);
+  
+    return () => clearTimeout(timer); // Clear timeout if component unmounts
+  }, []);
   
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(null);
@@ -99,10 +107,13 @@ export default function TaskScreen() {
    {loading ? (
         <ScrollView showsVerticalScrollIndicator={false}>
           {[1, 2, 3,4,5].map((index) => (
-            <View key={index} className="mb-4 ">
-              <ShimmerPlaceholder  style={{ height: 80, width:'100%', borderRadius: 12, backgroundColor: "red" }} />
-
-            </View>
+           <View key={index} className="m-1 mb-4 mt-4 bg-white p-4 rounded-lg">
+           <ShimmerPlaceholder 
+             style={{ width: '100%', height: 60, borderRadius: 8, marginBottom: 8 }}
+             shimmerColors={['#EBEBEB', '#D9D9D9', '#EBEBEB']}
+             autoRun={true}
+           />
+         </View>
           ))}
         </ScrollView>
       ) :

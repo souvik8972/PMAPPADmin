@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, TouchableWithoutFeedback } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,17 +12,27 @@ import { Link } from "expo-router";
 
 export default function TaskScreen() {
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
-const projectId = 123;
+  const projectId = 123;
   const [searchQuery, setSearchQuery] = useState("");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [selectedRange, setSelectedRange] = useState({ startDate: new Date(), endDate: null });
   const [activeIndex, setActiveIndex] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [taskData, setTaskData] = useState([
-    { id: 1, title: "Learning and Upskilling - Frontend Team - Tech", taskId: "10586", owner: "Shijin Pulikkotil", planned: "06", actual: "06" },
-    { id: 2, title: "Backend Development - API Integration", taskId: "20345", owner: "Rahul Sharma", planned: "04", actual: "03" },
-    { id: 3, title: "UI Design - Mobile App", taskId: "30876", owner: "Priya Verma", planned: "05", actual: "0" },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [taskData, setTaskData] = useState([]);
+
+  useEffect(() => {
+    // Simulate API loading
+    const timer = setTimeout(() => {
+      setTaskData([
+        { id: 1, title: "Learning and Upskilling - Frontend Team - Tech", taskId: "10586", owner: "Shijin Pulikkotil", planned: "06", actual: "06" },
+        { id: 2, title: "Backend Development - API Integration", taskId: "20345", owner: "Rahul Sharma", planned: "04", actual: "03" },
+        { id: 3, title: "UI Design - Mobile App", taskId: "30876", owner: "Priya Verma", planned: "05", actual: "0" },
+      ]);
+      setLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleConfirmDate = (params) => {
     setDatePickerOpen(false);
@@ -75,50 +85,64 @@ const projectId = 123;
 
       {/* Task List */}
       <View><Text className="underline font-bold text-s">Task List</Text></View>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {filteredTasks.map((task, index) => (
-          <Animated.View key={task.id} entering={SlideInDown.duration(300)} exiting={SlideOutUp.duration(300)} className="m-1 mb-4  mt-4">
-            <TouchableOpacity
-              className={`p-3 h-[80px] flex-row justify-between items-center ${activeIndex === index ? "bg-white rounded-none rounded-t-lg" : "bg-[#EBEBEB] rounded-lg shadow"}`}
-              onPress={() => setActiveIndex(activeIndex === index ? null : index)}
-            >
-              <Text className="text-black font-semibold text-[14px] truncate w-[85%]">{task.title}</Text>
-              <FontAwesome name={activeIndex === index ? "angle-up" : "angle-down"} size={28} color="black" />
-            </TouchableOpacity>
-            <Collapsible collapsed={activeIndex !== index}>
-              <TouchableWithoutFeedback onPress={() => setActiveIndex(activeIndex === index ? null : index)}>
-                <View className="p-4 pt-0  bg-white rounded-t-none rounded-lg">
-                  <Text><MaterialCommunityIcons name="star-three-points-outline" size={12} color="black" /> Task Title:</Text>
-                  <Text className="font-semibold mb-2 pl-4">{task.title}</Text>
-                  <Text><MaterialCommunityIcons name="star-three-points-outline" size={12} color="black" /> Task Id:</Text>
-                  <Text className="font-semibold mb-2 pl-4">{task.taskId}</Text>
-                  <View className="flex-row justify-between items-center mb-2">
-                    <View>
-                      <Text><MaterialCommunityIcons name="star-three-points-outline" size={12} color="black" /> Task Owner:</Text>
-                      <Text className="font-semibold pl-4">{task.owner}</Text>
-                    </View>
-                    <View className="flex-row space-x-2 gap-2">
-                      
-                     <Link href={`/(updateTask)/123/222`} asChild>
-                    <TouchableOpacity>
-                        <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{borderRadius:50 ,padding:6}}  className="p-2 rounded-lg">
-                        <Feather name="edit" size={24} color="white" />
-                        </LinearGradient>
-                      </TouchableOpacity></Link>
-                      <TouchableOpacity>
-                        <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{borderRadius:50 ,padding:6}}  className="p-2 rounded-lg">
-                          <MaterialCommunityIcons name="delete"  size={24} color="white" />
-                        </LinearGradient>
-                      </TouchableOpacity>
+      
+      {loading ? (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {[1, 2, 3,4].map((item) => (
+            <View key={item} className="m-1 mb-4 mt-4 bg-white p-4 rounded-lg">
+              <ShimmerPlaceholder 
+                style={{ width: '100%', height: 60, borderRadius: 8, marginBottom: 8 }}
+                shimmerColors={['#EBEBEB', '#D9D9D9', '#EBEBEB']}
+                autoRun={true}
+              />
+            </View>
+          ))}
+        </ScrollView>
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {filteredTasks.map((task, index) => (
+            <Animated.View key={task.id} entering={SlideInDown.duration(300)} exiting={SlideOutUp.duration(300)} className="m-1 mb-4  mt-4">
+              <TouchableOpacity
+                className={`p-3 h-[80px] flex-row justify-between items-center ${activeIndex === index ? "bg-white rounded-none rounded-t-lg" : "bg-[#EBEBEB] rounded-lg shadow"}`}
+                onPress={() => setActiveIndex(activeIndex === index ? null : index)}
+              >
+                <Text className="text-black font-semibold text-[14px] truncate w-[85%]">{task.title}</Text>
+                <FontAwesome name={activeIndex === index ? "angle-up" : "angle-down"} size={28} color="black" />
+              </TouchableOpacity>
+              <Collapsible collapsed={activeIndex !== index}>
+                <TouchableWithoutFeedback onPress={() => setActiveIndex(activeIndex === index ? null : index)}>
+                  <View className="p-4 pt-0  bg-white rounded-t-none rounded-lg">
+                    <Text><MaterialCommunityIcons name="star-three-points-outline" size={12} color="black" /> Task Title:</Text>
+                    <Text className="font-semibold mb-2 pl-4">{task.title}</Text>
+                    <Text><MaterialCommunityIcons name="star-three-points-outline" size={12} color="black" /> Task Id:</Text>
+                    <Text className="font-semibold mb-2 pl-4">{task.taskId}</Text>
+                    <View className="flex-row justify-between items-center mb-2">
+                      <View>
+                        <Text><MaterialCommunityIcons name="star-three-points-outline" size={12} color="black" /> Task Owner:</Text>
+                        <Text className="font-semibold pl-4">{task.owner}</Text>
+                      </View>
+                      <View className="flex-row space-x-2 gap-2">
+                        <Link href={`/(addTask)/123-222`} asChild>
+                          <TouchableOpacity>
+                            <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{borderRadius:50 ,padding:6}}  className="p-2 rounded-lg">
+                              <Feather name="edit" size={24} color="white" />
+                            </LinearGradient>
+                          </TouchableOpacity>
+                        </Link>
+                        <TouchableOpacity>
+                          <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{borderRadius:50 ,padding:6}}  className="p-2 rounded-lg">
+                            <MaterialCommunityIcons name="delete"  size={24} color="white" />
+                          </LinearGradient>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   </View>
-                  
-                </View>
-              </TouchableWithoutFeedback>
-            </Collapsible>
-          </Animated.View>
-        ))}
-      </ScrollView>
+                </TouchableWithoutFeedback>
+              </Collapsible>
+            </Animated.View>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }

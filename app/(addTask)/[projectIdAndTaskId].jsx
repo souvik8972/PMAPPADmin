@@ -22,7 +22,7 @@ import { LinearGradient } from "expo-linear-gradient";
 const AddEditTask = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { projectId, taskId } = route.params || {};
+const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null, null];
   
   const isEditMode = !!taskId;
   

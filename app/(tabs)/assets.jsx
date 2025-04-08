@@ -33,6 +33,7 @@ const Assets = () => {
       prev.includes(id) ? prev.filter((assetId) => assetId !== id) : [...prev, id]
     );
   };
+  
 
   const handleSubmit = () => {
     if (selectedAssets.length > 0) {

@@ -1,6 +1,6 @@
 import { Redirect, Stack, Tabs, useSegments } from 'expo-router';
 import React, { useContext } from 'react';
-import { SafeAreaView } from 'react-native';
+import { ActivityIndicator, SafeAreaView, View } from 'react-native';
 import Header from '../../components/Header';
 import { MaterialIcons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
@@ -23,14 +23,20 @@ export default function TabLayout() {
     
       <Header />
       <Tabs 
-        tabBar={(props) => <MyTabBar {...props} />} // Use the custom TabBar component
+        tabBar={(props) => <MyTabBar {...props} />} 
         
-        
+          lazy={true} 
         screenOptions={{
          
           headerShown: false,
           
         }}
+        
+        lazyplaceholder={
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#D01313" />
+          </View>
+        }
       >
         <Tabs.Screen 
           name="resource" 
