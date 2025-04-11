@@ -15,7 +15,7 @@ export const getLast7Weekdays = () => {
         let year = today.getFullYear();
         
         // Ensure two-digit month and day format (e.g., 03 instead of 3)
-        let formattedDate = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+        let formattedDate = `${month.toString().padStart(2, "0")}/${day.toString().padStart(2, "0")}/${year}`;
         let label = `${dayName} ${day}`;
   
         result.push({ label, date: formattedDate });
@@ -33,13 +33,13 @@ export const getLast7Weekdays = () => {
     const date = new Date();
     date.setDate(date.getDate() - daysAgo);
   
-    const day = date.getDate();
-    const month = date.getMonth() + 1; // Months are 0-based
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
     const year = date.getFullYear();
   
-    return `${day}/${month}/${year}`;
+    return `${month}/${day}/${year}`;
   };
-
+  
   export function formatDateForAPI(date) {
     const d = new Date(date);
     const month = (d.getMonth() + 1).toString().padStart(2, '0');
