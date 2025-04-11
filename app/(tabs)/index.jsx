@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, TouchableWithoutFeedback } from "react-native";
 import Collapsible from "react-native-collapsible";
 import { FontAwesome } from "@expo/vector-icons";
@@ -9,9 +9,14 @@ import { getLast7Weekdays,getFormattedDate} from "../../utils/functions/last7Day
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder'
+import { AuthContext } from "@/context/AuthContext";
 
 
 export default function TaskScreen() {
+
+const {user}=useContext(AuthContext)
+console.log("USER",user)
+
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient)
   useEffect(() => {
     setLoading(true); // Start with shimmer

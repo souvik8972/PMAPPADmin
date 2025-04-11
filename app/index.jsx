@@ -1,16 +1,32 @@
 import { View, Text, Image, Pressable, StyleSheet, Dimensions } from 'react-native';
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AuthContext } from '../context/AuthContext';
+
 
 
 const { width, height } = Dimensions.get('window');
 
 const Index = () => {
-  const handleClick = () => {
-    router.push('/(auth)/login');
-  };
+const {user}=useContext(AuthContext)
+
+
+  
+const handleClick = () => {
+  console.log("Userrrr",user)
+  if (!user) {
+    router.replace('/(auth)/login');
+    return;
+  }
+  
+  if (user.userType == 3) {
+    router.replace('(tabs)');
+  } else {
+    router.replace('(admin)');
+  }
+};
 
   return (
     <SafeAreaView style={styles.container}>

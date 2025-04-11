@@ -1,48 +1,59 @@
-import { View, Text, TouchableOpacity, Image, TextInput, ActivityIndicator,StyleSheet, SafeAreaView } from 'react-native';
-import React, { useState,useEffect, useContext } from 'react';
+import { View, Text, TouchableOpacity, Image, TextInput, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useState, useContext } from 'react';
 import Checkbox from 'expo-checkbox';
 import { router } from 'expo-router';
-
-
+import { useMutation } from '@tanstack/react-query';
+import { loginUser } from '../../services/api'; // assuming apo.js is in root
+import { AuthContext } from '../../context/AuthContext';
+import {parseJwt} from '../../utils/auth'; // assuming you have a utility function to parse JWT
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
+  const { login } = useContext(AuthContext);
+  const {user}=useContext(AuthContext)
 
+  const mutation = useMutation({
+    mutationFn: loginUser,
+    onSuccess: (data) => {
+      console.log("Login successful", data.token);
+      
+      // Parse the token to get user data
+      const userData = parseJwt(data.token);
+      console.log("User data from token:", userData);
+
+      // Call login with the token AND user data
+      login(data.token, userData).then(() => {
+        // Now the redirect happens after the state is definitely updated
+        if (userData.UserType == "3") {
+          router.replace('/(tabs)');
+        } else {
+          router.replace('/(admin)');
+        }
+      });
+    },
+    onError: (error) => {
+      setError({
+        email: error.message,
+        password: error.message,
+      });
+    },
+  });
 
   const handleLogin = () => {
-    if(email.toLocaleLowerCase()=="admin"){
-      router.replace('/(admin)'); 
-    }else{
-      router.replace('/(tabs)'); 
-    }
-    
- 
     let newErrors = { email: '', password: '' };
-    
-    if (email.length <= 0) newErrors.email = 'Enter your email';
-    if (password.length <= 0) newErrors.password = 'Enter your password';
+    if (!email) newErrors.email = 'Enter your email';
+    if (!password) newErrors.password = 'Enter your password';
 
     if (newErrors.email || newErrors.password) {
       setError(newErrors);
       return;
     }
 
-    setLoading(true);
     setError({ email: '', password: '' });
-    
-
-    setTimeout(() => {
-      if (email === 'A' && password === '1') {
-        router.replace('/(admin)'); 
-      } else {
-        setError({ email: 'Invalid email or password', password: 'Invalid email or password' });
-      }
-      setLoading(false);
-    }, 1000);
+    mutation.mutate({ email, password });
   };
 
   return (
@@ -50,7 +61,7 @@ const Login = () => {
       <View style={{ marginTop: 80, marginBottom: 30 }} className="items-center mb-8">
         <Image source={require("../../assets/images/Medtrix_logo.jpg")} className="w-[250px]" resizeMode="contain" />
       </View>
-      
+
       <View className="bg-[#F0F0F0] p-6 pt-8 pb-8 w-full min-h-[400px] justify-between z-[10] max-w-lg rounded-[20px] shadow-lg"
         style={{
           shadowColor: "#091E42",
@@ -60,16 +71,13 @@ const Login = () => {
           elevation: 4,
         }}>
         
-        {/* Show error message at the top */}
-        
-
         <Text className="text-[24px] font-semibold mb-4 text-center text-gray-800">Project Management Portal</Text>
         {error.email === 'Invalid email or password' && (
           <Text className="text-red-700 text-center mt-1 mb-1 font-medium">
-          Invalid email or password
-        </Text>
+            Invalid email or password
+          </Text>
         )}
-        
+
         <View className="mb-4">
           <Text className="text-gray-700 text-[15px] pl-1 font-medium mb-1">Email</Text>
           <TextInput
@@ -120,39 +128,45 @@ const Login = () => {
 
         <View className="flex-row justify-between items-center mb-6">
           <View className="flex-row items-center">
-          <Checkbox
-  value={rememberMe}
-  onValueChange={setRememberMe}
-  color={rememberMe ? 'red' : 'gray'}
-/>
-<Text className="pl-2">Remember Me</Text>
+            <Checkbox
+              value={rememberMe}
+              onValueChange={setRememberMe}
+              color={rememberMe ? 'red' : 'gray'}
+            />
+            <Text className="pl-2">Remember Me</Text>
           </View>
           <TouchableOpacity>
             <Text className="text-red-700 font-medium">Forgot Password?</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity className="bg-black py-4 h-[50px] rounded-[12px] flex items-center justify-center" onPress={handleLogin} disabled={loading}>
-          {loading ? <ActivityIndicator color="white" /> : <Text className="text-center text-white font-semibold text-lg">Login</Text>}
+        <TouchableOpacity
+          className="bg-black py-4 h-[50px] rounded-[12px] flex items-center justify-center"
+          onPress={handleLogin}
+          disabled={mutation.isPending}
+        >
+          {mutation.isPending ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-center text-white font-semibold text-lg">Login</Text>
+          )}
         </TouchableOpacity>
       </View>
 
-
       <View style={styles.waveContainer}>
-        <Image 
-          source={require('../../assets/images/svg2.png')} 
-          style={styles.waveImage} 
+        <Image
+          source={require('../../assets/images/svg2.png')}
+          style={styles.waveImage}
           resizeMode="stretch"
         />
       </View>
-    </View >
+    </View>
   );
 };
 
 export default Login;
-const styles = StyleSheet.create({
 
- 
+const styles = StyleSheet.create({
   waveContainer: {
     position: 'absolute',
     bottom: -10,

@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, TextInput } from "react-native";
+import React, { useContext, useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, Modal, TextInput, ScrollView } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import "nativewind";
 import RenderItem from "../../components/Assets/RenderItem";
-
+import {useFetchData} from "../../ReactQuery/hooks/useFetchData";
+import { AuthContext } from "../../context/AuthContext";
 const initialAssets = [
   { id: 1, name: "Samsung Tab S8", icon: "tablet", taken: false, category: "tablet" },
   { id: 2, name: "Laptop Lenovo", icon: "laptop", taken: false, category: "laptop" },
@@ -21,7 +22,16 @@ const initialAssets = [
   { id: 13, name: "iPad Cables", icon: "cable", taken: false, category: "accessory" },
 ];
 
+
 const Assets = () => {
+  const {user}=useContext(AuthContext)
+
+  const {data, isLoading, error} = useFetchData("Assests/GetAllAssests",user.token) 
+  useEffect(()=>{
+
+    console.log(data,isLoading,"assets")
+  },[data])
+
   const [assets, setAssets] = useState(initialAssets);
   const [selectedAssets, setSelectedAssets] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -67,7 +77,7 @@ const Assets = () => {
     : assets;
 
   return (
-    <View className="flex-1">
+    <ScrollView className="flex-1">
       <Text className="text-black font-bold text-center text-lg mb-4">Assets Management</Text>
      <View className="flex items-center"> 
      <TouchableOpacity onPress={handleSubmit} disabled={selectedAssets.length === 0}>
@@ -120,7 +130,7 @@ const Assets = () => {
           </View>
         </View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 };
 

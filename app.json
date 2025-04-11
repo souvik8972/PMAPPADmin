@@ -1,45 +1,91 @@
 {
   "expo": {
-    "name": "nativeWind",
-    "slug": "nativeWind",
+    "name": "Pm Tool",
+    "slug": "Pm-Tool",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "pmtool",
     "userInterfaceStyle": "automatic",
+    "jsEngine": "hermes",
+    "assetBundlePatterns": ["**/*"],
     "newArchEnabled": true,
-    "platforms": ["ios", "android"],
+    
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff",
+      "fullScreen": true,
+      "width": 500,
+      "height": 500
+    },
+
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/915f2bd5-989d-4900-b622-23219b713bb4"
+    },
+
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.souvik8582.Meditracker"
+      "bundleIdentifier": "com.souvik8582.Meditracker",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos",
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to use the camera",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use your microphone"
+      }
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#FFFFFF"
       },
-      "package": "com.souvik8582.nativeWind"
+      "package": "com.souvik8582.pmtool",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
+
     "web": {
       "bundler": "metro",
-      "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/Medtrix_logo.png",
-          "imageWidth": 1000,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "splashScreenImage": "./assets/images/splash.png",
+          "backgroundColor": "#ffffff",
+          "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": "./assets/fonts/PublicSans-VariableFont_wght.ttf"
         }
       ]
     ],
+
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "tsconfigPaths": true
     },
+
     "extra": {
       "router": {
         "origin": false
@@ -47,6 +93,10 @@
       "eas": {
         "projectId": "915f2bd5-989d-4900-b622-23219b713bb4"
       }
+    },
+
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     }
   }
 }

@@ -17,21 +17,7 @@ async function loadFonts() {
   });
 }
 
-function ProtectedLayout() {
-  const { user } = useContext(AuthContext);
-  const router = useRouter();
 
-  useEffect(() => {
-    console.log('user',user)
-    if (!user) {
-      router.replace("/");
-    } else {
-      router.replace("/(tabs)");
-    }
-  }, [user]);
-
-  return <Stack screenOptions={{ headerShown: false }} />;
-}
 
 export default function RootLayout() {
   const queryClient = new QueryClient();
@@ -41,14 +27,12 @@ export default function RootLayout() {
     loadFonts().then(() => setFontsLoaded(true));
   }, []);
 
-  if (!fontsLoaded) {
-    return <Text>Loading</Text> // Show a loading screen until fonts load
-  }
+  
 
   return (
     <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <ProtectedLayout />
+    <Stack screenOptions={{ headerShown: false }} />
     </AuthProvider>
     </QueryClientProvider>
   );

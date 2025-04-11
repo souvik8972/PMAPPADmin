@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const postData = async ({ endpoint, data, token }) => {
-  const response = await fetch(`https://your-api.com/${endpoint}`, {
+  const response = await fetch(`http://184.72.156.185/Test-APp/api/${endpoint}`, {
     method: 'POST', // or 'PUT'
     headers: {
       'Content-Type': 'application/json',
