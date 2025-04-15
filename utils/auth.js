@@ -22,6 +22,7 @@ export async function saveAuthInfo(token) {
   const authInfo = {
     token: token,
     email: decoded.sub,
+    name:decoded?.sub?.split(".")[0],
     empId: decoded.EmpId,
     userType: decoded.UserType
   };

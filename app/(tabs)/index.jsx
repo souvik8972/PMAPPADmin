@@ -34,7 +34,7 @@ export default function TaskScreen() {
   const [selectedOption, setSelectedOption] = useState(today);
   const [selectedDate, setSelectedDate] = useState(today);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [taskData, setTaskData] = useState(null);
+  const [localTaskData, setLocalTaskData] = useState({});
 
   const {
     data: apiData,
@@ -42,36 +42,21 @@ export default function TaskScreen() {
     error: apiError,
     refetch,
   } = useFetchData(
-    `Task/TaskDetails?emp_id=${user.empId}&date_val=${"01/10/2025"}`,
+    `Task/TaskDetails?emp_id=${user.empId}&date_val=${selectedDate}`,
     user.token
   );
-  useEffect(() => {
 
-console.log(apiData, isLoading, "taskData")
-    console.log("selectedDate", selectedDate);
-  },[selectedDate])
+  useEffect(() => {
+    // Close all collapsible items when date changes
+    setActiveIndex(null);
+    refetch();
+  }, [selectedDate]);
 
   const items = [
     { label: "Today", value: today },
     { label: "Yesterday", value: yesterday },
     { label: "Last 7 Days", value: "last7days" },
   ];
-
-  useEffect(() => {
-    if (apiData && apiData.emp_task_data) {
-      const formattedTasks = apiData.emp_task_data.map((task, index) => ({
-        id: index + 1,
-        title: task.Task_Title || "No title",
-        taskId: task.Task_Id ? task.Task_Id.toString() : "N/A",
-        owner: task.Taskowner || "Unknown",
-        planned: task.Working_hours ? task.Working_hours.toString() : "0",
-        actual: task.Logged_hours ? task.Logged_hours.toString() : "0",
-      }));
-      setTaskData(formattedTasks);
-    } else {
-      setTaskData([]);
-    }
-  }, [apiData]);
 
   useEffect(() => {
     if (selectedOption === "last7days") {
@@ -81,17 +66,31 @@ console.log(apiData, isLoading, "taskData")
     }
   }, [selectedOption]);
 
+  const formatTaskData = (data) => {
+    if (!data?.emp_task_data) return [];
+    
+    return data.emp_task_data.map((task, index) => ({
+      id: index + 1,
+      title: task.Task_Title || "No title",
+      taskId: task.Task_Id ? task.Task_Id.toString() : "N/A",
+      owner: task.Taskowner || "Unknown",
+      planned: task.Working_hours ? task.Working_hours.toString() : "0",
+      actual: localTaskData[task.Task_Id] || 
+             (task.Logged_hours ? task.Logged_hours.toString() : "0"),
+    }));
+  };
+
   const handleActualHoursChange = (text, taskId) => {
     if (!/^\d*\.?\d*$/.test(text)) return;
-    setTaskData(prevTasks =>
-      prevTasks.map(task =>
-        task.taskId === taskId ? { ...task, actual: text } : task
-      )
-    );
+    
+    setLocalTaskData(prev => ({
+      ...prev,
+      [taskId]: text
+    }));
   };
 
   const handleSubmit = async (taskId) => {
-    const task = taskData.find(t => t.taskId === taskId);
+    const task = formattedTasks.find(t => t.taskId === taskId);
     if (!task) return;
 
     setIsProcessing(true);
@@ -107,13 +106,20 @@ console.log(apiData, isLoading, "taskData")
     }
   };
 
-  const filteredTasks = taskData?.filter(task =>
+  const handleDateChange = (date) => {
+    // Close any open collapsible before changing date
+    setActiveIndex(null);
+    setSelectedDate(date);
+  };
+
+  const formattedTasks = formatTaskData(apiData);
+  const filteredTasks = formattedTasks.filter(task =>
     task.title.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  );
 
   const renderTaskItem = (task, index) => (
     <Animated.View
-      key={`${task.taskId}-${index}`}
+      key={`${task.taskId}-${index}-${selectedDate}`} // Include selectedDate in key to force re-render
       entering={SlideInDown.duration(300)}
       exiting={SlideOutUp.duration(300)}
       className="mb-2 mt-4"
@@ -139,7 +145,7 @@ console.log(apiData, isLoading, "taskData")
 
       <Collapsible collapsed={activeIndex !== index}>
         <TouchableWithoutFeedback>
-          <View className="p-4 pt-0 bg-white rounded-t-none rounded-b-lg shadow-sm">
+          <View className="p-4 pt-0 bg-white rounded-t-none rounded-b-lg ">
             {["Task Title", "Task Id", "Task Owner"].map((label, i) => (
               <View key={i}>
                 <View className="flex-row items-center mb-1">
@@ -176,6 +182,7 @@ console.log(apiData, isLoading, "taskData")
                   keyboardType="decimal-pad"
                   placeholder="00"
                   maxLength={5}
+                  editable={true}
                   onChangeText={text => handleActualHoursChange(text, task.taskId)}
                   value={task.actual}
                 />
@@ -208,9 +215,9 @@ console.log(apiData, isLoading, "taskData")
   );
 
   const renderContent = () => {
-    if (isLoading || taskData === null) {
+    if (isLoading) {
       return (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView className="bg-white" showsVerticalScrollIndicator={false}>
           {[1, 2, 3, 4, 5].map(index => (
             <View key={index} className="m-1 mb-4 mt-4 bg-white p-4 rounded-lg">
               <ShimmerPlaceholder
@@ -292,7 +299,7 @@ console.log(apiData, isLoading, "taskData")
           {dates.map((item, index) => (
             <TouchableOpacity
               key={index}
-              onPress={() => setSelectedDate(item.date)}
+              onPress={() => handleDateChange(item.date)}
               activeOpacity={0.8}
             >
               <LinearGradient
@@ -307,20 +314,31 @@ console.log(apiData, isLoading, "taskData")
                   borderRadius: 20,
                   marginRight: 12,
                   height: 80,
-                  width: 80,
+                  width: 50,
                   justifyContent: "center",
                   alignItems: "center",
                 }}
               >
-                <Text
-                  className={
-                    selectedDate === item.date
-                      ? "text-white font-bold text-xs text-center"
-                      : "text-black font-semibold text-xs text-center"
-                  }
-                >
-                  {item.label}
-                </Text>
+                <View className="items-center">
+                  <Text
+                    className={
+                      selectedDate === item.date
+                        ? "text-white font-bold text-xs"
+                        : "text-black font-semibold text-xs"
+                    }
+                  >
+                    {item.label.split(" ")[0]}
+                  </Text>
+                  <Text
+                    className={
+                      selectedDate === item.date
+                        ? "text-white font-bold text-base"
+                        : "text-black font-semibold text-base"
+                    }
+                  >
+                    {item.label.split(" ")[1]}
+                  </Text>
+                </View>
               </LinearGradient>
             </TouchableOpacity>
           ))}

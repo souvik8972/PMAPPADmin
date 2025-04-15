@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity, Modal, SafeAreaView } from 'react-native';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Feather from '@expo/vector-icons/Feather';
@@ -10,9 +10,12 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
   const router = useRouter();
   const [isModalVisible, setModalVisible] = useState(false);
   const {logout}=useContext(AuthContext)
+  const[userName,setUserName]=useState("Guest")
+
 
   const {user}=useContext(AuthContext)
 
+  useEffect(()=>{  setUserName(user.name)},[user])
   const handleLogout = () => {
     console.log("Logout button pressed");
     logout(); // Call the logout function from AuthContext
@@ -29,7 +32,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
       
       {/* Right Profile Image */}
       <TouchableOpacity className="px-4 py-3 flex flex-row items-center" onPress={() => setModalVisible(true)}>
-        <Text className="text-[20px] mr-2 font-bold">Hello Abc</Text>
+        <Text className="text-[20px] mr-2 font-bold capitalize">Hello {userName}</Text>
         <Image source={require('../assets/images/Avatar.png')} className="w-12 h-12 bg-red-700" resizeMode="contain" />
       </TouchableOpacity></View>): <View className='flex-row w-full p-4  justify-between items-center '>
       <TouchableOpacity onPress={() => navigation.toggleDrawer()} className="p-2 pl-6"> 
@@ -41,7 +44,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
       
       {/* Right Profile Image */}
       <TouchableOpacity className="px-4 py-3 flex flex-row items-center" onPress={() => setModalVisible(true)}>
-        <Text className="text-[20px] mr-2 font-bold">Hello Abc</Text>
+        <Text className="text-[20px] mr-2 font-bold">Hello {userName}</Text>
         <Image source={require('../assets/images/Avatar.png')} className="w-12 h-12 " resizeMode="contain" />
       </TouchableOpacity>
       </View>}
@@ -51,7 +54,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
       <Modal animationType="fade" transparent={true} visible={isModalVisible} onRequestClose={() => setModalVisible(false)}>
         <View className="flex-1 justify-center items-center bg-black/50">
           <View className="bg-white p-10 rounded-lg w-80 items-center">
-            <Text className="text-xl font-bold mb-4">Hello, Abc</Text>
+            <Text className="text-xl font-bold mb-4">Hello, {userName}</Text>
             
             <TouchableOpacity onPress={handleLogout} className="w-full rounded-full overflow-hidden">
               <LinearGradient

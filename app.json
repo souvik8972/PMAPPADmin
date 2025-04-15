@@ -1,70 +1,42 @@
 {
   "expo": {
     "name": "Pm Tool",
-    "slug": "Pm-Tool",
+    "slug": "pm-tool",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "pmtool",
     "userInterfaceStyle": "automatic",
     "jsEngine": "hermes",
-    "assetBundlePatterns": ["**/*"],
-    "newArchEnabled": true,
-    
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff",
-      "fullScreen": true,
-      "width": 500,
-      "height": 500
+      "backgroundColor": "#ffffff"
     },
-
     "updates": {
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/915f2bd5-989d-4900-b622-23219b713bb4"
     },
-
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.souvik8582.Meditracker",
-      "buildNumber": "1.0.0",
-      "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos",
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to use the camera",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use your microphone"
-      }
+      "bundleIdentifier": "com.souvik8582.pmtool",
+      "buildNumber": "1.0.0"
     },
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.souvik8582.pmtool",
-      "versionCode": 1,
-      "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
-      ]
+      "versionCode": 1
     },
-
     "web": {
-      "bundler": "metro",
       "favicon": "./assets/images/favicon.png"
     },
-
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "splashScreenImage": "./assets/images/splash.png",
-          "backgroundColor": "#ffffff",
-          "resizeMode": "contain"
-        }
-      ],
       [
         "expo-build-properties",
         {
@@ -72,31 +44,13 @@
             "useFrameworks": "static"
           }
         }
-      ],
-      [
-        "expo-font",
-        {
-          "fonts": "./assets/fonts/PublicSans-VariableFont_wght.ttf"
-        }
       ]
     ],
-
-    "experiments": {
-      "typedRoutes": true,
-      "tsconfigPaths": true
-    },
-
     "extra": {
-      "router": {
-        "origin": false
-      },
       "eas": {
-        "projectId": "915f2bd5-989d-4900-b622-23219b713bb4"
+        "projectId": "92c04134-039e-4359-906f-e3e78d3bb90a"
       }
     },
-
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    }
+    "owner": "souvik8582"
   }
 }

@@ -1,66 +1,74 @@
-import React, { useState, useMemo, useRef } from "react";
-import { View, Text, TouchableOpacity, TextInput, FlatList, ScrollView, Platform, Animated, KeyboardAvoidingView} from "react-native";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { View, Text, TouchableOpacity, TextInput, FlatList, ScrollView, Platform, Animated, KeyboardAvoidingView, Easing} from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
 import Icon from "react-native-vector-icons/AntDesign";
 import tw from "tailwind-react-native-classnames";
+ import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
+import moment from "moment/moment";
+ 
+import ShimmerPlaceholder, { createShimmerPlaceholder } from 'react-native-shimmer-placeholder'
  
  
-const teamData = {
-  Tech: [
-    {
-      id: 1, name: "Tony Stark", Loggedhours: 4, Available: 4,
-      taskData: [
-        { id: 1123, title: "Meeting", PH: 4, LH: 4, Owner: "Shijin Pulikkotil" },
-        { id: 1543, title: "MAT-USA2025", PH: 4, LH: 4, Owner: "Shijin Pulikkotil" }
-      ]
-    },
-    { id: 2, name: "Bruce Wayne", Loggedhours: 25, Available: 30, taskData: [
-      { id: 1123, title: "Meeting", PH: 4, LH: 4, Owner: "Shijin Pulikkotil" },
-      { id: 1543, title: "MAT-USA2025", PH: 4, LH: 4, Owner: "Shijin Pulikkotil" }
-    ] },
-    {
-      id:3, name: "Harry Potter", Loggedhours: 1, Available: 10,
-      taskData: [
-        { id: 1123, title: "Orsodu", PH: 4, LH: 4, Owner: "Shijin Pulikkotil" },
-        { id: 1543, title: "Ask the Expert", PH: 4, LH: 4, Owner: "Shijin Pulikkotil" }
-      ]
-    },
-  ],
-  Creative: [{ id: 4, name: "Picasso", Loggedhours: 4, Available: 4, taskData: [] }],
-  Content: [{ id: 7, name: "Stan Lee", Loggedhours: 4, Available: 4, taskData: [] }],
-  PM: [{ id: 10, name: "Marvel", Loggedhours: 4, Available: 4, taskData: [] },{ id: 11, name: "DC", Loggedhours: 4, Available: 4, taskData: [] }],
-};
  
-const TABS = ["Tech", "Creative", "Content", "PM"];
+//
+const TABS = [{"Tech":1}, {"Creative":2}, {"Content":3}, {"PM":4}, ];
  
 export default function ResourcesScreen() {
   const [activeTab, setActiveTab] = useState("Tech");
+  const [activeData,setActiveData]=useState([]);
+ 
   const [searchText, setSearchText] = useState("");
   const [selectedDropdown, setSelectedDropdown] = useState(null);
+  const {user}= useContext(AuthContext)
  
  
-  const filteredData = useMemo(() => {
-    return teamData[activeTab].filter((member) =>
-      member.name.toLowerCase().includes(searchText.toLowerCase())
-    );
-  }, [activeTab, searchText]);
+  const TOKEN=user.token||null;
+  const teamId = TABS.find((tab) => activeTab in tab)?.[activeTab]||1;
+  const {data,isLoading,isError} = useFetchData(`Resource/GetTeamMembers?teamId=${teamId}`, TOKEN)
+  console.log(isError);
+     
  
-  const HandleTab=(tab)=>{
-    setSearchText("")
-    setActiveTab(tab)
-  }
+  const HandleTab = async (tab) => {
+    setSearchText("");
+    setActiveTab(tab);
+    console.log(activeTab);
+  };
+ 
+  let  FilterTaskData= activeData.filter((emp) =>
+    emp.Employee_Name.toLowerCase().includes(searchText.toLowerCase()))
+   console.log(FilterTaskData);
+ 
+  useEffect(()=>{
+ 
+    if(data){
+      console.log(data);
+     
+     
+      setActiveData(data);
+     
+    }
+  },[data,activeTab,isLoading])
+ 
+    const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient)
+ 
+ 
+ 
  
   return (
+   
      <View style={{flex:1}}>
+     
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={tw`flex-1`}>
       <Text className='mx-3 mb-6  text-lg font-medium'>Task Availability</Text>
        
     <ScrollView style={{flexGrow:1}}>
         <View className="flex-row  justify-evenly m-0 p-0 ">
           {TABS.map((tab) => (
-            <TabButton key={tab} tab={tab} activeTab={activeTab} setActiveTab={()=>{HandleTab(tab)}} />
+            <TabButton key={tab[Object.keys(tab)]} tab={Object.keys(tab)[0]} activeTab={activeTab} setActiveTab={()=>{HandleTab(Object.keys(tab)[0])}} />
           ))}
         </View>
  
@@ -89,14 +97,11 @@ export default function ResourcesScreen() {
  
         {/* Team Members List */}
      
-        {filteredData.map((item, index) => (
-               <TeamMember  key={index} item={item} selectedDropdown={selectedDropdown} setSelectedDropdown={setSelectedDropdown} />
-            ))}
- 
        
-       
+       <TeamMember item={FilterTaskData} selectedDropdown={selectedDropdown} setSelectedDropdown={setSelectedDropdown} isLoading={isLoading}/>
       </ScrollView>
       </KeyboardAvoidingView>
+     
       </View>
      
   );
@@ -104,7 +109,7 @@ export default function ResourcesScreen() {
  
 // 💡 Reusable Components
 const TabButton = ({ tab, activeTab, setActiveTab }) => (
-  <TouchableOpacity onPress={() => setActiveTab(tab)} className="   " style={{minWidth:80, alignSelf:'flext-start' }} >
+  <TouchableOpacity onPress={() => setActiveTab(tab)} className="   " style={{minWidth:80, alignSelf:'flext-start', }} >
     <LinearGradient
       colors={activeTab === tab ? ["#D01313", "#6A0A0A"] : ["#333", "#333"]}
       style={tw` rounded-lg`}
@@ -125,19 +130,40 @@ const GradientProgressBar = ({ progress }) => (
   </View>
 );
  
-const TeamMember = ({ item, selectedDropdown, setSelectedDropdown }) => {
-  const handleToggle = () => {
-    setSelectedDropdown(prev => (prev === item.id ? null : item.id));
+const TeamMember = ({ item, selectedDropdown, setSelectedDropdown  ,isLoading}) => {
+  const handleToggle = (id) => {
+    setSelectedDropdown(prev=>prev===id?null:id);
   };
  
+ 
+  if(isLoading){
+    return  <ScrollView showsVerticalScrollIndicator={false}>
+    {[1, 2, 3,4].map((index) => (
+     <View key={index} className="m-1 mb-4 mt-4 bg-white p-4 rounded-lg">
+     <ShimmerPlaceholder
+       style={{ width: '100%', height: 60, borderRadius: 8, marginBottom: 8 }}
+       shimmerColors={['#EBEBEB', '#D9D9D9', '#EBEBEB']}
+       autoRun={true}
+     />
+   </View>
+    ))}
+  </ScrollView>
+  }
+ console.log("inside team member",item);
+ 
+ 
   return (
+ 
     <View>
-    <View style={[tw`p-3 rounded-lg shadow-md my-4 mx-3`, {backgroundColor:'#EBEBEB'}]}  >
+   {item && item.map((emp)=>{ return(<View style={[tw`p-3 rounded-lg shadow-md my-3 mx-3 `, {backgroundColor:'#EBEBEB'}]} key={emp.EmpId}  >
      
-      <TouchableOpacity onPress={handleToggle} className='flex-row justify-between'>
-        <Text style={''}>{item.name}</Text>
-          <MaterialIcons name={selectedDropdown === item.id ? "keyboard-arrow-down" : "chevron-right"} size={35} color="black" />
+      <TouchableOpacity onPress={()=>{handleToggle(emp.EmpId)}} className='flex-row justify-between  items-center'>
+        <Text className=' text-center'>{emp.Employee_Name}</Text>
+          <MaterialIcons name={selectedDropdown === emp.EmpId ? "keyboard-arrow-down" : "chevron-right"} size={35} color="black" />
           </TouchableOpacity>
+          {selectedDropdown === emp.EmpId && (
+        <TaskDropdown emp={emp} />
+      )}
      
         {/* <TouchableOpacity className="flex-row items-center  p" onPress={handleToggle} > */}
   {/* Logged Hours */}
@@ -155,35 +181,108 @@ const TeamMember = ({ item, selectedDropdown, setSelectedDropdown }) => {
 {/* </TouchableOpacity> */}
     </View>
  
- 
-      {/* Dropdown Content */}
-      {selectedDropdown === item.id && (
-        <TaskDropdown taskData={item.taskData} />
-      )}
-     
+      )
+    })}
  
     </View>
    
   );
 };
  
-const TaskDropdown = ({ taskData }) => {
-  const [selectedDate, setSelectedDate] = useState("Mon 12");
-  const dates = ["Mon 12", "Tue 13", "Wed 14", "Thu 15", "Fri 16"];
-  const [SearchTask, SetSearchTask]= useState("");
+const TaskDropdown = ({ emp }) => {
+  // moment().format('MM-DD-YYYY')
+  const [selectedDate, setSelectedDate] = useState('01/10/2025');
+  const [taskData,setTaskData]=useState([]);
+  const [thisWeek,setThisWeek]= useState([]);
+  const {user}= useContext(AuthContext)
+  const [SearchTask,SetSearchTask]=useState("")
+ 
+  const TOKEN=user.token||null;
+  console.log(selectedDate);
+  console.log(emp);
+ 
+ 
+  const {data,isLoading, isError}= useFetchData(`Task/TaskDetails?emp_id=${emp.EmpId}&date_val=${selectedDate}`, TOKEN)
+ 
+ 
+ 
+ 
    let  FilterTaskData= taskData.filter((member) =>
    
-    member.title.toLowerCase().includes(SearchTask.toLowerCase()))
-   console.log(taskData, FilterTaskData);
+    member.Task_Title.toLowerCase().includes(SearchTask.toLowerCase()))
+   
+  useEffect(()=>{
+    const StartOfWeek= moment().startOf('isoWeek')
+    const Dates=[];
+ 
+    for(let i=0;i<5;i++){
+      const date= moment(StartOfWeek).add(i,'day')
+ 
+      Dates.push({
+         lebel:date.format('ddd'),
+         value:date.format('MM-DD-YYYY'),
+         day:date.format('DD'),
+ 
+      })
+    }
+    setThisWeek(Dates)
+  },[])
+  useEffect(() => {
+    if (data?.emp_task_data) {
+      console.log(data.emp_task_data);
+     
+      setTaskData(data.emp_task_data);
+    }
+  }, [data, isLoading]);
+ 
+  const slideAnim = useRef(new Animated.Value(-3)).current; // Start a bit higher
+  const fadeAnim = useRef(new Animated.Value(0)).current;     // Start transparent
+ 
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, []);
+  if(isLoading ){
+    <View>
+      <Text>Loading......</Text>
+    </View>
+  }
+  if(isError){
+    <Text>Something Went Wrong.......</Text>
+  }
+ 
  
  
  
   return (
-    <View style={[tw`p-4  rounded-lg shadow-md  mx-3`,{backgroundColor:'#EBEBEB'}]} >
-    <View style={tw`  rounded-lg mt-4 mb-4`}>
+   
+    <Animated.View
+    style={[
+      {
+        transform: [{ translateY: slideAnim }],
+        opacity: fadeAnim,
+      },
+     
+    ]}
+  >
+ 
+    <View style={[tw`  `,{backgroundColor:'#EBEBEB'}]} >
+    <View style={tw`  rounded-lg `}>
  
           {/* Google search bar */}
-          <Animated.View>
+         
           <View className="flex-row space-x-3 items-center border border-gray-300 rounded-full   w-2/3 text-white mb-2 mt-2" style={{backgroundColor:'#B4B4B4'}}>
           <Icon name="search1" size={20} color="white" className="p-2" />
      
@@ -195,48 +294,74 @@ const TaskDropdown = ({ taskData }) => {
              
             </TextInput>
           </View>
-          </Animated.View>
+         
  
-      {/* Date Selector */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2">
-  {dates.map((date) => (
-    <TouchableOpacity key={date} onPress={() => setSelectedDate(date)}>
+     
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="h-[100px] flex-grow-0 mt-2">
+  {thisWeek && thisWeek.map((date) => (
+    <TouchableOpacity key={date.value} onPress={() => setSelectedDate(date.value)}>
       <LinearGradient
-        colors={selectedDate === date ? ["#D01313", "#6A0A0A"] : ["#BDBDBD", "#BDBDBD"]}
-        style={[tw`px-3 py-6 rounded-full mx-1`, {minWidth:60}]} // ✅ Ensures equal width
+        colors={selectedDate === date.value ? ["#D01313", "#6A0A0A"] : ["#E0E0E0", "#C0C0C0"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ borderRadius: 20, marginRight: 12, height: 80 }} // ✅ Ensures equal width
       >
-        <Text style={tw`font-semibold text-white text-center`}>{date.split(" ")[0]}</Text>
-        <Text style={tw` text-lg font-bold text-white text-center`}>{date.split(" ")[1]}</Text>
+        <View className="px-3 py-1 h-[80px] flex justify-center items-center w-[50px] rounded-[20px]">
+        <Text className={selectedDate === date.value ? "text-white font-semibold text-sm" : "text-black text-sm"}>{date.day}</Text>
+        <Text className={selectedDate === date.value ? "text-white font-bold text-sm" : "text-black text-sm"}>{date.lebel}</Text>
+        </View>
       </LinearGradient>
     </TouchableOpacity>
   ))}
 </ScrollView>
  
  
-      {/* Task Table */}
-      <View style={tw`border-t border-gray-400 mt-2 pt-2`}>
-        <View style={tw`flex-row border-b border-gray-400 pb-2`}>
-          <Text style={tw`text-sm font-semibold w-1/5`}>ID</Text>
-          <Text style={tw`text-sm font-semibold w-1/5`}>Title</Text>
-          <Text style={tw`text-sm font-semibold w-1/5 pl-2`}>LH</Text>
-          <Text style={tw`text-sm font-semibold w-1/5`}>PH</Text>
-          <Text style={tw`text-sm font-semibold w-1/5`}>Owner</Text>
+     
+     <View style={tw`border-t border-gray-200  pt-2`}>
+  {FilterTaskData.length === 0 ? (
+    <Text style={tw`text-gray-500 text-center mt-4 text-base`}>
+      No tasks available
+    </Text>
+  ) : (
+    FilterTaskData.map((task) => (
+      <View
+        key={task.Task_Id}
+        style={tw`bg-white rounded-xl shadow-md border border-gray-200 mb-4 p-2`}
+      >
+        <View style={tw`mb-2`}>
+          <Text style={tw`text-md font-bold text-gray-800`}>
+            Tittle: {task.Task_Title}
+          </Text>
+          <View style={tw`mt-1 max-w-[75%]`}>
+            <Text
+              style={tw`text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full w-auto`}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              ID: {task.Task_Id}
+            </Text>
+          </View>
         </View>
-        {FilterTaskData.length === 0 ? (
-          <Text style={tw`text-gray-500 text-center mt-2`}>No tasks available</Text>
-        ) : (
-          FilterTaskData.map((task) => (
-            <View key={task.id} style={tw`flex-row border-b border-gray-300 py-2`}>
-              <Text style={tw`text-sm w-1/5`}>{task.id}</Text>
-              <Text style={tw`text-sm w-1/5`}>{task.title}</Text>
-              <Text style={tw`text-sm w-1/5 pl-2`}>{task.LH}</Text>
-              <Text style={tw`text-sm w-1/5`}>{task.PH}</Text>
-              <Text style={tw`text-sm w-1/5`}>{task.Owner}</Text>
-            </View>
-          ))
-        )}
+ 
+        <View style={tw`space-y-1`}>
+          <Text style={tw`text-sm text-gray-700`}>
+            <Text style={tw`font-semibold`}>Logged Hours: </Text>{task.Working_hours}
+          </Text>
+          <Text style={tw`text-sm text-gray-700`}>
+            <Text style={tw`font-semibold`}>Production Hours: </Text>{task.Working_hours}
+          </Text>
+          <Text style={tw`text-sm text-gray-700`}>
+            <Text style={tw`font-semibold`}>Product Manager: </Text>{task.Taskowner}
+          </Text>
+        </View>
       </View>
+    ))
+  )}
+</View>
+ 
+ 
     </View>
     </View>
+    </Animated.View>
   );
 };
