@@ -5,6 +5,7 @@ import "../global.css";
 import { AuthProvider } from "../context/AuthContext";
 import { Text } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { checkTokenExpiration } from "@/utils/auth";
 
 async function loadFonts() {
   await Font.loadAsync({
@@ -14,6 +15,9 @@ async function loadFonts() {
 }
 
 export default function RootLayout() {
+
+
+  
   const queryClient = new QueryClient();
   const [fontsLoaded, setFontsLoaded] = useState(false);
 

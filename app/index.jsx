@@ -29,9 +29,9 @@ const {user}=useContext(AuthContext)
 
   
 const handleClick = () => {
-  console.log("Userrrr",user)
+  console.log("Userrrr",user?.checkTokenExpiration)
   
-  if (!user) {
+  if (!user|| user?.checkTokenExpiration) {
     router.replace('/(auth)/login');
     return;
   }

@@ -8,7 +8,7 @@ import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { AuthContext } from "../../context/AuthContext";
 
 const ShimmerItem = () => (
-  <View className="m-2 w-[150px] h-[150px] rounded-lg overflow-hidden">
+  <View className="m-2 w-[100px] h-[150px] rounded-lg ">
     <View className="bg-gray-200 w-full h-full animate-pulse">
       <View className="absolute top-4 left-4 w-10 h-10 rounded-full bg-gray-300" />
       <View className="absolute bottom-4 left-4 w-[100px] h-4 rounded bg-gray-300" />
@@ -123,13 +123,11 @@ const Assets = () => {
       </View>
 
       {isLoading ? (
-        <ScrollView className="flex-1">
-          <View className="flex-row flex-wrap justify-center mt-4">
-            {[...Array(8)].map((_, index) => (
-              <ShimmerItem key={index} />
-            ))}
-          </View>
-        </ScrollView>
+        <View className="flex-row flex-wrap justify-center mt-4">
+          {[...Array(6)].map((_, index) => (
+            <ShimmerItem key={index} />
+          ))}
+        </View>
       ) : (
         <View className="flex-row flex-wrap justify-center mt-4">
           {assets.map((item) => (

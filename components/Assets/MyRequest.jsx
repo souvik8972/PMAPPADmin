@@ -1,5 +1,5 @@
-import { View, Text, FlatList, ActivityIndicator, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
-import React, { useContext } from 'react';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet, ImageBackground, TouchableOpacity, Animated } from 'react-native';
+import React, { useContext, useEffect, useRef } from 'react';
 import { AuthContext } from '@/context/AuthContext';
 import { useFetchData } from '@/ReactQuery/hooks/useFetchData';
 import { format } from 'date-fns';
@@ -7,21 +7,162 @@ import { format } from 'date-fns';
 const MyRequest = () => {
   const { user } = useContext(AuthContext);
   const { data, isLoading } = useFetchData(`Assests/GetAssestDetailsById?Empid=${user.empId}`, user.token);
-console.log(data,"dataaa")
-const formatDate = (dateValue) => {
+  const shimmerAnim = useRef(new Animated.Value(-1)).current;
+
+  // Shimmer animation effect
+  useEffect(() => {
+    if (isLoading) {
+      Animated.loop(
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        })
+      ).start();
+    } else {
+      shimmerAnim.setValue(-1);
+    }
+  }, [isLoading]);
+
+  const formatDate = (dateValue) => {
     try {
-      if (!dateValue || typeof dateValue !== 'string') return 'N/A'; // Handle null, undefined, or object
+      if (!dateValue || typeof dateValue !== 'string') return 'N/A';
       return format(new Date(dateValue), 'MMM dd, yyyy');
     } catch {
       return 'N/A';
     }
   };
-  
+
+  // Animated Skeleton Loading Component
+  const SkeletonCard = () => {
+    return (
+      <View style={[styles.cardContainer, styles.skeletonCard]}>
+        <View style={styles.cardContent}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.skeletonLine, { width: 120, height: 20 }]}>
+              <Animated.View style={[
+                styles.shimmer,
+                {
+                  transform: [{
+                    translateX: shimmerAnim.interpolate({
+                      inputRange: [-1, 1],
+                      outputRange: [-50, 350]
+                    })
+                  }]
+                }
+              ]} />
+            </View>
+            <View style={[styles.skeletonLine, { width: 80, height: 24, borderRadius: 12 }]}>
+              <Animated.View style={[
+                styles.shimmer,
+                {
+                  transform: [{
+                    translateX: shimmerAnim.interpolate({
+                      inputRange: [-1, 1],
+                      outputRange: [-50, 350]
+                    })
+                  }]
+                }
+              ]} />
+            </View>
+          </View>
+          
+          <View style={styles.itemContainer}>
+            <View style={[styles.skeletonLine, { width: 60, height: 16, marginBottom: 8 }]}>
+              <Animated.View style={[
+                styles.shimmer,
+                {
+                  transform: [{
+                    translateX: shimmerAnim.interpolate({
+                      inputRange: [-1, 1],
+                      outputRange: [-50, 350]
+                    })
+                  }]
+                }
+              ]} />
+            </View>
+            <View style={[styles.skeletonLine, { width: '100%', height: 20 }]}>
+              <Animated.View style={[
+                styles.shimmer,
+                {
+                  transform: [{
+                    translateX: shimmerAnim.interpolate({
+                      inputRange: [-1, 1],
+                      outputRange: [-50, 350]
+                    })
+                  }]
+                }
+              ]} />
+            </View>
+          </View>
+          
+          <View style={styles.datesContainer}>
+            <View style={styles.dateBox}>
+              <View style={[styles.skeletonLine, { width: 60, height: 16, marginBottom: 8 }]}>
+                <Animated.View style={[
+                  styles.shimmer,
+                  {
+                    transform: [{
+                      translateX: shimmerAnim.interpolate({
+                        inputRange: [-1, 1],
+                        outputRange: [-50, 350]
+                      })
+                    }]
+                  }
+                ]} />
+              </View>
+              <View style={[styles.skeletonLine, { width: 100, height: 18 }]}>
+                <Animated.View style={[
+                  styles.shimmer,
+                  {
+                    transform: [{
+                      translateX: shimmerAnim.interpolate({
+                        inputRange: [-1, 1],
+                        outputRange: [-50, 350]
+                      })
+                    }]
+                  }
+                ]} />
+              </View>
+            </View>
+            <View style={styles.dateBox}>
+              <View style={[styles.skeletonLine, { width: 70, height: 16, marginBottom: 8 }]}>
+                <Animated.View style={[
+                  styles.shimmer,
+                  {
+                    transform: [{
+                      translateX: shimmerAnim.interpolate({
+                        inputRange: [-1, 1],
+                        outputRange: [-50, 350]
+                      })
+                    }]
+                  }
+                ]} />
+              </View>
+              <View style={[styles.skeletonLine, { width: 100, height: 18 }]}>
+                <Animated.View style={[
+                  styles.shimmer,
+                  {
+                    transform: [{
+                      translateX: shimmerAnim.interpolate({
+                        inputRange: [-1, 1],
+                        outputRange: [-50, 350]
+                      })
+                    }]
+                  }
+                ]} />
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity activeOpacity={1}>
       <ImageBackground 
-        source={require('@/assets/images/border.png')} // Replace with your actual border image path
+        source={require('@/assets/images/border.png')}
         resizeMode="stretch"
         style={styles.cardContainer}
         imageStyle={styles.cardBorder}
@@ -63,16 +204,20 @@ const formatDate = (dateValue) => {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+      <View style={styles.container}>
+        <FlatList
+          data={[1, 2, 3, 4]} // Render 4 skeleton cards
+          renderItem={() => <SkeletonCard />}
+          keyExtractor={(item) => item.toString()}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.title}>My Asset Requests</Text> */}
-      
       {data && data.length > 0 ? (
         <FlatList
           data={data}
@@ -94,16 +239,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
- 
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 20,
-    textShadowColor: 'rgba(0,0,0,0.1)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
   },
   cardContainer: {
     marginBottom: 16,
@@ -112,6 +247,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 5,
+  },
+  skeletonCard: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   cardBorder: {
     borderRadius: 16,
@@ -131,23 +271,30 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.05)',
   },
+  skeletonLine: {
+    backgroundColor: '#e0e0e0',
+    borderRadius: 4,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  shimmer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '30%',
+    height: '100%',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    transform: [{ skewX: '20deg' }],
+  },
   requestId: {
     fontSize: 16,
     fontWeight: '600',
     color: '#374151',
-    textShadowColor: 'rgba(0,0,0,0.05)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1,
   },
   statusBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
   },
   statusText: {
     fontSize: 12,
@@ -201,12 +348,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.8)',
   },
   emptyContainer: {
     flex: 1,

@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
-import { getAuthInfo, saveAuthInfo, removeAuthInfo } from "../utils/auth"; // Updated to reflect changes
+import { getAuthInfo, saveAuthInfo, removeAuthInfo,checkTokenExpiration } from "../utils/auth"; // Updated to reflect changes
 
 export const AuthContext = createContext(null);
 
@@ -12,7 +12,9 @@ export function AuthProvider({ children }) {
       try {
         const authInfo = await getAuthInfo(); // Get user info (token, email, empId, userType)
         if (authInfo) {
-          setUser(authInfo); // Store the user information in state
+          const tokenExpiration = checkTokenExpiration(authInfo.exp);
+          !tokenExpiration? setUser(authInfo):setUser(null); // Check token expiration
+          // Store the user information in state
         } else {
           setUser(null); // No auth info, set user to null
         }

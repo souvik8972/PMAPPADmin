@@ -17,13 +17,15 @@ export function parseJwt(token) {
 
 export async function saveAuthInfo(token) {
   const decoded = parseJwt(token);
+  console.log("Decoded JWT:", decoded);
   if (!decoded) return;
-
+const tokenExpiration = checkTokenExpiration(decoded.exp);
   const authInfo = {
     token: token,
     email: decoded.sub,
     name:decoded?.sub?.split(".")[0],
     empId: decoded.EmpId,
+    checkTokenExpiration: tokenExpiration,
     userType: decoded.UserType
   };
 
@@ -38,3 +40,8 @@ export async function getAuthInfo() {
 export async function removeAuthInfo() {
   await SecureStore.deleteItemAsync(AUTH_KEY);
 }
+
+export const checkTokenExpiration = (exp) => {
+  const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+  return exp < currentTime; // true if expired
+};

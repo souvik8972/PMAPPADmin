@@ -74,8 +74,8 @@ export default function ResourcesScreen() {
  
        
         <View className='mx-4 mt-5 mb-2'>
-          <Text style={tw`text-lg `}>Team Utilization:</Text>
-          <View style={tw`flex-row items-center justify-between mt-2 mr-16  `}>
+          <Text className={`text-lg `}>Team Utilization:</Text>
+          <View className={`flex-row items-center justify-between mt-2 mr-16  `}>
             <GradientProgressBar progress={0.5}  />
             <Text className={'p-2'}>50%</Text>
             <Icon name="infocirlceo" size={18} color="gray" />
@@ -83,12 +83,12 @@ export default function ResourcesScreen() {
         </View>
          
         {/* Search Input */}
-        <View style={tw`flex-row items-center border border-gray-300 rounded-xl bg-gray-100 mx-3  shadow-lg mb-4 mt-2 pr-4 pl-3  pt-3  pb-3`}>
+        <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-100 mx-3  shadow-lg mb-4 mt-2 pr-4 pl-3  pt-3  pb-3">
           <TextInput
             placeholder="Search"
             value={searchText}
             onChangeText={setSearchText}
-            style={tw`flex-1 pl-3`}
+            className="flex-1 pl-3"
            
           />
           <Icon name="search1" size={20} color="gray" />
@@ -114,13 +114,13 @@ const TabButton = ({ tab, activeTab, setActiveTab }) => (
       colors={activeTab === tab ? ["#D01313", "#6A0A0A"] : ["#333", "#333"]}
       style={tw` rounded-lg`}
     >
-      <Text style={tw` text-white text-center  p-4 `}>{tab}</Text>
+      <Text className={` text-white text-center  p-4 `}>{tab}</Text>
     </LinearGradient>
   </TouchableOpacity>
 );
  
 const GradientProgressBar = ({ progress }) => (
-  <View style={tw`w-full h-2 bg-gray-300 rounded-lg`}>
+  <View className={`w-full h-2 bg-gray-300 rounded-lg`}>
     <LinearGradient
       colors={["#D01313", "#6A0A0A"]}
       start={{ x: 0, y: 0 }}
@@ -279,7 +279,7 @@ const TaskDropdown = ({ emp }) => {
   >
  
     <View style={[tw`  `,{backgroundColor:'#EBEBEB'}]} >
-    <View style={tw`  rounded-lg `}>
+    <View className={`  rounded-lg `}>
  
           {/* Google search bar */}
          
@@ -294,9 +294,6 @@ const TaskDropdown = ({ emp }) => {
              
             </TextInput>
           </View>
-         
- 
-     
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="h-[100px] flex-grow-0 mt-2">
   {thisWeek && thisWeek.map((date) => (
     <TouchableOpacity key={date.value} onPress={() => setSelectedDate(date.value)}>
@@ -304,7 +301,7 @@ const TaskDropdown = ({ emp }) => {
         colors={selectedDate === date.value ? ["#D01313", "#6A0A0A"] : ["#E0E0E0", "#C0C0C0"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={{ borderRadius: 20, marginRight: 12, height: 80 }} // ✅ Ensures equal width
+        style={{ borderRadius: 20, marginRight: 12, height: 80 }}
       >
         <View className="px-3 py-1 h-[80px] flex justify-center items-center w-[50px] rounded-[20px]">
         <Text className={selectedDate === date.value ? "text-white font-semibold text-sm" : "text-black text-sm"}>{date.day}</Text>
@@ -317,24 +314,25 @@ const TaskDropdown = ({ emp }) => {
  
  
      
-     <View style={tw`border-t border-gray-200  pt-2`}>
-  {FilterTaskData.length === 0 ? (
-    <Text style={tw`text-gray-500 text-center mt-4 text-base`}>
+     <View className="border-t border-gray-200  pt-2">
+     
+  {FilterTaskData.length === 0 && !isLoading? (
+    <Text className="text-gray-500 text-center mt-4 text-base">
       No tasks available
     </Text>
   ) : (
     FilterTaskData.map((task) => (
       <View
         key={task.Task_Id}
-        style={tw`bg-white rounded-xl shadow-md border border-gray-200 mb-4 p-2`}
+        className="bg-white rounded-xl shadow-md border border-gray-200 mb-4 p-2 mt-2"
       >
-        <View style={tw`mb-2`}>
-          <Text style={tw`text-md font-bold text-gray-800`}>
+        <View className="mb-2">
+          <Text className="text-md font-bold text-gray-800">
             Tittle: {task.Task_Title}
           </Text>
-          <View style={tw`mt-1 max-w-[75%]`}>
+          <View className="mt-1 max-w-[75%]">
             <Text
-              style={tw`text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full w-auto`}
+              className={`text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full w-auto`}
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -343,15 +341,15 @@ const TaskDropdown = ({ emp }) => {
           </View>
         </View>
  
-        <View style={tw`space-y-1`}>
-          <Text style={tw`text-sm text-gray-700`}>
-            <Text style={tw`font-semibold`}>Logged Hours: </Text>{task.Working_hours}
+        <View  className='space-y-1'>
+          <Text className="text-sm text-gray-700">
+            <Text className="font-semibold">Logged Hours: </Text>{task.Working_hours}
           </Text>
-          <Text style={tw`text-sm text-gray-700`}>
-            <Text style={tw`font-semibold`}>Production Hours: </Text>{task.Working_hours}
+          <Text className={`text-sm text-gray-700`}>
+            <Text className={`font-semibold`}>Production Hours: </Text>{task.Working_hours}
           </Text>
-          <Text style={tw`text-sm text-gray-700`}>
-            <Text style={tw`font-semibold`}>Product Manager: </Text>{task.Taskowner}
+          <Text className="text-sm text-gray-700">
+            <Text className="font-semibold">Product Manager: </Text>{task.Taskowner}
           </Text>
         </View>
       </View>
