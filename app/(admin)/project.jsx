@@ -6,7 +6,7 @@ import { DatePickerModal } from "react-native-paper-dates";
 import Collapsible from "react-native-collapsible";
 import Animated, { SlideInDown, SlideOutUp } from "react-native-reanimated";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 
@@ -86,7 +86,7 @@ export default function ProjectList() {
   <TouchableOpacity >
     <View>
       <Text className="mb-1">Project Name:</Text>
-      <Text className="font-semibold mb-3">{project.projectName}</Text>
+      <Text className="font-semibold mb-3 underline">{project.projectName}</Text>
     </View>
   </TouchableOpacity>
 </Link>
@@ -122,11 +122,11 @@ export default function ProjectList() {
       </ScrollView>
 
       {/* Add Button */}
-      <TouchableOpacity className="absolute bottom-10 right-6">
+      {/* <TouchableOpacity className="absolute bottom-10 right-6" onPress={()=>router.push('/(addProject)/addProject')}>
         <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: 50, padding: 10 }}>
           <MaterialCommunityIcons name="plus" size={32} color="white" />
         </LinearGradient>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }

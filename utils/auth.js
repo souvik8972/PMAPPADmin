@@ -25,6 +25,7 @@ const tokenExpiration = checkTokenExpiration(decoded.exp);
     email: decoded.sub,
     name:decoded?.sub?.split(".")[0],
     empId: decoded.EmpId,
+    exp:decoded.exp,
     checkTokenExpiration: tokenExpiration,
     userType: decoded.UserType
   };

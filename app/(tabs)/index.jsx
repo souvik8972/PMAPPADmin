@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -19,10 +19,11 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { AuthContext } from "../../context/AuthContext";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
-
+import {usePostData} from "../../ReactQuery/hooks/usePostData";
 export default function TaskScreen() {
   const { user } = useContext(AuthContext);
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
+  const { mutateAsync: postTaskLog } = usePostData('Task/SaveTaskLog', ['emp_task_data']);
 
   const today = getFormattedDate(0);
   const yesterday = getFormattedDate(1);
@@ -78,6 +79,7 @@ export default function TaskScreen() {
   }, [selectedOption]);
 
   const formatTaskData = (data) => {
+  console.log("API Data",data)
     if (!data?.emp_task_data) return [];
     
     return data.emp_task_data.map((task) => {
@@ -108,22 +110,26 @@ export default function TaskScreen() {
   };
 
   const handleSubmit = async (taskId) => {
-    const task = formattedTasks.find(t => t.taskId === taskId);
+    const task = apiData?.emp_task_data?.find(t => t.Task_Id.toString() === taskId);
     if (!task) return;
-
+  
+    const payload = {
+      TimelogId: task.LogId,
+      TaskId: task.Task_Id,
+      Emp_Id: user.empId,
+      logDate: selectedDate,
+      Log: parseFloat(localTaskData[taskId] || "0"),
+      Billing_type: task.Billing_Type
+    };
+  
+    console.log(payload, "Payload");
     setIsProcessing(true);
+  
     try {
-      // Here you would make your actual API call to update the hours
-      // For example:
-      // await updateTaskHours(user.token, taskId, task.actual, selectedDate);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await postTaskLog({ data: payload, token: user.token });
+  
       Alert.alert("Success", "Hours submitted successfully");
-      
-      // After successful submission, you might want to refetch the data
-      refetch();
+      // No need to manually refetch, as invalidateQueries in the hook will handle it
     } catch (error) {
       Alert.alert("Error", "Failed to submit hours");
       console.error("Submission error:", error);
@@ -131,13 +137,14 @@ export default function TaskScreen() {
       setIsProcessing(false);
     }
   };
+  
 
   const handleDateChange = (date) => {
     setActiveIndex(null);
     setSelectedDate(date);
   };
 
-  const formattedTasks = formatTaskData(apiData);
+  const formattedTasks = useMemo(() => formatTaskData(apiData), [apiData, localTaskData]);
   const filteredTasks = formattedTasks.filter(task =>
     task.title.toLowerCase().includes(searchQuery.toLowerCase())
   );

@@ -1,52 +1,67 @@
 import React, { useContext, useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Modal, TextInput, ScrollView } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  TextInput,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import "nativewind";
 import RenderItem from "../../components/Assets/RenderItem";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { AuthContext } from "../../context/AuthContext";
 
+// Calculate item width based on screen width
+const windowWidth = Dimensions.get('window').width;
+const itemWidth = (windowWidth - 60) / 3; // 60 = paddingHorizontal (20*2) + gap (20)
+
 const ShimmerItem = () => (
-  <View className="m-2 w-[100px] h-[150px] rounded-lg ">
-    <View className="bg-gray-200 w-full h-full animate-pulse">
-      <View className="absolute top-4 left-4 w-10 h-10 rounded-full bg-gray-300" />
-      <View className="absolute bottom-4 left-4 w-[100px] h-4 rounded bg-gray-300" />
-    </View>
+  <View style={[styles.shimmerItem, { width: itemWidth }]}>
+    <View style={styles.shimmerIcon} />
+    <View style={styles.shimmerText} />
   </View>
 );
 
 const Assets = () => {
   const { user } = useContext(AuthContext);
-  const { data, isLoading, error } = useFetchData("Assests/GetAllAssests", user.token);
-  
+  const { data, isLoading, error } = useFetchData(
+    "Assests/GetAllAssests",
+    user.token
+  );
+
   const [assets, setAssets] = useState([]);
   const [selectedAssets, setSelectedAssets] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [textInput, setTextInput] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Improved icon mapping based on P_Id and BrandName
   const getIconName = (pId, brandName) => {
-    // Handle Apple products first
-    if (brandName.includes("Apple") || brandName.includes("iPhone") || brandName.includes("MacBook")) {
+    if (
+      brandName.includes("Apple") ||
+      brandName.includes("iPhone") ||
+      brandName.includes("MacBook")
+    ) {
       return pId === 6 ? "smartphone" : "laptop-mac";
     }
 
-    // Handle other products by type
-    switch(pId) {
-      case 1: // MacBook
-      case 2: // Lenovo
+    switch (pId) {
+      case 1:
+      case 2:
         return "laptop";
-      case 3: // iPad
-      case 4: // Android Tablets
+      case 3:
+      case 4:
         return "tablet";
-      case 5: // Android Phone
+      case 5:
         return "smartphone";
-      case 7: // Accessories
+      case 7:
         return "power";
-      case 8: // Microsoft (Hololens)
+      case 8:
         return "vrpano";
-      case 9: // Hardware
+      case 9:
         return "storage";
       default:
         return "devices";
@@ -55,30 +70,37 @@ const Assets = () => {
 
   useEffect(() => {
     if (data) {
-      const transformedData = data.map(item => ({
-        id: item.Id,
-        name: item.Product_Name,
-        icon: getIconName(item.P_Id, item.BrandName),
-        taken: item.P_Status === "U",
-        brand: item.BrandName,
-        typeId: item.P_Id
-      }));
-      setAssets(transformedData);
+      setIsProcessing(true);
+      const timer = setTimeout(() => {
+        const transformedData = data.map((item) => ({
+          id: item.Id,
+          name: item.Product_Name,
+          icon: getIconName(item.P_Id, item.BrandName),
+          taken: item.P_Status === "U",
+          brand: item.BrandName,
+          typeId: item.P_Id,
+        }));
+        setAssets(transformedData);
+        setIsProcessing(false);
+      }, 500);
+      return () => clearTimeout(timer);
     }
   }, [data]);
 
   const handlePress = (id) => {
     setSelectedAssets((prev) =>
-      prev.includes(id) ? prev.filter((assetId) => assetId !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((assetId) => assetId !== id)
+        : [...prev, id]
     );
   };
 
   const handleSubmit = () => {
-    if (selectedAssets.length > 0) {
-      setModalVisible(true);
-    } else {
+    if (selectedAssets.length === 0) {
       alert("Please select at least one asset.");
+      return;
     }
+    setModalVisible(true);
   };
 
   const handleModalSubmit = () => {
@@ -100,67 +122,95 @@ const Assets = () => {
     setTextInput("");
   };
 
+  if (isLoading || isProcessing) {
+    return (
+      <View style={styles.loadingContainer}>
+        <View style={styles.shimmerContainer}>
+          {[...Array(6)].map((_, index) => (
+            <ShimmerItem key={index} />
+          ))}
+        </View>
+      </View>
+    );
+  }
+
   if (error) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <Text>Error loading assets: {error.message}</Text>
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Error loading assets: {error.message}</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1">
-      <View className="flex items-center"> 
-        <TouchableOpacity onPress={handleSubmit} disabled={selectedAssets.length === 0}>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleSubmit} activeOpacity={0.8}>
           <LinearGradient
-            colors={selectedAssets.length > 0 ? ["#D01313", "#6A0A0A"] : ['#D1D5DB', '#D1D5DB']}
-            style={{ padding: 12, borderRadius: 9999, width: 160, alignItems: 'center' }}>
-            <Text style={{ color: 'white', fontWeight: 'bold' }}>
-              {selectedAssets.length === 0 ? "Select assets" : "Proceed"}
+            colors={
+              selectedAssets.length > 0
+                ? ["#D01313", "#6A0A0A"]
+                : ["#E5E7EB", "#E5E7EB"]
+            }
+            style={[
+              styles.proceedButton,
+              selectedAssets.length === 0 && styles.disabledButton,
+            ]}
+          >
+            <Text
+              style={[
+                styles.buttonText,
+                selectedAssets.length === 0 && styles.disabledButtonText,
+              ]}
+            >
+              {selectedAssets.length > 0 ? "Proceed" : "Select Assets"}
             </Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
 
-      {isLoading ? (
-        <View className="flex-row flex-wrap justify-center mt-4">
-          {[...Array(6)].map((_, index) => (
-            <ShimmerItem key={index} />
-          ))}
-        </View>
-      ) : (
-        <View className="flex-row flex-wrap justify-center mt-4">
-          {assets.map((item) => (
-            <RenderItem 
-              key={item.id} 
-              item={item} 
-              selectedAssets={selectedAssets} 
-              handlePress={handlePress} 
-            />
-          ))}
-        </View>
-      )}
+      <View style={styles.assetsGrid}>
+        {assets.map((item) => (
+          <RenderItem
+            key={item.id}
+            item={item}
+            selectedAssets={selectedAssets}
+            handlePress={handlePress}
+            itemWidth={itemWidth}
+          />
+        ))}
+      </View>
 
-      <Modal visible={modalVisible} transparent={true} animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black/50">
-          <View className="bg-white p-5 rounded-lg w-[90%]">
-            <Text className="text-lg font-bold mb-4">Enter Details</Text>
+      {/* Modal */}
+      <Modal visible={modalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Reason for Checkout</Text>
             <TextInput
               value={textInput}
               onChangeText={setTextInput}
-              placeholder="Enter reason for checkout"
-              className="border border-gray-300 h-12 p-2 rounded mb-4"
+              placeholder="Enter reason..."
+              style={styles.modalInput}
+              placeholderTextColor="#9CA3AF"
+              multiline
             />
-            <View className="flex-row justify-between">
-              <TouchableOpacity onPress={handleModalSubmit} className="flex-1 mr-2">
-                <LinearGradient colors={['#D01313', '#6A0A0A']} style={{ padding: 10, borderRadius: 9999, alignItems: 'center' }}>
-                  <Text style={{ color: 'white', fontWeight: 'bold' }}>Submit</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                onPress={handleModalSubmit}
+                style={styles.submitButtonWrapper}
+              >
+                <LinearGradient
+                  colors={["#D01313", "#6A0A0A"]}
+                  style={styles.submitButton}
+                >
+                  <Text style={styles.submitButtonText}>Submit</Text>
                 </LinearGradient>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleCancelModal} className="flex-1">
-                <View className="bg-gray-100 p-3 rounded-full justify-center items-center">
-                  <Text className="text-red-500 text-center font-bold">Cancel</Text>
-                </View>
+              <TouchableOpacity
+                onPress={handleCancelModal}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -169,5 +219,162 @@ const Assets = () => {
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 20,
+    paddingTop: 32,
+    paddingBottom: 48,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 16,
+  },
+  shimmerContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: 10,
+  },
+  shimmerItem: {
+    height: 150,
+    borderRadius: 16,
+    backgroundColor: "#E5E7EB",
+    marginBottom: 20,
+  },
+  shimmerIcon: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#D1D5DB",
+  },
+  shimmerText: {
+    position: "absolute",
+    bottom: 16,
+    left: 16,
+    width: '70%',
+    height: 16,
+    borderRadius: 4,
+    backgroundColor: "#D1D5DB",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+  },
+  errorText: {
+    color: "#DC2626",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  buttonContainer: {
+    alignItems: "center",
+    marginBottom: 28,
+  },
+  proceedButton: {
+    paddingVertical: 14,
+    paddingHorizontal: 36,
+    borderRadius: 32,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  disabledButtonText: {
+    color: "#6B7280",
+  },
+  assetsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    width: "100%",
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1F2937",
+    marginBottom: 16,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 12,
+    padding: 14,
+    minHeight: 100,
+    fontSize: 16,
+    color: "#111827",
+    backgroundColor: "#F3F4F6",
+    marginBottom: 20,
+    textAlignVertical: "top",
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  submitButtonWrapper: {
+    flex: 1,
+    marginRight: 10,
+  },
+  submitButton: {
+    paddingVertical: 14,
+    borderRadius: 30,
+    alignItems: "center",
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  cancelButton: {
+    flex: 1,
+    marginLeft: 10,
+    backgroundColor: "#E5E7EB",
+    paddingVertical: 14,
+    borderRadius: 30,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#DC2626",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+});
 
 export default Assets;

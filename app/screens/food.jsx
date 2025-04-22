@@ -45,7 +45,7 @@ const FoodComponent = () => {
       className="flex-1 items-center justify-center 0 p-5 pt-0"
     >
       {/* Header with logo */}
-      <View className="w-full h-[250px] mb-4 justify-center items-center">
+      <View className="w-full h-[140px] mb-4 justify-center items-center">
         <Image 
           source={require("../../assets/images/food2.png")} 
           style={{ 

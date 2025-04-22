@@ -1,80 +1,88 @@
-import { Redirect, Stack, Tabs, useSegments } from 'expo-router';
 import React, { useContext } from 'react';
-import { ActivityIndicator, SafeAreaView, View } from 'react-native';
+import { SafeAreaView } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
 import Header from '../../components/Header';
+import MyTabBar from '../../components/MyTabBar';
+import { AuthContext } from '../../context/AuthContext';
+
 import { MaterialIcons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import Octicons from '@expo/vector-icons/Octicons';
-import MyTabBar from '../../components/MyTabBar'; // import the custom TabBar component
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AuthContext } from "../../context/AuthContext";
+
+// Import screens directly
+import Assets from '../screens/assets';
+import Food from '../screens/food';
+import Home from './index';
+import Resource from '../screens/resource';
+import Ticket from '../screens/ticket';
+
+const Tab = createBottomTabNavigator();
 
 export default function TabLayout() {
-  const segments = useSegments();
-  const {user}=useContext(AuthContext)
-
-
-
-  
+  const { user } = useContext(AuthContext);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-    
       <Header />
-      <Tabs 
-        tabBar={(props) => <MyTabBar {...props} />} 
-        
-          lazy={true} 
+
+      <Tab.Navigator
+        tabBar={(props) => <MyTabBar {...props} />}
         screenOptions={{
-         
           headerShown: false,
-          
         }}
-        
-        lazyplaceholder={
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="#D01313" />
-          </View>
-        }
+        sceneContainerStyle={{
+          flex: 1,
+        }}
       >
-        <Tabs.Screen 
-          name="resource" 
+         <Tab.Screen
+          name="Home"
+          component={Home}
           options={{
-            headerShown: false,
-            tabBarIcon: ({ color }) => <Feather name="users" size={26} color={color} />,
-            tabBarLabel: () => null, 
-          }} 
+            tabBarIcon: ({ color }) => (
+              <FontAwesome5 name="calendar-alt" size={26} color={color} />
+            ),
+          }}
         />
-        <Tabs.Screen 
-          name="index" 
+        <Tab.Screen
+          name="Resource"
+          component={Resource}
           options={{
-            tabBarIcon: ({ color }) => <FontAwesome5 name="calendar-alt" size={26} color={color} />,
-            tabBarLabel: () => null, 
-          }} 
+            tabBarIcon: ({ color }) => (
+              <Feather name="users" size={26} color={color} />
+            ),
+          }}
         />
-        <Tabs.Screen 
-          name="ticket" 
+       
+        <Tab.Screen
+          name="Ticket"
+          component={Ticket}
           options={{
-            tabBarIcon: ({ color }) => <MaterialIcons name="receipt-long" size={30} color={color} />,
-            tabBarLabel: () => null, 
-          }} 
+            tabBarIcon: ({ color }) => (
+              <MaterialIcons name="receipt-long" size={30} color={color} />
+            ),
+          }}
         />
-        <Tabs.Screen 
-          name="assets" 
+        <Tab.Screen
+          name="Assets"
+          component={Assets}
           options={{
-            tabBarIcon: ({ color }) => <FontAwesome5 name="mobile" size={26} color={color} />,
-            tabBarLabel: () => null, 
-          }} 
+            tabBarIcon: ({ color }) => (
+              <FontAwesome5 name="mobile" size={26} color={color} />
+            ),
+          }}
         />
-        <Tabs.Screen 
-          name="food" 
+        <Tab.Screen
+          name="Food"
+          component={Food}
           options={{
-            tabBarIcon: ({ color }) => <Ionicons name="fast-food" size={26} color={color}  />,
-            tabBarLabel: () => null, 
-          }} 
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="fast-food" size={26} color={color} />
+            ),
+          }}
         />
-      </Tabs>
+      </Tab.Navigator>
     </SafeAreaView>
   );
 }

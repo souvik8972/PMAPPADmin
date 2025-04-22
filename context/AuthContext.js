@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
       try {
         const authInfo = await getAuthInfo(); // Get user info (token, email, empId, userType)
         if (authInfo) {
+          console.log("Auth Info",authInfo.exp ); // Log the auth info for debugging
           const tokenExpiration = checkTokenExpiration(authInfo.exp);
           !tokenExpiration? setUser(authInfo):setUser(null); // Check token expiration
           // Store the user information in state
@@ -29,9 +30,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (token) => {
+    console.log("token",token)
     try {
       await saveAuthInfo(token);
       const authInfo = await getAuthInfo(); 
+      console.log(authInfo,"AuthInfo")
       setUser(authInfo); 
     } catch (error) {
       console.error("Failed to save token:", error);

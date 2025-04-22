@@ -14,15 +14,15 @@ const { width, height } = Dimensions.get('window');
 const Index = () => {
   useNotificationPermission();
  
-  // useEffect(() => {
-  //   // Automatically schedule daily 9AM notification when the app is loaded
-  //   const handleSchedule = () => {
-  //     scheduleDailyNotification(12, 11); // e.g., schedule for 9:00 AM daily
-  //     console.log('✅ Daily 9AM notification scheduled');
-  //   };
+  useEffect(() => {
+    // Automatically schedule daily 9AM notification when the app is loaded
+    const handleSchedule = () => {
+      scheduleDailyNotification(12, 11); // e.g., schedule for 9:00 AM daily
+      console.log('✅ Daily 9AM notification scheduled');
+    };
 
-  //   handleSchedule();  // Schedule the notification
-  // }, []); 
+    handleSchedule();  // Schedule the notification
+  }, []); 
 
 const {user}=useContext(AuthContext)
 

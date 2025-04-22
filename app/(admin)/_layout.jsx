@@ -11,9 +11,9 @@ import { LinearGradient } from "expo-linear-gradient";
 
 // Create lazy-loaded components for each screen
 const Task = lazy(() => import("./index"));
-const Resource = lazy(() => import("./resource"));
-const Ticket = lazy(() => import("./ticket"));
-const Assets = lazy(() => import("./assets"));
+const Resource = lazy(() => import("../screens/resource"));
+const Ticket = lazy(() => import("../screens/ticket"));
+const Assets = lazy(() => import("../screens/assets"));
 const Project = lazy(() => import("./project"));
 const TimeSheet = lazy(() => import("./timeSheet"));
 const Finance = lazy(() => import("./finance"));

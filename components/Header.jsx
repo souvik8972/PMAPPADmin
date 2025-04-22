@@ -15,7 +15,9 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
 
   const {user}=useContext(AuthContext)
 
-  useEffect(()=>{  setUserName(user.name)},[user])
+  useEffect(()=>{  setUserName(user.name)
+    console.log(userName,"UserName")
+  },[user])
   const handleLogout = () => {
     console.log("Logout button pressed");
     logout(); // Call the logout function from AuthContext
@@ -26,16 +28,16 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
   return (
     <SafeAreaView className="flex-row  justify-between items-center">
       {/* Hamburger Menu */}
-      {user.userType == 3 ? (<View className="flex-row w-full p-4  justify-between items-center">
+      {user.userType == 3 ? (<View className="flex-row w-full p-4   justify-between items-center">
       {/* Left Logo */}
       <Image source={require('../assets/images/icon.png')} className="w-12 h-12" resizeMode="contain" />
       
       {/* Right Profile Image */}
       <TouchableOpacity className="px-4 py-3 flex flex-row items-center" onPress={() => setModalVisible(true)}>
-        <Text className="text-[20px] mr-2 font-bold capitalize">Hello {userName}</Text>
+        <Text className="text-[20px] mr-2 font-bold capitalize ">Hello {userName}</Text>
         <Image source={require('../assets/images/Avatar.png')} className="w-12 h-12 bg-red-700" resizeMode="contain" />
-      </TouchableOpacity></View>): <View className='flex-row w-full p-4  justify-between items-center '>
-      <TouchableOpacity onPress={() => navigation.toggleDrawer()} className="p-2 pl-6"> 
+      </TouchableOpacity></View>): <View className='flex-row w-full  p-4 pl-0 justify-between items-center '>
+      <TouchableOpacity onPress={() => navigation.toggleDrawer()} className="p-2 "> 
         <Ionicons name="menu" size={28} color="black" />
       </TouchableOpacity>
 
@@ -43,7 +45,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
   
       
       {/* Right Profile Image */}
-      <TouchableOpacity className="px-4 py-3 flex flex-row items-center" onPress={() => setModalVisible(true)}>
+      <TouchableOpacity className=" flex flex-row items-center" onPress={() => setModalVisible(true)}>
         <Text className="text-[20px] mr-2 font-bold">Hello {userName}</Text>
         <Image source={require('../assets/images/Avatar.png')} className="w-12 h-12 " resizeMode="contain" />
       </TouchableOpacity>

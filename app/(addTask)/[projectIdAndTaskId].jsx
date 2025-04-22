@@ -22,7 +22,7 @@ import { LinearGradient } from "expo-linear-gradient";
 const AddEditTask = () => {
   const navigation = useNavigation();
   const route = useRoute();
-const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null, null];
+  const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null, null];
   
   const isEditMode = !!taskId;
   
@@ -53,7 +53,7 @@ const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null
   const fakeUsers = ["Vishwnath", "Prajwal K", "John Doe", "Jane Smith", "Alice Brown"];
 
   const [showHoursInput, setShowHoursInput] = useState(false);
-  const [dateHours, setDateHours] = useState({});
+  const [memberHours, setMemberHours] = useState({}); // Format: { "memberName": { "date": hours } }
   const [rotateAnim] = useState(new Animated.Value(0));
 
   // Load task data if in edit mode
@@ -70,9 +70,15 @@ const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null
           startDate: new Date(2023, 5, 15),
           endDate: new Date(2023, 5, 20),
           teamMembers: ["Vishwnath", "Prajwal K"],
-          hours: {
-            "15/06/2023": 8,
-            "16/06/2023": 6,
+          memberHours: {
+            "Vishwnath": {
+              "15/06/2023": 8,
+              "16/06/2023": 6,
+            },
+            "Prajwal K": {
+              "15/06/2023": 4,
+              "16/06/2023": 7,
+            }
           }
         };
         
@@ -83,8 +89,8 @@ const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null
         setEndDate(mockTaskData.endDate);
         setSelectedResources(mockTaskData.teamMembers);
         
-        if (mockTaskData.hours) {
-          setDateHours(mockTaskData.hours);
+        if (mockTaskData.memberHours) {
+          setMemberHours(mockTaskData.memberHours);
           setShowHoursInput(true);
         }
       };
@@ -111,6 +117,11 @@ const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null
   const addResource = (name) => {
     if (name && !selectedResources.includes(name)) {
       setSelectedResources([...selectedResources, name]);
+      // Initialize hours for this member if they don't exist
+      setMemberHours(prev => ({
+        ...prev,
+        [name]: {}
+      }));
     }
     setResourceInput("");
     setShowResourceDropdown(false);
@@ -118,6 +129,12 @@ const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null
 
   const removeResource = (name) => {
     setSelectedResources(selectedResources.filter((res) => res !== name));
+    // Remove hours for this member
+    setMemberHours(prev => {
+      const newHours = {...prev};
+      delete newHours[name];
+      return newHours;
+    });
   };
 
   const formatDate = (date) =>
@@ -157,6 +174,16 @@ const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null
     return dates;
   };
 
+  const handleHoursChange = (member, dateStr, hours) => {
+    setMemberHours(prev => ({
+      ...prev,
+      [member]: {
+        ...prev[member],
+        [dateStr]: hours === "" ? 0 : parseInt(hours, 10) || 0
+      }
+    }));
+  };
+
   const handleSubmit = () => {
     const taskData = {
       taskName,
@@ -165,7 +192,7 @@ const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
       teamMembers: selectedResources,
-      hours: showHoursInput ? dateHours : null,
+      memberHours: showHoursInput ? memberHours : null,
     };
     
     if (isEditMode) {
@@ -197,6 +224,7 @@ const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null
       >
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <View>
+            {/* Existing form fields (Task Name, Client, Status, Dates) */}
             <Text className="text-sm font-medium text-slate-600 mb-1">Task Name</Text>
             <View className="bg-white rounded-lg border border-slate-200 shadow-xs mb-3">
               <TextInput
@@ -343,37 +371,38 @@ const [projectId, taskId] = route.params?.projectIdAndTaskId.split("-") || [null
               onPress={toggleHoursInput}
               className="flex-row items-center justify-between bg-slate-50 p-3 rounded-lg mb-3"
             >
-              <Text className="text-slate-700 font-medium">Add Hours for Specific Dates</Text>
+              <Text className="text-slate-700 font-medium">Add Hours for Team Members</Text>
               <Animated.View style={{ transform: [{ rotate: rotateInterpolate }] }}>
                 <Feather name="chevron-down" size={20} color="#64748b" />
               </Animated.View>
             </TouchableOpacity>
 
-            {showHoursInput && (
+            {showHoursInput && selectedResources.length > 0 && (
               <View className="mb-4 border border-slate-200 rounded-lg p-3">
-                <Text className="text-sm font-medium text-slate-600 mb-2">Enter Hours</Text>
-                {getDatesInRange(startDate, endDate).map((date, index) => {
-                  const dateStr = formatDate(date);
-                  return (
-                    <View key={index} className="flex-row items-center justify-between mb-2">
-                      <Text className="text-slate-700 w-24">{dateStr}</Text>
-                      <TextInput
-                        value={dateHours[dateStr] ? dateHours[dateStr].toString() : ""}
-                        onChangeText={(text) => {
-                          const num = text === "" ? 0 : parseInt(text, 10);
-                          setDateHours(prev => ({
-                            ...prev,
-                            [dateStr]: isNaN(num) ? 0 : num
-                          }));
-                        }}
-                        placeholder="0"
-                        keyboardType="numeric"
-                        className="flex-1 ml-2 bg-white border border-slate-200 rounded px-3 py-2 text-slate-800"
-                      />
-                      <Text className="text-slate-500 ml-2">hours</Text>
-                    </View>
-                  );
-                })}
+                <Text className="text-sm font-medium text-slate-600 mb-2">Enter Hours for Each Member</Text>
+                
+                {selectedResources.map((member, memberIndex) => (
+                  <View key={memberIndex} className="mb-4">
+                    <Text className="font-medium text-slate-700 mb-2">{member}</Text>
+                    
+                    {getDatesInRange(startDate, endDate).map((date, dateIndex) => {
+                      const dateStr = formatDate(date);
+                      return (
+                        <View key={dateIndex} className="flex-row items-center justify-between mb-2">
+                          <Text className="text-slate-600 w-24">{dateStr}</Text>
+                          <TextInput
+                            value={memberHours[member]?.[dateStr] ? memberHours[member][dateStr].toString() : ""}
+                            onChangeText={(text) => handleHoursChange(member, dateStr, text)}
+                            placeholder="0"
+                            keyboardType="numeric"
+                            className="flex-1 ml-2 bg-white border border-slate-200 rounded px-3 py-2 text-slate-800"
+                          />
+                          <Text className="text-slate-500 ml-2">hours</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ))}
               </View>
             )}
 
