@@ -22,8 +22,11 @@ import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import {usePostData} from "../../ReactQuery/hooks/usePostData";
 export default function TaskScreen() {
   const { user } = useContext(AuthContext);
+  console.log(user)
+
+
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
-  const { mutateAsync: postTaskLog } = usePostData('Task/SaveTaskLog', ['emp_task_data']);
+  // const { mutateAsync: postTaskLog } = usePostData('Task/SaveTaskLog', ['_Tasks']);
 
   const today = getFormattedDate(0);
   const yesterday = getFormattedDate(1);
@@ -49,11 +52,11 @@ export default function TaskScreen() {
 
   // Initialize localTaskData when apiData changes
   useEffect(() => {
-    if (apiData?.emp_task_data) {
+    if (apiData?._Tasks) {
       const initialData = {};
-      apiData.emp_task_data.forEach(task => {
+      apiData._Tasks.forEach(task => {
         if (task.Task_Id) {
-          // Only initialize if we don't already have a local value
+          
           if (localTaskData[task.Task_Id] === undefined) {
             initialData[task.Task_Id] = task.Logged_hours?.toString() || "0";
           }
@@ -80,9 +83,9 @@ export default function TaskScreen() {
 
   const formatTaskData = (data) => {
   console.log("API Data",data)
-    if (!data?.emp_task_data) return [];
+    if (!data?._Tasks) return [];
     
-    return data.emp_task_data.map((task) => {
+    return data?._Tasks?.map((task) => {
       const taskId = task.Task_Id ? task.Task_Id.toString() : "N/A";
       
       return {
@@ -110,33 +113,58 @@ export default function TaskScreen() {
   };
 
   const handleSubmit = async (taskId) => {
-    const task = apiData?.emp_task_data?.find(t => t.Task_Id.toString() === taskId);
+    const task = apiData?._Tasks?.find(t => t.Task_Id.toString() === taskId);
     if (!task) return;
+  
+    const logValue = localTaskData[taskId];
+    if (!logValue || isNaN(logValue)) {
+      Alert.alert("Error", "Invalid log value");
+      return;
+    }
   
     const payload = {
       TimelogId: task.LogId,
       TaskId: task.Task_Id,
       Emp_Id: user.empId,
       logDate: selectedDate,
-      Log: parseFloat(localTaskData[taskId] || "0"),
+      Log: parseFloat(logValue),
       Billing_type: task.Billing_Type
     };
   
-    console.log(payload, "Payload");
+    const actualHoursURL = `http://184.72.156.185/Test-APp/api/Task/SendActualHours?TimelogId=${task.LogId}&TaskId=${task.Task_Id}&Emp_Id=${user.empId}&logDate=${encodeURIComponent(selectedDate)}&Log=${logValue}&Billing_type=${task.Billing_Type}&Notes=Na`;
+  
+   
     setIsProcessing(true);
   
     try {
-      await postTaskLog({ data: payload, token: user.token });
+      // await postTaskLog({ data: payload, token: user.token });
   
+      // await new Promise(resolve => setTimeout(resolve, 1000)); // give server time to process
+  
+      const response = await fetch(actualHoursURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({}) // some APIs fail silently without a body
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to send actual hours");
+      }
+  refetch()
       Alert.alert("Success", "Hours submitted successfully");
-      // No need to manually refetch, as invalidateQueries in the hook will handle it
     } catch (error) {
-      Alert.alert("Error", "Failed to submit hours");
       console.error("Submission error:", error);
+      Alert.alert("Error", "Failed to submit hours");
     } finally {
       setIsProcessing(false);
     }
   };
+  
+  
   
 
   const handleDateChange = (date) => {
@@ -215,7 +243,7 @@ export default function TaskScreen() {
           <TextInput
             className="bg-white border border-gray-300 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800 focus:border-red-500"
             keyboardType="decimal-pad"
-            placeholder="0.0"
+            placeholder="0"
             maxLength={5}
             value={task.actual}
             onChangeText={(text) => handleActualHoursChange(text, task.taskId)}

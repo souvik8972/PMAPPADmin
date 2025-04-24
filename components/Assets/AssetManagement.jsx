@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,12 +12,13 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import RenderItem from "../../components/Assets/RenderItem";
-import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
+import { useFetchDataNoCache } from "@/ReactQuery/hooks/userFetchWithoutCache";
+import { usePostData } from "../../ReactQuery/hooks/usePostData";
 import { AuthContext } from "../../context/AuthContext";
+import { useNavigation } from "@react-navigation/native";
 
-// Calculate item width based on screen width
-const windowWidth = Dimensions.get('window').width;
-const itemWidth = (windowWidth - 60) / 3; // 60 = paddingHorizontal (20*2) + gap (20)
+const windowWidth = Dimensions.get("window").width;
+const itemWidth = (windowWidth - 60) / 3;
 
 const ShimmerItem = () => (
   <View style={[styles.shimmerItem, { width: itemWidth }]}>
@@ -27,17 +28,30 @@ const ShimmerItem = () => (
 );
 
 const Assets = () => {
+  const { mutate } = usePostData("Assests/SendAssestdetails", ["Assests/GetAllAssests"]);
   const { user } = useContext(AuthContext);
-  const { data, isLoading, error } = useFetchData(
+  const navigation = useNavigation();
+
+  const { data, isLoading, error, refetch } = useFetchDataNoCache(
     "Assests/GetAllAssests",
-    user.token
+    user?.token
   );
+  console.log(data, "dataaa");
 
   const [assets, setAssets] = useState([]);
   const [selectedAssets, setSelectedAssets] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+   
+     refetch();
+     
+    });
+    return unsubscribe;
+  }, [navigation, refetch]);
 
   const getIconName = (pId, brandName) => {
     if (
@@ -69,29 +83,24 @@ const Assets = () => {
   };
 
   useEffect(() => {
-    if (data) {
+    if (data?.assests) {
       setIsProcessing(true);
-      const timer = setTimeout(() => {
-        const transformedData = data.map((item) => ({
-          id: item.Id,
-          name: item.Product_Name,
-          icon: getIconName(item.P_Id, item.BrandName),
-          taken: item.P_Status === "U",
-          brand: item.BrandName,
-          typeId: item.P_Id,
-        }));
-        setAssets(transformedData);
-        setIsProcessing(false);
-      }, 500);
-      return () => clearTimeout(timer);
+      const transformedData = data.assests.map((item) => ({
+        id: item.Id,
+        name: item.Product_Name,
+        icon: getIconName(item.P_Id, item.BrandName),
+        taken: item.P_Status === "U",
+        brand: item.BrandName,
+        typeId: item.P_Id,
+      }));
+      setAssets(transformedData);
+      setIsProcessing(false);
     }
   }, [data]);
 
   const handlePress = (id) => {
     setSelectedAssets((prev) =>
-      prev.includes(id)
-        ? prev.filter((assetId) => assetId !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((assetId) => assetId !== id) : [...prev, id]
     );
   };
 
@@ -108,13 +117,34 @@ const Assets = () => {
       alert("Please enter some text before submitting.");
       return;
     }
-    const updatedAssets = assets.map((asset) =>
-      selectedAssets.includes(asset.id) ? { ...asset, taken: true } : asset
+
+    const payload = {
+      empId: user?.empId || user?.id || "default-emp-id",
+      reason: textInput.trim(),
+      productDetail: selectedAssets.join(","),
+    };
+
+    console.log("Submitting payload:", payload);
+
+    mutate(
+      { data: payload, token: user.token },
+      {
+        onSuccess: () => {
+          const updatedAssets = assets.map((asset) =>
+            selectedAssets.includes(asset.id) ? { ...asset, taken: true } : asset
+          );
+          setAssets(updatedAssets);
+          setModalVisible(false);
+          setTextInput("");
+          setSelectedAssets([]);
+          alert("Asset checkout submitted successfully.");
+        },
+        onError: (error) => {
+          console.error("Submission error:", error);
+          alert("Failed to submit asset checkout.");
+        },
+      }
     );
-    setAssets(updatedAssets);
-    setModalVisible(false);
-    setTextInput("");
-    setSelectedAssets([]);
   };
 
   const handleCancelModal = () => {
@@ -148,9 +178,7 @@ const Assets = () => {
         <TouchableOpacity onPress={handleSubmit} activeOpacity={0.8}>
           <LinearGradient
             colors={
-              selectedAssets.length > 0
-                ? ["#D01313", "#6A0A0A"]
-                : ["#E5E7EB", "#E5E7EB"]
+              selectedAssets.length > 0 ? ["#D01313", "#6A0A0A"] : ["#E5E7EB", "#E5E7EB"]
             }
             style={[
               styles.proceedButton,
@@ -260,7 +288,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 16,
     left: 16,
-    width: '70%',
+    width: "70%",
     height: 16,
     borderRadius: 4,
     backgroundColor: "#D1D5DB",

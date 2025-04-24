@@ -8,6 +8,8 @@ const MyRequest = () => {
   const { user } = useContext(AuthContext);
   const { data, isLoading } = useFetchData(`Assests/GetAssestDetailsById?Empid=${user.empId}`, user.token);
   const shimmerAnim = useRef(new Animated.Value(-1)).current;
+  const requestData = (data === 'no data present' || !Array.isArray(data)) ? [] : data;
+
 
   // Shimmer animation effect
   useEffect(() => {
@@ -205,13 +207,19 @@ const MyRequest = () => {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <FlatList
-          data={[1, 2, 3, 4]} // Render 4 skeleton cards
-          renderItem={() => <SkeletonCard />}
-          keyExtractor={(item) => item.toString()}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
+        {requestData.length > 0 ? (
+      <FlatList
+        data={requestData}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.Id.toString()}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
+    ) : (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>No asset requests found</Text>
+      </View>
+    )}
       </View>
     );
   }

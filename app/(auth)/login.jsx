@@ -8,8 +8,10 @@ import { AuthContext } from '../../context/AuthContext';
 import {parseJwt} from '../../utils/auth'; // assuming you have a utility function to parse JWT
 
 const Login = () => {
-  const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
-  const [password, setPassword] = useState('hello@123');
+  // const [email, setEmail] = useState('yukta.d@medtrixhealthcare.com');
+  // const [password, setPassword] = useState('yoTxiPqF');
+  const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
+  const [password, setPassword] = useState('lavgZzsS');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
   const { login } = useContext(AuthContext);

@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 
 const fetchData = async ({ endpoint, token }) => {
@@ -17,13 +16,14 @@ const fetchData = async ({ endpoint, token }) => {
   return response.json();
 };
 
-export const useFetchData = (endpoint, token) => {
+export const useFetchDataNoCache = (endpoint, token) => {
   return useQuery({
-    queryKey: [endpoint], // Unique key for caching
+    queryKey: [endpoint],
     queryFn: () => fetchData({ endpoint, token }),
-    enabled: !!token, // Only fetch if token exists
-    staleTime: 60 * 1000, // 1 minute (data stays fresh for 1 min)
-    cacheTime: 5 * 60 * 1000, // Optional: Keep data in cache for 5 mins (default)
-
+    enabled: !!token,
+    staleTime: 0,     // Data is always considered stale
+    cacheTime: 0,     // Don't keep in cache at all after unmount
+    refetchOnMount: true, // Optional: ensures data is fetched on every mount
+    refetchOnWindowFocus: true, // Optional: fetch again if user refocuses the window
   });
 };
