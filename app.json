@@ -6,18 +6,13 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
-    "jsEngine": "hermes",
     "assetBundlePatterns": [
       "**/*"
     ],
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/915f2bd5-989d-4900-b622-23219b713bb4"
     },
     "ios": {
       "supportsTablet": true,
@@ -26,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.souvik8582.pmtool",
@@ -50,7 +45,6 @@
       "eas": {
         "projectId": "92c04134-039e-4359-906f-e3e78d3bb90a"
       }
-    },
-    "owner": "souvik8582"
+    }
   }
 }

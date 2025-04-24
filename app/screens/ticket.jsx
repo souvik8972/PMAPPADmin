@@ -6,6 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Image } from 'react-native';
 import { useFetchData } from '@/ReactQuery/hooks/useFetchData'
 import { AuthContext } from '@/context/AuthContext';
+import { usePostData } from '@/ReactQuery/hooks/usePostData';
 
 const IssueTracker = () => {
   const { user } = useContext(AuthContext);
@@ -19,7 +20,8 @@ const IssueTracker = () => {
   const [openSeverity, setOpenSeverity] = useState(false);
 
   const { data, isLoading, error, refetch, isFetching } = useFetchData("Ticket/GetAllTickets", token);
-  
+  const { mutate, isPending } = usePostData('Ticket/RaiseTicket',["Ticket/GetAllTickets"]);
+
 
   useEffect(() => {
     console.log(data, "Data from API")
@@ -63,40 +65,38 @@ const IssueTracker = () => {
 
   const handleSubmit = async () => {
     try {
-      // Prepare the data to be sent to the API
       const issueData = {
-        IssueType: type, // Send numeric value
-        Severity: severity, // Send numeric value
+        IssueType: type, // numeric
+        Severity: severity, // numeric
         Issue_Description: description,
       };
   
-      // Log the data to console
       console.log('Submitting issue with data:', issueData);
   
-      // For now we'll simulate it with local state
-      const newIssue = {
-        id: `temp-${Date.now()}`,
-        type,
-        severity,
-        description,
-        status: 'Open',
-        date: new Date().toLocaleDateString('en-GB'), // Format as DD-MM-YYYY
-        employeeName: user?.name || 'Unknown',
-        email: user?.email || 'unknown@email.com'
-      };
-      refetch();
-    alert("Ticket Submitted Successfully")
-     
-      setModalVisible(false);
-      setDescription('');
-      setType(null);
-      setSeverity(null);
-      
-     
+      mutate({
+        data: {}, 
+        token: user.token, 
+        queryParams: issueData,
+      }, {
+        onSuccess: () => {
+          alert("Ticket Submitted Successfully");
+          setModalVisible(false);
+          setDescription('');
+          setType(null);
+          setSeverity(null);
+          refetch(); 
+        },
+        onError: (error) => {
+          console.error('Error submitting issue:', error);
+          alert("Failed to submit ticket.");
+        }
+      });
+  
     } catch (err) {
       console.error('Error submitting issue:', err);
     }
   };
+  
 
   const isSubmitDisabled = type === null || severity === null || !description;
 

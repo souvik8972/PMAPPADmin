@@ -73,12 +73,14 @@ const Login = () => {
           elevation: 4,
         }}>
         
-        <Text className="text-[24px] font-semibold mb-4 text-center text-gray-800">Project Management Portal</Text>
+        {/* Error message at the very top */}
         {error.email === 'Invalid email or password' && (
-          <Text className="text-red-700 text-center mt-1 mb-1 font-medium">
+          <Text className="text-red-700 text-center mt-1 mb-4 font-medium text-lg">
             Invalid email or password
           </Text>
         )}
+        
+        <Text className="text-[24px] font-semibold mb-4 text-center text-gray-800">Project Management Portal</Text>
 
         <View className="mb-4">
           <Text className="text-gray-700 text-[15px] pl-1 font-medium mb-1">Email</Text>
