@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient'; // Import the LinearGradi
 
 const MyTabBar = ({ state, descriptors, navigation }) => {
   return (
-    <View style={{ flexDirection: 'row', height: 60,padding:2  }}>
+    <View  style={{ flexDirection: 'row', height: 60,padding:8 ,backgroundColor:'white' }}>
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
         const { options } = descriptors[route.key];
@@ -21,7 +21,7 @@ const MyTabBar = ({ state, descriptors, navigation }) => {
         };
 
         // Define the gradient colors
-        const gradientColors = isFocused ? ["#D01313", "#6A0A0A"] : ['#f3f4f6','#f3f4f6']; // Active gradient and inactive solid color
+        const gradientColors = isFocused ? ["#D01313", "#6A0A0A"] : ['white','white']; // Active gradient and inactive solid color
 
         return (
           <TouchableOpacity
@@ -32,6 +32,7 @@ const MyTabBar = ({ state, descriptors, navigation }) => {
               justifyContent: 'center',
               alignItems: 'center',
               borderRadius: 12,
+              
                // Optional: add padding to space out icons
             }}
           >

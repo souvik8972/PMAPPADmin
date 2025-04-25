@@ -24,7 +24,7 @@ export default function TabLayout() {
   const { user } = useContext(AuthContext);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1}}>
       <Header />
 
       <Tab.Navigator
@@ -33,6 +33,7 @@ export default function TabLayout() {
           headerShown: false,
         }}
         sceneContainerStyle={{
+         
           flex: 1,
         }}
       >
@@ -41,7 +42,7 @@ export default function TabLayout() {
           component={Home}
           options={{
             tabBarIcon: ({ color }) => (
-              <FontAwesome5 name="calendar-alt" size={26} color={color} />
+              <FontAwesome5 name="calendar-alt" size={24} color={color} />
             ),
           }}
         />
@@ -50,7 +51,7 @@ export default function TabLayout() {
           component={Resource}
           options={{
             tabBarIcon: ({ color }) => (
-              <Feather name="users" size={26} color={color} />
+              <Feather name="users" size={24} color={color} />
             ),
           }}
         />
@@ -60,7 +61,7 @@ export default function TabLayout() {
           component={Ticket}
           options={{
             tabBarIcon: ({ color }) => (
-              <MaterialIcons name="receipt-long" size={30} color={color} />
+              <MaterialIcons name="receipt-long" size={26} color={color} />
             ),
           }}
         />
@@ -69,7 +70,7 @@ export default function TabLayout() {
           component={Assets}
           options={{
             tabBarIcon: ({ color }) => (
-              <FontAwesome5 name="mobile" size={26} color={color} />
+              <FontAwesome5 name="mobile" size={24} color={color} />
             ),
           }}
         />
@@ -78,7 +79,7 @@ export default function TabLayout() {
           component={Food}
           options={{
             tabBarIcon: ({ color }) => (
-              <Ionicons name="fast-food" size={26} color={color} />
+              <Ionicons name="fast-food" size={24} color={color} />
             ),
           }}
         />

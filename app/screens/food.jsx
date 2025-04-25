@@ -42,7 +42,7 @@ const FoodComponent = () => {
   return (
     <Animated.View 
       style={{ opacity: fadeAnim }}
-      className="flex-1 items-center justify-center 0 p-5 pt-0"
+      className="flex-1 items-center bg-white justify-center 0 p-5 pt-0"
     >
       {/* Header with logo */}
       <View className="w-full h-[140px] mb-4 justify-center items-center">

@@ -137,10 +137,7 @@ export default function TaskScreen() {
     setIsProcessing(true);
   
     try {
-      // await postTaskLog({ data: payload, token: user.token });
-  
-      // await new Promise(resolve => setTimeout(resolve, 1000)); // give server time to process
-  
+      
       const response = await fetch(actualHoursURL, {
         method: 'POST',
         headers: {
@@ -148,7 +145,7 @@ export default function TaskScreen() {
           'Accept': 'application/json',
           'Authorization': `Bearer ${user.token}`
         },
-        body: JSON.stringify({}) // some APIs fail silently without a body
+        body: JSON.stringify({}) 
       });
   
       if (!response.ok) {
@@ -178,11 +175,11 @@ export default function TaskScreen() {
   );
 
   const renderTaskItem = (task, index) => (
-    <View key={`${task.taskId}-${index}`} className="mb-2">
+    <View key={`${task.taskId}-${index}`} className="mb-2 ">
       <TouchableOpacity
         className={`p-3 h-[80px] pl-5 pr-5 flex-row justify-between items-center ${
           activeIndex === index
-            ? "bg-white rounded-none rounded-t-lg"
+            ? "bg-white rounded-none rounded-t-lg border-[0.5px] border-b-0"
             : "bg-[#EBEBEB] rounded-lg shadow-[0px_5px_3px_1px_rgba(0,_0,_0,_0.1)]"
         }`}
         onPress={() => setActiveIndex(activeIndex === index ? null : index)}
@@ -200,9 +197,9 @@ export default function TaskScreen() {
 
       <Collapsible collapsed={activeIndex !== index}>
   <TouchableWithoutFeedback onPress={() => setActiveIndex(null)}>
-    <View className="bg-white rounded-xl rounded-t-none  pb-6">
+    <View className="border-[0.5px]    rounded-xl rounded-t-none  pb-6">
       {/* Task ID */}
-      <View className="px-4 pt-5 pb-4 border-b border-gray-200">
+      <View className="px-4 pt-4 pb-4 border-b border-gray-200">
         <View className="flex-row items-center mb-1">
           <MaterialCommunityIcons name="identifier" size={16} color="#6b7280" className="mr-2" />
           <Text className="text-gray-500 text-sm font-medium">Task ID</Text>
@@ -343,7 +340,7 @@ export default function TaskScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-100">
+    <View className="flex-1 bg-white">
       <View className="p-4 pt-0">
         <DropDown
           open={open}
@@ -424,7 +421,7 @@ export default function TaskScreen() {
           </ScrollView>
         )}
 
-        <Text className="text-lg font-bold mb-2">Task list</Text>
+        <Text style={{fontWeight:600 }} className="text-lg underline font-bold mb-2">My Task list</Text>
       </View>
 
       <View className="flex-1 px-4">

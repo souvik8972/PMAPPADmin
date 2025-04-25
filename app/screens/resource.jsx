@@ -63,7 +63,7 @@ export default function ResourcesScreen() {
    
      <View style={{flex:1}}>
      
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={tw`flex-1`}>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={tw`flex-1 bg-white`}>
       <Text className='mx-3 mb-6  text-lg font-medium'>Task Availability</Text>
        
     <ScrollView style={{flexGrow:1}}>
@@ -325,34 +325,64 @@ const TaskDropdown = ({ emp }) => {
     FilterTaskData.map((task) => (
       <View
         key={task.Task_Id}
-        className="bg-white rounded-xl shadow-md border border-gray-200 mb-4 p-2 mt-2"
+        className="bg-white rounded-lg shadow-sm border border-gray-100 mb-3 p-4 mx-2"
+        style={{
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 2,
+          elevation: 2,
+        }}
       >
-        <View className="mb-2">
-          <Text className="text-md font-bold text-gray-800">
-            Tittle: {task.Task_Title}
-          </Text>
-          <View className="mt-1 max-w-[75%]">
-            <Text
-              className={`text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full w-auto`}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              ID: {task.Task_Id}
+        {/* Header Section */}
+        <View className="flex-row justify-between items-start mb-3">
+          <View className="flex-1">
+            <Text className="text-lg font-semibold text-gray-900 mb-1">
+              {task.Task_Title}
             </Text>
+            <View className="flex-row items-center">
+              <View className="bg-blue-50 px-2 py-1 rounded-md">
+                <Text className="text-xs font-medium text-blue-600">
+                  ID: {task.Task_Id}
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
- 
-        <View  className='space-y-1'>
-          <Text className="text-sm text-gray-700">
-            <Text className="font-semibold">Logged Hours: </Text>{task.Working_hours}
-          </Text>
-          <Text className={`text-sm text-gray-700`}>
-            <Text className={`font-semibold`}>Production Hours: </Text>{task.Working_hours}
-          </Text>
-          <Text className="text-sm text-gray-700">
-            <Text className="font-semibold">Product Manager: </Text>{task.Taskowner}
-          </Text>
+    
+        {/* Details Section */}
+        <View className="space-y-2">
+          <View className="flex-row justify-between">
+            <Text className="text-sm font-medium text-gray-500">Logged Hours</Text>
+            <Text className="text-sm font-semibold text-gray-800">{task.Working_hours}h</Text>
+          </View>
+          
+          <View className="flex-row justify-between">
+            <Text className="text-sm font-medium text-gray-500">Production Hours</Text>
+            <Text className="text-sm font-semibold text-gray-800">{task.Working_hours}h</Text>
+          </View>
+          
+          <View className="flex-row justify-between items-center pt-1">
+            <Text className="text-sm font-medium text-gray-500">Product Manager</Text>
+            <View className="bg-gray-50 px-2 py-1 rounded-md">
+              <Text className="text-sm font-medium text-gray-700">{task.Taskowner}</Text>
+            </View>
+          </View>
         </View>
+    
+        {/* Progress Bar (optional) - uncomment if you have progress data
+        <View className="mt-3">
+          <View className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+            <View 
+              className="h-full bg-blue-500" 
+              style={{ width: `${task.progress}%` }}
+            />
+          </View>
+          <View className="flex-row justify-end mt-1">
+            <Text className="text-xs text-gray-500">{task.progress}% complete</Text>
+          </View>
+        </View>
+        */}
       </View>
     ))
   )}

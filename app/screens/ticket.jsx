@@ -110,7 +110,7 @@ const IssueTracker = () => {
 
   if (error) {
     return (
-      <View className="flex-1 justify-center items-center p-5">
+      <View className="flex-1 justify-center   items-center p-5">
         <Text className="text-red-600 text-lg mb-4">Error loading issues</Text>
         <TouchableOpacity 
           onPress={refetch}
@@ -123,7 +123,7 @@ const IssueTracker = () => {
   }
 
   return (
-    <View className="flex-1 p-5 pt-0">
+    <View className="flex-1 p-5 pt-0  bg-white">
       <Text className="text-lg font-bold text-center mb-2 text-black">Issue Tracker</Text>
       
       <TouchableOpacity className="rounded-lg items-center mb-4" onPress={() => setModalVisible(true)}>
@@ -154,56 +154,65 @@ const IssueTracker = () => {
         <FlatList
           data={issues}
           keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <View className="bg-white rounded-xl p-4 my-2">
+            <View className="bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-3 mb-4">
               <View className="flex-row items-center justify-between">
-                {/* Left Side: Icon and Type Info */}
-                <View className="flex-row items-center">
-                  <View className="p-3 bg-gray-100 rounded-full">
-                    <Ionicons 
-                      name={issueIcons[item.type] || 'help-circle'} 
-                      size={28} 
-                      color="black" 
+                
+                {/* Left: Icon (Vertically Centered) */}
+                <View className="mr-3">
+                  <View className="p-3 bg-red-100 rounded-full items-center justify-center">
+                    <Ionicons
+                      name={issueIcons[item.type] || 'help-circle'}
+                      size={26}
+                      color="#D01313"
                     />
                   </View>
-          
-                  <View className="ml-4">
-                    <Text className="text-lg font-bold text-black">{item.type}</Text>
-                    <Text className="text-gray-600">ID: {item.id}</Text>
-                    <Text className={`px-2 py-1 w-[70px] text-center rounded-full text-xs font-semibold ${severityColors[item.severity] || 'bg-gray-200 text-gray-800'}`}>
-                      {item.severity}
-                    </Text>
-                  </View>
                 </View>
-        
-                {/* Right Side: Status */}
-                <View className="self-center">
+          
+                {/* Center: Details */}
+                <View className="flex-1 pr-2">
+                  <Text className="text-base font-bold text-gray-900 mb-1">{item.type}</Text>
+                  <Text className="text-xs text-gray-500 mb-1">ID: {item.id}</Text>
+                  <Text className="text-sm text-gray-700 mb-1">{item.description}</Text>
+          
+                  {/* Only Severity Value */}
                   <Text
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[item.status] || "bg-gray-200 text-gray-800"}`}
+                    className={`self-start px-2 py-1 rounded-full text-xs font-semibold w-fit ${severityColors[item.severity] || 'bg-gray-200 text-gray-800'} mb-1`}
+                  >
+                    {item.severity}
+                  </Text>
+          
+                  {/* Dates */}
+                  <Text className="text-xs text-gray-500">Reported: {item.date}</Text>
+                  {item.resolvedDate && Object.keys(item.resolvedDate).length > 0 && (
+                    <Text className="text-xs text-gray-500">Resolved: {item.resolvedDate}</Text>
+                  )}
+          
+                  {/* Comments */}
+                  {item.comments && Object.keys(item.comments).length > 0 && (
+                    <View className="mt-2 bg-gray-50 p-2 rounded-md border border-gray-100">
+                      <Text className="text-xs font-semibold text-gray-800 mb-1">Admin Comments:</Text>
+                      <Text className="text-xs text-gray-600">{item.comments}</Text>
+                    </View>
+                  )}
+                </View>
+          
+                {/* Right: Status (Vertically Centered) */}
+                <View className="pl-2 items-center justify-center">
+                  <Text
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[item.status] || 'bg-gray-200 text-gray-800'}`}
                   >
                     {item.status}
                   </Text>
                 </View>
               </View>
-
-              {/* Additional Info */}
-              <View className="mt-3">
-                <Text className="text-gray-700">{item.description}</Text>
-                <View className="flex-row justify-between mt-2">
-                  <Text className="text-gray-500 text-sm">Reported on: {item.date}</Text>
-                  {item.resolvedDate && Object.keys(item.resolvedDate).length > 0 && (
-                    <Text className="text-gray-500 text-sm">Resolved: {item.resolvedDate}</Text>
-                  )}
-                </View>
-                {item.comments && Object.keys(item.comments).length > 0 && (
-                  <View className="mt-2 p-2 bg-gray-50 rounded">
-                    <Text className="text-gray-700 font-semibold">Comments:</Text>
-                    <Text className="text-gray-600">{item.comments}</Text>
-                  </View>
-                )}
-              </View>
             </View>
           )}
+          
+          
+          
+          
         />
       )}
 

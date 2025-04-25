@@ -173,7 +173,7 @@ const Assets = () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={handleSubmit} activeOpacity={0.8}>
           <LinearGradient
@@ -251,7 +251,7 @@ const Assets = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "white",
     paddingHorizontal: 20,
     paddingTop: 32,
     paddingBottom: 48,
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "white",
     paddingHorizontal: 16,
   },
   shimmerContainer: {
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   disabledButton: {
-    opacity: 0.5,
+    opacity: 1,
   },
   buttonText: {
     color: "#fff",

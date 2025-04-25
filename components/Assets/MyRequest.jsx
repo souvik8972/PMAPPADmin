@@ -8,7 +8,9 @@ const MyRequest = () => {
   const { user } = useContext(AuthContext);
   const { data, isLoading } = useFetchData(`Assests/GetAssestDetailsById?Empid=${user.empId}`, user.token);
   const shimmerAnim = useRef(new Animated.Value(-1)).current;
-  const requestData = (data === 'no data present' || !Array.isArray(data)) ? [] : data;
+  
+  // Handle data properly - assuming data comes as direct array
+ 
 
 
   // Shimmer animation effect
@@ -35,41 +37,101 @@ const MyRequest = () => {
     }
   };
 
-  // Animated Skeleton Loading Component
-  const SkeletonCard = () => {
+  // Loading state
+  if (isLoading) {
     return (
-      <View style={[styles.cardContainer, styles.skeletonCard]}>
-        <View style={styles.cardContent}>
-          <View style={styles.cardHeader}>
-            <View style={[styles.skeletonLine, { width: 120, height: 20 }]}>
-              <Animated.View style={[
-                styles.shimmer,
-                {
-                  transform: [{
-                    translateX: shimmerAnim.interpolate({
-                      inputRange: [-1, 1],
-                      outputRange: [-50, 350]
-                    })
-                  }]
-                }
-              ]} />
-            </View>
-            <View style={[styles.skeletonLine, { width: 80, height: 24, borderRadius: 12 }]}>
-              <Animated.View style={[
-                styles.shimmer,
-                {
-                  transform: [{
-                    translateX: shimmerAnim.interpolate({
-                      inputRange: [-1, 1],
-                      outputRange: [-50, 350]
-                    })
-                  }]
-                }
-              ]} />
-            </View>
+      <View style={styles.container}>
+        {[1, 2, 3].map((_, index) => (
+          <SkeletonCard key={`skeleton-${index}`} shimmerAnim={shimmerAnim} />
+        ))}
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {data?.assests.length > 0 ? (
+        <FlatList
+          data={data?.assests}
+          renderItem={({ item }) => <RequestCard item={item} formatDate={formatDate} />}
+          keyExtractor={(item) => item.Id.toString()}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No asset requests found</Text>
+        </View>
+      )}
+    </View>
+  );
+};
+
+// Separate component for skeleton loading
+const SkeletonCard = ({ shimmerAnim }) => {
+  return (
+    <View style={[styles.cardContainer, styles.skeletonCard]}>
+      <View style={styles.cardContent}>
+        <View style={styles.cardHeader}>
+          <View style={[styles.skeletonLine, { width: 120, height: 20 }]}>
+            <Animated.View style={[
+              styles.shimmer,
+              {
+                transform: [{
+                  translateX: shimmerAnim.interpolate({
+                    inputRange: [-1, 1],
+                    outputRange: [-50, 350]
+                  })
+                }]
+              }
+            ]} />
           </View>
-          
-          <View style={styles.itemContainer}>
+          <View style={[styles.skeletonLine, { width: 80, height: 24, borderRadius: 12 }]}>
+            <Animated.View style={[
+              styles.shimmer,
+              {
+                transform: [{
+                  translateX: shimmerAnim.interpolate({
+                    inputRange: [-1, 1],
+                    outputRange: [-50, 350]
+                  })
+                }]
+              }
+            ]} />
+          </View>
+        </View>
+        
+        <View style={styles.itemContainer}>
+          <View style={[styles.skeletonLine, { width: 60, height: 16, marginBottom: 8 }]}>
+            <Animated.View style={[
+              styles.shimmer,
+              {
+                transform: [{
+                  translateX: shimmerAnim.interpolate({
+                    inputRange: [-1, 1],
+                    outputRange: [-50, 350]
+                  })
+                }]
+              }
+            ]} />
+          </View>
+          <View style={[styles.skeletonLine, { width: '100%', height: 20 }]}>
+            <Animated.View style={[
+              styles.shimmer,
+              {
+                transform: [{
+                  translateX: shimmerAnim.interpolate({
+                    inputRange: [-1, 1],
+                    outputRange: [-50, 350]
+                  })
+                }]
+              }
+            ]} />
+          </View>
+        </View>
+        
+        <View style={styles.datesContainer}>
+          <View style={styles.dateBox}>
             <View style={[styles.skeletonLine, { width: 60, height: 16, marginBottom: 8 }]}>
               <Animated.View style={[
                 styles.shimmer,
@@ -83,7 +145,7 @@ const MyRequest = () => {
                 }
               ]} />
             </View>
-            <View style={[styles.skeletonLine, { width: '100%', height: 20 }]}>
+            <View style={[styles.skeletonLine, { width: 100, height: 18 }]}>
               <Animated.View style={[
                 styles.shimmer,
                 {
@@ -97,71 +159,43 @@ const MyRequest = () => {
               ]} />
             </View>
           </View>
-          
-          <View style={styles.datesContainer}>
-            <View style={styles.dateBox}>
-              <View style={[styles.skeletonLine, { width: 60, height: 16, marginBottom: 8 }]}>
-                <Animated.View style={[
-                  styles.shimmer,
-                  {
-                    transform: [{
-                      translateX: shimmerAnim.interpolate({
-                        inputRange: [-1, 1],
-                        outputRange: [-50, 350]
-                      })
-                    }]
-                  }
-                ]} />
-              </View>
-              <View style={[styles.skeletonLine, { width: 100, height: 18 }]}>
-                <Animated.View style={[
-                  styles.shimmer,
-                  {
-                    transform: [{
-                      translateX: shimmerAnim.interpolate({
-                        inputRange: [-1, 1],
-                        outputRange: [-50, 350]
-                      })
-                    }]
-                  }
-                ]} />
-              </View>
+          <View style={styles.dateBox}>
+            <View style={[styles.skeletonLine, { width: 70, height: 16, marginBottom: 8 }]}>
+              <Animated.View style={[
+                styles.shimmer,
+                {
+                  transform: [{
+                    translateX: shimmerAnim.interpolate({
+                      inputRange: [-1, 1],
+                      outputRange: [-50, 350]
+                    })
+                  }]
+                }
+              ]} />
             </View>
-            <View style={styles.dateBox}>
-              <View style={[styles.skeletonLine, { width: 70, height: 16, marginBottom: 8 }]}>
-                <Animated.View style={[
-                  styles.shimmer,
-                  {
-                    transform: [{
-                      translateX: shimmerAnim.interpolate({
-                        inputRange: [-1, 1],
-                        outputRange: [-50, 350]
-                      })
-                    }]
-                  }
-                ]} />
-              </View>
-              <View style={[styles.skeletonLine, { width: 100, height: 18 }]}>
-                <Animated.View style={[
-                  styles.shimmer,
-                  {
-                    transform: [{
-                      translateX: shimmerAnim.interpolate({
-                        inputRange: [-1, 1],
-                        outputRange: [-50, 350]
-                      })
-                    }]
-                  }
-                ]} />
-              </View>
+            <View style={[styles.skeletonLine, { width: 100, height: 18 }]}>
+              <Animated.View style={[
+                styles.shimmer,
+                {
+                  transform: [{
+                    translateX: shimmerAnim.interpolate({
+                      inputRange: [-1, 1],
+                      outputRange: [-50, 350]
+                    })
+                  }]
+                }
+              ]} />
             </View>
           </View>
         </View>
       </View>
-    );
-  };
+    </View>
+  );
+};
 
-  const renderItem = ({ item }) => (
+
+const RequestCard = ({ item, formatDate }) => {
+  return (
     <TouchableOpacity activeOpacity={1}>
       <ImageBackground 
         source={require('@/assets/images/border.png')}
@@ -172,8 +206,19 @@ const MyRequest = () => {
         <View style={styles.cardContent}>
           <View style={styles.cardHeader}>
             <Text style={styles.requestId}>Request #{item.Request_Id}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: '#DCFCE7' }]}>
-              <Text style={[styles.statusText, { color: '#166534' }]}>{item?.statusName}</Text>
+            <View style={[
+              styles.statusBadge, 
+              { 
+                backgroundColor: item.status === 3 ? '#DCFCE7' : '#FEE2E2',
+                borderColor: item.status === 3 ? '#166534' : '#B91C1C'
+              }
+            ]}>
+              <Text style={[
+                styles.statusText, 
+                { color: item.status === 3 ? '#166534' : '#B91C1C' }
+              ]}>
+                {item?.statusName}
+              </Text>
             </View>
           </View>
           
@@ -185,7 +230,7 @@ const MyRequest = () => {
           <View style={styles.datesContainer}>
             <View style={styles.dateBox}>
               <Text style={styles.dateLabel}>Issued</Text>
-              <Text style={styles.dateText}>{formatDate(item?.Item_IssueDate)}</Text>
+              <Text style={styles.dateText}>{formatDate(item?.Request_RaisedDate)}</Text>
             </View>
             <View style={styles.dateBox}>
               <Text style={styles.dateLabel}>Returned</Text>
@@ -203,50 +248,13 @@ const MyRequest = () => {
       </ImageBackground>
     </TouchableOpacity>
   );
-
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        {requestData.length > 0 ? (
-      <FlatList
-        data={requestData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.Id.toString()}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
-    ) : (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No asset requests found</Text>
-      </View>
-    )}
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      {data && data.length > 0 ? (
-        <FlatList
-          data={data}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.Id.toString()}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No asset requests found</Text>
-        </View>
-      )}
-    </View>
-  );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: '#f8f9fa',
   },
   cardContainer: {
     marginBottom: 16,
@@ -303,6 +311,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+    borderWidth: 1,
   },
   statusText: {
     fontSize: 12,

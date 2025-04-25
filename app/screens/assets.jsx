@@ -1,8 +1,11 @@
 // AssetsScreen.js
-import React from 'react';
+import React, { lazy } from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import AssetManagement from '../../components/Assets/AssetManagement';
-import MyRequest from '../../components/Assets/MyRequest';
+import { ActivityIndicator, View } from 'react-native';
+
+
+const AssetManagement=lazy(()=>import("../../components/Assets/AssetManagement"))
+const MyRequest=lazy(()=>import("../../components/Assets/MyRequest"))
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -26,6 +29,8 @@ const AssetsScreen = () => {
           height: 3,
           borderRadius: 1.5,
         },
+        lazy:true,
+       
       }}
     >
       <Tab.Screen name="Asset Management" component={AssetManagement} />
