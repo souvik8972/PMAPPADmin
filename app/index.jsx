@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     maxWidth: '80%',
-    fontFamily: 'Inter-Regular',
+   
   },
   buttonContainer: {
     width: 180,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
     letterSpacing: 0.5,
-    fontFamily: 'Inter-SemiBold',
+  
   },
   waveContainer: {
     position: 'absolute',

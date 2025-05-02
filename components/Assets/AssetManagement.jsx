@@ -16,7 +16,8 @@ import { useFetchDataNoCache } from "@/ReactQuery/hooks/userFetchWithoutCache";
 import { usePostData } from "../../ReactQuery/hooks/usePostData";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
-
+import Retry from "../../components/Retry";
+import RetryButton from "../../components/Retry";
 const windowWidth = Dimensions.get("window").width;
 const itemWidth = (windowWidth - 60) / 3;
 
@@ -27,7 +28,8 @@ const ShimmerItem = () => (
   </View>
 );
 
-const Assets = () => {
+const AssetManagement = () => {
+  console.log("AssetManagement");
   const { mutate } = usePostData("Assests/SendAssestdetails", ["Assests/GetAllAssests"]);
   const { user } = useContext(AuthContext);
   const navigation = useNavigation();
@@ -36,7 +38,7 @@ const Assets = () => {
     "Assests/GetAllAssests",
     user?.token
   );
-  console.log(data, "dataaa");
+ 
 
   const [assets, setAssets] = useState([]);
   const [selectedAssets, setSelectedAssets] = useState([]);
@@ -140,7 +142,7 @@ const Assets = () => {
           alert("Asset checkout submitted successfully.");
         },
         onError: (error) => {
-          console.error("Submission error:", error);
+          
           alert("Failed to submit asset checkout.");
         },
       }
@@ -167,7 +169,7 @@ const Assets = () => {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Error loading assets: {error.message}</Text>
+      <RetryButton onRetry={refetch} message={"Failed to load assets"}/>
       </View>
     );
   }
@@ -405,4 +407,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Assets;
+export default AssetManagement;

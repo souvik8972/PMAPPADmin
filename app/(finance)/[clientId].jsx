@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import { View, Text, TouchableOpacity, StatusBar, TouchableWithoutFeedback, ScrollView , Platform} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -12,6 +12,7 @@ import { EvilIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Collapsible from "react-native-collapsible";
 import Animated, { SlideInDown, SlideOutUp } from "react-native-reanimated";
 import { Link } from 'expo-router'
+import { AuthContext } from "../../context/AuthContext";
 
 const  Client = () => {
   const param = useLocalSearchParams();
@@ -139,6 +140,7 @@ const  Client = () => {
 
 const TaskList = () => {
   const router = useRouter();
+  const {user}=useContext(AuthContext)
 
   const projectData = [
     {
@@ -167,7 +169,7 @@ const TaskList = () => {
     <View className="flex-1 pt-0">
       <View className="flex-row items-center justify-between mb-6">
         <Text className="text-lg font-semibold">Projects List</Text>
-        <TouchableOpacity
+        {user?.userType == 1 && <TouchableOpacity
           className=""
           onPress={() => router.push("/(addProject)/addProject")}
         >
@@ -183,7 +185,7 @@ const TaskList = () => {
           >
             <MaterialCommunityIcons name="plus" size={20} color="white" />
           </LinearGradient>
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>

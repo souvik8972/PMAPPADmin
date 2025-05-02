@@ -30,7 +30,7 @@ export default function ResourcesScreen() {
   const TOKEN=user.token||null;
   const teamId = TABS.find((tab) => activeTab in tab)?.[activeTab]||1;
   const {data,isLoading,isError} = useFetchData(`Resource/GetTeamMembers?teamId=${teamId}`, TOKEN)
-  console.log(isError);
+ 
      
  
   const HandleTab = async (tab) => {

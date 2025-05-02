@@ -97,6 +97,8 @@ const CustomDrawerContent = (props) => {
 };
 
 export default function DrawerLayout() {
+  const { user } = useContext(AuthContext);
+
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawerContent {...props} />}
@@ -123,7 +125,7 @@ export default function DrawerLayout() {
           ),
         }}
       />
-      <Drawer.Screen 
+     {user?.userType!==5&& <Drawer.Screen 
         name="Tasks" 
         children={() => (
           <Suspense fallback={<LoadingScreen />}>
@@ -137,7 +139,7 @@ export default function DrawerLayout() {
             </View>
           ),
         }}
-      />
+      />}
       <Drawer.Screen 
         name="Time Sheet" 
         children={() => (
@@ -153,7 +155,7 @@ export default function DrawerLayout() {
           ),
         }}
       />
-      <Drawer.Screen 
+      {user?.userType!==5&& <Drawer.Screen 
         name="Projects" 
         children={() => (
           <Suspense fallback={<LoadingScreen />}>
@@ -167,7 +169,7 @@ export default function DrawerLayout() {
             </View>
           ),
         }}
-      />
+      />}
       <Drawer.Screen 
         name="Ticket" 
         children={() => (
@@ -198,7 +200,7 @@ export default function DrawerLayout() {
           ),
         }}
       />
-      <Drawer.Screen 
+      {user?.userType!==5&& <Drawer.Screen 
         name="Finance Module" 
         children={() => (
           <Suspense fallback={<LoadingScreen />}>
@@ -212,7 +214,7 @@ export default function DrawerLayout() {
             </View>
           ),
         }}
-      />
+      />}
     </Drawer.Navigator>
   );
 }

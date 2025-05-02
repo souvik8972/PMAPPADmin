@@ -8,8 +8,10 @@ import { AuthContext } from '../../context/AuthContext';
 import { parseJwt } from '../../utils/auth';
 
 const Login = () => {
-  const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
-  const [password, setPassword] = useState('lavgZzsS');
+  // const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
+  // const [password, setPassword] = useState('lavgZzsS');
+  const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
+  const [password, setPassword] = useState('hello@123');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
   const { login } = useContext(AuthContext);
@@ -23,7 +25,7 @@ const Login = () => {
       console.log("User data from token:", userData);
 
       login(data.token, userData).then(() => {
-        if (userData.UserType == "3") {
+        if (userData?.UserType == "3") {
           router.replace('/(tabs)');
         } else {
           router.replace('/(admin)');

@@ -7,25 +7,34 @@ import { Image } from 'react-native';
 import { useFetchData } from '@/ReactQuery/hooks/useFetchData'
 import { AuthContext } from '@/context/AuthContext';
 import { usePostData } from '@/ReactQuery/hooks/usePostData';
+import RetryButton from '@/components/Retry';
 
 const IssueTracker = () => {
   const { user } = useContext(AuthContext);
   const token = user?.token || null;
+  const isAdmin = user?.userType==5; 
+  
+  // States for report issue modal
   const [modalVisible, setModalVisible] = useState(false);
   const [issues, setIssues] = useState([]);
-  const [type, setType] = useState(null); // Store type as a number (1 to 5)
-  const [severity, setSeverity] = useState(null); // Store severity as a number (1 to 3)
+  const [type, setType] = useState(null);
+  const [severity, setSeverity] = useState(null);
   const [description, setDescription] = useState('');
   const [openType, setOpenType] = useState(false);
   const [openSeverity, setOpenSeverity] = useState(false);
 
-  const { data, isLoading, error, refetch, isFetching } = useFetchData("Ticket/GetAllTickets", token);
-  const { mutate, isPending } = usePostData('Ticket/RaiseTicket',["Ticket/GetAllTickets"]);
+  // States for update issue modal
+  const [updateModalVisible, setUpdateModalVisible] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState(null);
+  const [updateStatus, setUpdateStatus] = useState(null);
+  const [updateReason, setUpdateReason] = useState('');
+  const [openStatus, setOpenStatus] = useState(false);
 
+  const { data, isLoading, error, refetch, isFetching } = useFetchData("Ticket/GetAllTickets", token);
+  const { mutate: submitMutate, isPending: isSubmitPending } = usePostData('Ticket/RaiseTicket', ["Ticket/GetAllTickets"]);
+  const { mutate: updateMutate, isPending: isUpdatePending } = usePostData('Ticket/UpdateTicket', ["Ticket/GetAllTickets"]);
 
   useEffect(() => {
-    console.log(data, "Data from API")
-    
     if (data && Array.isArray(data.ticketingIssuesClient)) {
       const formattedIssues = data.ticketingIssuesClient.map(issue => ({
         id: issue.Issue_Id.toString(),
@@ -50,30 +59,29 @@ const IssueTracker = () => {
     'Internet': 'globe',
     'Other': 'help-circle',
   };
+
   const severityColors = {
-    1: "bg-green-200 text-green-800",  
-    2: "bg-yellow-200 text-yellow-800", 
-    3: "bg-red-200 text-red-800",     
+    1: "bg-green-200 text-green-800",
+    2: "bg-yellow-200 text-yellow-800",
+    3: "bg-red-200 text-red-800",
   };
 
   const statusColors = {
-    Open: "bg-blue-200 text-blue-800",
+    'Open': "bg-blue-200 text-blue-800",
     'In Progress': "bg-orange-200 text-orange-800",
-    Resolved: "bg-green-200 text-green-800",
-    Closed: "bg-gray-200 text-gray-800",
+    'Resolved': "bg-green-200 text-green-800",
+    'Closed': "bg-gray-200 text-gray-800",
   };
 
   const handleSubmit = async () => {
     try {
       const issueData = {
-        IssueType: type, // numeric
-        Severity: severity, // numeric
+        IssueType: type,
+        Severity: severity,
         Issue_Description: description,
       };
-  
-      console.log('Submitting issue with data:', issueData);
-  
-      mutate({
+
+      submitMutate({
         data: {}, 
         token: user.token, 
         queryParams: issueData,
@@ -87,18 +95,46 @@ const IssueTracker = () => {
           refetch(); 
         },
         onError: (error) => {
-          console.error('Error submitting issue:', error);
           alert("Failed to submit ticket.");
         }
       });
-  
     } catch (err) {
       console.error('Error submitting issue:', err);
     }
   };
-  
+
+  const handleUpdateSubmit = async () => {
+    try {
+      if (!selectedIssue || !updateStatus || !updateReason) return;
+
+      const updateData = {
+        Issue_Id: selectedIssue.id,
+        Status: updateStatus,
+        Comments: updateReason
+      };
+
+      updateMutate({
+        data: updateData,
+        token: user.token
+      }, {
+        onSuccess: () => {
+          alert("Issue updated successfully");
+          setUpdateModalVisible(false);
+          setUpdateStatus(null);
+          setUpdateReason('');
+          refetch();
+        },
+        onError: (error) => {
+          alert("Failed to update issue");
+        }
+      });
+    } catch (err) {
+      console.error('Error updating issue:', err);
+    }
+  };
 
   const isSubmitDisabled = type === null || severity === null || !description;
+  const isUpdateDisabled = !updateStatus || !updateReason;
 
   if (isLoading || isFetching) {
     return (
@@ -110,22 +146,16 @@ const IssueTracker = () => {
 
   if (error) {
     return (
-      <View className="flex-1 justify-center   items-center p-5">
-        <Text className="text-red-600 text-lg mb-4">Error loading issues</Text>
-        <TouchableOpacity 
-          onPress={refetch}
-          className="bg-red-100 p-3 rounded-lg"
-        >
-          <Text className="text-red-800">Retry</Text>
-        </TouchableOpacity>
+      <View className="flex-1 justify-center bg-white items-center">
+        <RetryButton onRetry={refetch} message="Failed to load issues. Please try again." />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 p-5 pt-0  bg-white">
+    <View className="flex-1 p-5 pt-0 bg-white">
       <Text className="text-lg font-bold text-center mb-2 text-black">Issue Tracker</Text>
-      
+
       <TouchableOpacity className="rounded-lg items-center mb-4" onPress={() => setModalVisible(true)}>
         <LinearGradient
           colors={["#D01313", "#6A0A0A"]}
@@ -157,65 +187,22 @@ const IssueTracker = () => {
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <View className="bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-3 mb-4">
-              <View className="flex-row items-center justify-between">
-                
-                {/* Left: Icon (Vertically Centered) */}
-                <View className="mr-3">
-                  <View className="p-3 bg-red-100 rounded-full items-center justify-center">
-                    <Ionicons
-                      name={issueIcons[item.type] || 'help-circle'}
-                      size={26}
-                      color="#D01313"
-                    />
-                  </View>
-                </View>
-          
-                {/* Center: Details */}
-                <View className="flex-1 pr-2">
-                  <Text className="text-base font-bold text-gray-900 mb-1">{item.type}</Text>
-                  <Text className="text-xs text-gray-500 mb-1">ID: {item.id}</Text>
-                  <Text className="text-sm text-gray-700 mb-1">{item.description}</Text>
-          
-                  {/* Only Severity Value */}
-                  <Text
-                    className={`self-start px-2 py-1 rounded-full text-xs font-semibold w-fit ${severityColors[item.severity] || 'bg-gray-200 text-gray-800'} mb-1`}
-                  >
-                    {item.severity}
-                  </Text>
-          
-                  {/* Dates */}
-                  <Text className="text-xs text-gray-500">Reported: {item.date}</Text>
-                  {item.resolvedDate && Object.keys(item.resolvedDate).length > 0 && (
-                    <Text className="text-xs text-gray-500">Resolved: {item.resolvedDate}</Text>
-                  )}
-          
-                  {/* Comments */}
-                  {item.comments && Object.keys(item.comments).length > 0 && (
-                    <View className="mt-2 bg-gray-50 p-2 rounded-md border border-gray-100">
-                      <Text className="text-xs font-semibold text-gray-800 mb-1">Admin Comments:</Text>
-                      <Text className="text-xs text-gray-600">{item.comments}</Text>
-                    </View>
-                  )}
-                </View>
-          
-                {/* Right: Status (Vertically Centered) */}
-                <View className="pl-2 items-center justify-center">
-                  <Text
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[item.status] || 'bg-gray-200 text-gray-800'}`}
-                  >
-                    {item.status}
-                  </Text>
-                </View>
-              </View>
+              {isAdmin ? (
+                <TouchableOpacity onPress={() => {
+                  setSelectedIssue(item);
+                  setUpdateModalVisible(true);
+                }}>
+                  <IssueItemContent item={item} />
+                </TouchableOpacity>
+              ) : (
+                <IssueItemContent item={item} />
+              )}
             </View>
           )}
-          
-          
-          
-          
         />
       )}
 
+      {/* Report Issue Modal */}
       <Modal visible={modalVisible} animationType="fade" transparent>
         <View className="flex-1 justify-center items-center bg-black/50">
           <View className="w-4/5 bg-white p-5 rounded-lg">
@@ -308,6 +295,155 @@ const IssueTracker = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Update Issue Modal (only for admin) */}
+      {isAdmin && (
+        <Modal visible={updateModalVisible} animationType="fade" transparent>
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="w-4/5 bg-white p-5 rounded-lg">
+              <Text className="text-xl font-bold text-center text-black mb-3">
+                Update Issue #{selectedIssue?.id}
+              </Text>
+              
+              <View className="mb-4">
+                <Text className="text-sm text-gray-700 mb-1">Current Status:</Text>
+                <Text className={`px-3 py-1 rounded-full text-xs font-semibold self-start ${statusColors[selectedIssue?.status] || 'bg-gray-200 text-gray-800'}`}>
+                  {selectedIssue?.status}
+                </Text>
+              </View>
+
+              <View className="z-50 mb-4">
+                <DropDownPicker
+                  open={openStatus}
+                  value={updateStatus}
+                  items={[
+                    { label: 'In Progress', value: 'In Progress' },
+                    { label: 'Open', value: 'Resolved' },
+                    { label: 'Closed', value: 'Closed' }
+                  ]}
+                  setOpen={setOpenStatus}
+                  setValue={setUpdateStatus}
+                  placeholder="Select new status"
+                  placeholderStyle={{ color: 'gray' }}
+                  style={{ borderColor: 'gray' }}
+                  textStyle={{ color: 'black' }}
+                />
+              </View>
+
+              <TextInput
+                className="border border-gray-300 p-2 h-24 rounded-lg text-black mt-3"
+                placeholder="Add reason/comment..."
+                placeholderTextColor="gray"
+                value={updateReason}
+                onChangeText={setUpdateReason}
+                multiline
+                textAlignVertical="top"
+              />
+
+              <View className="flex-row justify-center mt-4">
+                <TouchableOpacity
+                  className="p-3 rounded-lg items-center mr-4"
+                  onPress={() => {
+                    setUpdateModalVisible(false);
+                    setUpdateStatus(null);
+                    setUpdateReason('');
+                  }}
+                >
+                  <Text className="text-gray-700 font-bold">Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  onPress={handleUpdateSubmit}
+                  disabled={isUpdateDisabled}
+                  style={{ opacity: isUpdateDisabled ? 0.5 : 1 }}
+                >
+                  <LinearGradient
+                    colors={["#D01313", "#6A0A0A"]}
+                    style={{
+                      padding: 12,
+                      borderRadius: 9999,
+                      width: 120,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text className="text-white font-bold">Update</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+    </View>
+  );
+};
+
+// Helper component for issue item content
+const IssueItemContent = ({ item }) => {
+  const issueIcons = {
+    'Hardware': 'hardware-chip-outline',
+    'Software': 'logo-windows',
+    'Server Access': 'server-outline',
+    'Internet': 'globe',
+    'Other': 'help-circle',
+  };
+
+  const severityColors = {
+    1: "bg-green-200 text-green-800",
+    2: "bg-yellow-200 text-yellow-800",
+    3: "bg-red-200 text-red-800",
+  };
+
+  const statusColors = {
+    'Open': "bg-blue-200 text-blue-800",
+    'In Progress': "bg-orange-200 text-orange-800",
+    'Resolved': "bg-green-200 text-green-800",
+    'Closed': "bg-gray-200 text-gray-800",
+  };
+
+  return (
+    <View className="flex-row items-center justify-between">
+      <View className="mr-3">
+        <View className="p-3 bg-red-100 rounded-full items-center justify-center">
+          <Ionicons
+            name={issueIcons[item.type] || 'help-circle'}
+            size={26}
+            color="#D01313"
+          />
+        </View>
+      </View>
+
+      <View className="flex-1 pr-2">
+        <Text className="text-base font-bold text-gray-900 mb-1">{item.type}</Text>
+        <Text className="text-xs text-gray-500 mb-1">ID: {item.id}</Text>
+        <Text className="text-sm text-gray-700 mb-1">{item.description}</Text>
+
+        <Text
+          className={`self-start px-2 py-1 rounded-full text-xs font-semibold w-fit ${severityColors[item.severity] || 'bg-gray-200 text-gray-800'} mb-1`}
+        >
+          {item.severity}
+        </Text>
+
+        <Text className="text-xs text-gray-500">Reported: {item.date}</Text>
+        {item.resolvedDate && Object.keys(item.resolvedDate).length > 0 && (
+          <Text className="text-xs text-gray-500">Resolved: {item.resolvedDate}</Text>
+        )}
+
+        {item.comments && Object.keys(item.comments).length > 0 && (
+          <View className="mt-2 bg-gray-50 p-2 rounded-md border border-gray-100">
+            <Text className="text-xs font-semibold text-gray-800 mb-1">Admin Comments:</Text>
+            <Text className="text-xs text-gray-600">{item.comments}</Text>
+          </View>
+        )}
+      </View>
+
+      <View className="pl-2 items-center justify-center">
+        <Text
+          className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[item.status] || 'bg-gray-200 text-gray-800'}`}
+        >
+          {item.status}
+        </Text>
+      </View>
     </View>
   );
 };

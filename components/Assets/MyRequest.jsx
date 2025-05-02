@@ -3,10 +3,15 @@ import React, { useContext, useEffect, useRef } from 'react';
 import { AuthContext } from '@/context/AuthContext';
 import { useFetchData } from '@/ReactQuery/hooks/useFetchData';
 import { format } from 'date-fns';
+import RetryButton from '../Retry';
 
 const MyRequest = () => {
   const { user } = useContext(AuthContext);
-  const { data, isLoading } = useFetchData(`Assests/GetAssestDetailsById?Empid=${user.empId}`, user.token);
+  const { data, isLoading, isFetching, refetch, error } = useFetchData(
+    `Assests/GetAssestDetailsById?Empid=${user.empId}`,
+    user.token
+  );
+  
   const shimmerAnim = useRef(new Animated.Value(-1)).current;
   
   // Handle data properly - assuming data comes as direct array
@@ -44,6 +49,13 @@ const MyRequest = () => {
         {[1, 2, 3].map((_, index) => (
           <SkeletonCard key={`skeleton-${index}`} shimmerAnim={shimmerAnim} />
         ))}
+      </View>
+    );
+  }
+  if(error) {
+    return (
+      <View style={styles.errorContainer}>
+        <RetryButton onRetry={refetch} message="Failed to load asset requests. Please try again." />
       </View>
     );
   }
@@ -377,6 +389,13 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: '#6B7280',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
   },
 });
 

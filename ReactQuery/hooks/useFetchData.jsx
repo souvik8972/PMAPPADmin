@@ -23,7 +23,7 @@ export const useFetchData = (endpoint, token) => {
     queryFn: () => fetchData({ endpoint, token }),
     enabled: !!token, // Only fetch if token exists
     staleTime: 60 * 1000, // 1 minute (data stays fresh for 1 min)
-    cacheTime: 5 * 60 * 1000, // Optional: Keep data in cache for 5 mins (default)
+    cacheTime: 1 * 60 * 1000, // Optional: Keep data in cache for 1 mins (default)
 
   });
 };

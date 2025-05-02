@@ -28,7 +28,7 @@ const finance = () => {
             ]}
           >
             <TouchableOpacity className="flex-row">
-              <Link href={`/(fina)/${ele.id}`}>
+              <Link href={`/(finance)/${ele.id}`}>
                 <View className="flex-row items-start">
                   {/* Company Logo */}
                   <Image

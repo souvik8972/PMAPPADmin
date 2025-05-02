@@ -14,7 +14,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 // Import screens directly
 import Assets from '../screens/assets';
 import Food from '../screens/food';
-import Home from './index';
+import Home from '../screens/Timesheet';
 import Resource from '../screens/resource';
 import Ticket from '../screens/ticket';
 

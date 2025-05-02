@@ -13,7 +13,7 @@
     "**/*.tsx",
     "nativewind-env.d.ts",
     "app/(tabs)/_layout.jsx",
-    "app/(tabs)/index.jsx",
+    "app/screens/Timesheet.jsx",
     "app/_layout.jsx"
   ]
 }
