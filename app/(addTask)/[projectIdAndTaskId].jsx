@@ -76,6 +76,7 @@ const AddEditTask = () => {
 const [originalId, setOriginalId] = useState("");
   // Use the usePostData hook
   const { mutate: fetchTaskData, isLoading: isFetching } = usePostData('Task/getTaskDetailsByProjectId');
+  const { mutate: submitTask, isPending: isSubmitPending } = usePostData('Task/CreateTask', ["Task/GetTasks"]);
 
   // Load task data if in edit mode
   useEffect(() => {
@@ -352,20 +353,21 @@ const [originalId, setOriginalId] = useState("");
       return;
     }
   
-    // Prepare employee data with hours - now includes all dates in range
+    // Prepare employee data with hours
     const employees = selectedResources.map(resource => {
       const hoursData = memberHours[resource.id] || {};
       const datesInRange = getDatesInRange(startDate, endDate);
       
       const logDetails = datesInRange.map(date => {
-        const dateStr = format(date, 'yyyy-MM-dd');
+        const dateStr = format(date, 'MM/dd/yyyy');
+        console.log(hoursData,dateStr,"dateStr)")
         const hours = hoursData[dateStr] || 0;
         
         return {
           date: dateStr,
           hr: hours,
-          startTime: hours > 0 ? "04:00:00" : "00:00:00",
-          endTime: hours > 0 ? calculateEndTime(hours) : "00:00:00"
+          startTime: "00:00:00", // Fixed value
+          endTime: "00:00:00"    // Fixed value
         };
       });
   
@@ -375,13 +377,6 @@ const [originalId, setOriginalId] = useState("");
         logDetails
       };
     });
-  
-    // Helper function to calculate end time based on hours (starting at 04:00:00)
-    function calculateEndTime(hours) {
-      const startHour = 4; // 04:00:00
-      const endHour = startHour + hours;
-      return `${endHour.toString().padStart(2, '0')}:00:00`;
-    }
   
     // Prepare the complete task data for API
     const taskData = {
@@ -399,26 +394,25 @@ const [originalId, setOriginalId] = useState("");
   
     console.log("Complete Task Payload:", JSON.stringify(taskData, null, 2));
   
-    // Here you would implement your actual API call
-    // const endpoint = isEditMode ? 'Task/updateTask' : 'Task/CreateTask';
-    // const { mutate: submitTask } = usePostData(endpoint);
+  
+  
     
-    // submitTask(
-    //   { 
-    //     data: taskData,
-    //     token: user?.token 
-    //   },
-    //   {
-    //     onSuccess: (data) => {
-    //       Alert.alert("Success", isEditMode ? "Task updated successfully" : "Task created successfully");
-    //       navigation.goBack();
-    //     },
-    //     onError: (error) => {
-    //       console.error("Submission failed:", error);
-    //       Alert.alert("Error", error.message || "Failed to submit task");
-    //     }
-    //   }
-    // );
+    submitTask(
+      { 
+        data: taskData,
+        token: user?.token 
+      },
+      {
+        onSuccess: (data) => {
+          Alert.alert("Success", isEditMode ? "Task updated successfully" : "Task created successfully");
+          navigation.goBack();
+        },
+        onError: (error) => {
+          console.error("Submission failed:", error);
+          Alert.alert("Error", error.message || "Failed to submit task");
+        }
+      }
+    );
   };
   if (isLoading) {
     return (
@@ -696,28 +690,35 @@ const [originalId, setOriginalId] = useState("");
               className="rounded-lg h-14 justify-center items-center mt-4 shadow-md flex-row"
             >
               <LinearGradient 
-                colors={["#D01313", "#6A0A0A"]} 
-                start={{ x: 0, y: 0 }} 
-                end={{ x: 1, y: 0 }}
-                style={{ 
-                  width: '100%',
-                  borderRadius: 8, 
-                  alignItems: "center", 
-                  justifyContent: "center", 
-                  flexDirection: "row", 
-                  shadowColor: "#000", 
-                  shadowOffset: { width: 0, height: 2 }, 
-                  shadowOpacity: 0.25, 
-                  shadowRadius: 3.84, 
-                  elevation: 5,
-                  height: 56
-                }}
-              >
-                <Text className="text-white font-semibold text-lg mr-2">
-                  {isEditMode ? "Update Task" : "Add Task"}
-                </Text>
-                <MaterialIcons name="arrow-forward" size={24} color="#fff" />
-              </LinearGradient>
+  colors={["#D01313", "#6A0A0A"]} 
+  start={{ x: 0, y: 0 }} 
+  end={{ x: 1, y: 0 }}
+  style={{ 
+    width: '100%',
+    borderRadius: 8, 
+    alignItems: "center", 
+    justifyContent: "center", 
+    flexDirection: "row", 
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.25, 
+    shadowRadius: 3.84, 
+    elevation: 5,
+    height: 56
+  }}
+>
+  {isSubmitPending ? (
+    <ActivityIndicator size="small" color="#fff" />
+  ) : (
+    <>
+      <Text className="text-white font-semibold text-lg mr-2">
+        {isEditMode ? "Update Task" : "Add Task"}
+      </Text>
+      <MaterialIcons name="arrow-forward" size={24} color="#fff" />
+    </>
+  )}
+</LinearGradient>
+
             </TouchableOpacity>
           </View>
         </TouchableWithoutFeedback>

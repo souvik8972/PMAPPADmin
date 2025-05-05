@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useMemo } from "react";
+import React, { useState, useContext, useEffect, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,9 @@ import {
   TouchableWithoutFeedback,
   Alert,
   ActivityIndicator,
+  RefreshControl,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import Collapsible from "react-native-collapsible";
 import { FontAwesome } from "@expo/vector-icons";
@@ -19,14 +22,12 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { AuthContext } from "../../context/AuthContext";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
-import {usePostData} from "../../ReactQuery/hooks/usePostData";
+import { usePostData } from "../../ReactQuery/hooks/usePostData";
+
 export default function TaskScreen() {
   const { user } = useContext(AuthContext);
-  console.log(user)
-
-
+  const scrollViewRef = useRef();
   const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
-  // const { mutateAsync: postTaskLog } = usePostData('Task/SaveTaskLog', ['_Tasks']);
 
   const today = getFormattedDate(0);
   const yesterday = getFormattedDate(1);
@@ -39,6 +40,7 @@ export default function TaskScreen() {
   const [selectedDate, setSelectedDate] = useState(today);
   const [isProcessing, setIsProcessing] = useState(false);
   const [localTaskData, setLocalTaskData] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
 
   const {
     data: apiData,
@@ -49,14 +51,13 @@ export default function TaskScreen() {
     `Task/TaskDetails?emp_id=${user.empId}&date_val=${selectedDate}`,
     user.token
   );
-
+  const flatListRef = useRef(null);
   // Initialize localTaskData when apiData changes
   useEffect(() => {
     if (apiData?._Tasks) {
       const initialData = {};
       apiData._Tasks.forEach(task => {
         if (task.Task_Id) {
-          
           if (localTaskData[task.Task_Id] === undefined) {
             initialData[task.Task_Id] = task.Logged_hours?.toString() || "0";
           }
@@ -81,8 +82,17 @@ export default function TaskScreen() {
     }
   }, [selectedOption]);
 
+  // Pull-to-refresh handler
+  const onRefresh = () => {
+    setRefreshing(true);
+    refetch().then(() => {
+      setRefreshing(false);
+    }).catch(() => {
+      setRefreshing(false);
+    });
+  };
+
   const formatTaskData = (data) => {
-  console.log("API Data",data)
     if (!data?._Tasks) return [];
     
     return data?._Tasks?.map((task) => {
@@ -94,7 +104,6 @@ export default function TaskScreen() {
         taskId: taskId,
         owner: task.Taskowner || "Unknown",
         planned: task.Working_hours ? task.Working_hours.toString() : "0",
-        // Use local value if it exists, otherwise use API value
         actual: localTaskData[task.Task_Id] !== undefined 
               ? localTaskData[task.Task_Id] 
               : (task.Logged_hours ? task.Logged_hours.toString() : "0"),
@@ -103,7 +112,6 @@ export default function TaskScreen() {
   };
 
   const handleActualHoursChange = (text, taskId) => {
-    // Validate input (only numbers and one decimal point)
     if (/^\d*\.?\d*$/.test(text)) {
       setLocalTaskData(prev => ({
         ...prev,
@@ -122,36 +130,27 @@ export default function TaskScreen() {
       return;
     }
   
-    const payload = {
-      TimelogId: task.LogId,
-      TaskId: task.Task_Id,
-      Emp_Id: user.empId,
-      logDate: selectedDate,
-      Log: parseFloat(logValue),
-      Billing_type: task.Billing_Type
-    };
-  
-    const actualHoursURL = `http://184.72.156.185/Test-APp/api/Task/SendActualHours?TimelogId=${task.LogId}&TaskId=${task.Task_Id}&Emp_Id=${user.empId}&logDate=${encodeURIComponent(selectedDate)}&Log=${logValue}&Billing_type=${task.Billing_Type}&Notes=Na`;
-  
-   
     setIsProcessing(true);
   
     try {
-      
-      const response = await fetch(actualHoursURL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${user.token}`
-        },
-        body: JSON.stringify({}) 
-      });
+      const response = await fetch(
+        `http://184.72.156.185/Test-APp/api/Task/SendActualHours?TimelogId=${task.LogId}&TaskId=${task.Task_Id}&Emp_Id=${user.empId}&logDate=${encodeURIComponent(selectedDate)}&Log=${logValue}&Billing_type=${task.Billing_Type}&Notes=Na`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${user.token}`
+          },
+          body: JSON.stringify({}) 
+        }
+      );
   
       if (!response.ok) {
         throw new Error("Failed to send actual hours");
       }
-  refetch()
+      
+      refetch();
       Alert.alert("Success", "Hours submitted successfully");
     } catch (error) {
       console.log("Submission error:", error);
@@ -160,9 +159,6 @@ export default function TaskScreen() {
       setIsProcessing(false);
     }
   };
-  
-  
-  
 
   const handleDateChange = (date) => {
     setActiveIndex(null);
@@ -175,7 +171,7 @@ export default function TaskScreen() {
   );
 
   const renderTaskItem = (task, index) => (
-    <View key={`${task.taskId}-${index}`} className="mb-2 ">
+    <View key={`${task.taskId}-${index}`} className="mb-2">
       <TouchableOpacity
         className={`p-3 h-[80px] pl-5 pr-5 flex-row justify-between items-center ${
           activeIndex === index
@@ -196,98 +192,107 @@ export default function TaskScreen() {
       </TouchableOpacity>
 
       <Collapsible collapsed={activeIndex !== index}>
-  <TouchableWithoutFeedback onPress={() => setActiveIndex(null)}>
-    <View className="border-[0.5px]    rounded-xl rounded-t-none  pb-6">
-      {/* Task ID */}
-      <View className="px-4 pt-4 pb-4 border-b border-gray-200">
-        <View className="flex-row items-center mb-1">
-          <MaterialCommunityIcons name="identifier" size={16} color="#6b7280" className="mr-2" />
-          <Text className="text-gray-500 text-sm font-medium">Task ID</Text>
-        </View>
-        <Text className="text-gray-900 text-base font-semibold pl-6">{task.taskId}</Text>
-      </View>
+        <TouchableWithoutFeedback onPress={() => setActiveIndex(null)}>
+          <View className="border-[0.5px] rounded-xl rounded-t-none pb-6">
+            {/* Task ID */}
+            <View className="px-4 pt-4 pb-4 border-b border-gray-200">
+              <View className="flex-row items-center mb-1">
+                <MaterialCommunityIcons name="identifier" size={16} color="#6b7280" className="mr-2" />
+                <Text className="text-gray-500 text-sm font-medium">Task ID</Text>
+              </View>
+              <Text className="text-gray-900 text-base font-semibold pl-6">{task.taskId}</Text>
+            </View>
 
-      {/* Task Owner */}
-      <View className="px-4 pt-5 pb-4 border-b border-gray-200">
-        <View className="flex-row items-center mb-1">
-          <MaterialCommunityIcons name="account" size={16} color="#6b7280" className="mr-2" />
-          <Text className="text-gray-500 text-sm font-medium">Task Owner</Text>
-        </View>
-        <Text className="text-gray-900 text-base font-semibold pl-6">{task.owner}</Text>
-      </View>
+            {/* Task Owner */}
+            <View className="px-4 pt-5 pb-4 border-b border-gray-200">
+              <View className="flex-row items-center mb-1">
+                <MaterialCommunityIcons name="account" size={16} color="#6b7280" className="mr-2" />
+                <Text className="text-gray-500 text-sm font-medium">Task Owner</Text>
+              </View>
+              <Text className="text-gray-900 text-base font-semibold pl-6">{task.owner}</Text>
+            </View>
 
-      {/* Hours Section */}
-      <View className="flex-row justify-between px-4 py-6">
-        {/* Planned Hours */}
-        <View className="items-center">
-          <View className="flex-row items-center mb-2">
-            <MaterialCommunityIcons name="clock-outline" size={16} color="#6b7280" className="mr-1" />
-            <Text className="text-gray-600 text-sm font-medium">Planned Hours</Text>
-          </View>
-          <TextInput
-            className="bg-gray-100 border  border-gray-300 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800"
-            value={task.planned}
-            style={{textAlign: "center", }}
-            editable={false}
-          />
-        </View>
-
-        {/* Actual Hours */}
-        <View className="items-center">
-          <View className="flex-row items-center mb-2">
-            <MaterialCommunityIcons name="clock-check-outline" size={16} color="#6b7280" className="mr-1" />
-            <Text className="text-gray-600 text-sm font-medium">Actual Hours</Text>
-          </View>
-          <TextInput
-            className="bg-white border border-gray-300 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800 focus:border-red-500"
-            keyboardType="decimal-pad"
-            placeholder="0"
-            maxLength={5}
-            value={task.actual}
-            onChangeText={(text) => handleActualHoursChange(text, task.taskId)}
-          />
-        </View>
-      </View>
-
-      {/* Submit Button */}
-      <TouchableOpacity
-        className="mx-6 mt-2 rounded-xl overflow-hidden"
-        onPress={() => handleSubmit(task.taskId)}
-        disabled={isProcessing}
-      >
-        <LinearGradient
-          colors={["#D01313", "#6A0A0A"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{paddingLeft: 10, paddingRight: 10 ,height: 50,display:"flex",justifyContent:"center",alignItems:"center"}}
-          className="py-3 px-6  rounded-xl shadow-md"
-        >
-          <View className="flex-row justify-center items-center">
-            {isProcessing ? (
-              <ActivityIndicator color="white" size="small" className="mr-2" />
-            ) : (
-              <>
-                <MaterialCommunityIcons
-                  name="send-check"
-                  size={16}
-                  color="white"
-                  className="mr-2"
+            {/* Hours Section */}
+            <View className="flex-row justify-between px-4 py-6">
+              {/* Planned Hours */}
+              <View className="items-center">
+                <View className="flex-row items-center mb-2">
+                  <MaterialCommunityIcons name="clock-outline" size={16} color="#6b7280" className="mr-1" />
+                  <Text className="text-gray-600 text-sm font-medium">Planned Hours</Text>
+                </View>
+                <TextInput
+                  className="bg-gray-100 border border-gray-300 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800"
+                  value={task.planned}
+                  style={{textAlign: "center"}}
+                  editable={false}
                 />
-                <Text className="text-white font-bold text-sm">SUBMIT HOURS</Text>
-              </>
-            )}
-          </View>
-        </LinearGradient>
-      </TouchableOpacity>
-    </View>
-  </TouchableWithoutFeedback>
-</Collapsible>
+              </View>
 
+              {/* Actual Hours */}
+              <View className="items-center">
+                <View className="flex-row items-center mb-2">
+                  <MaterialCommunityIcons name="clock-check-outline" size={16} color="#6b7280" className="mr-1" />
+                  <Text className="text-gray-600 text-sm font-medium">Actual Hours</Text>
+                </View>
+                <TextInput
+      className="bg-white border border-gray-300 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800 focus:border-red-500"
+      keyboardType="decimal-pad"
+      placeholder="0"
+      maxLength={5}
+      value={task.actual}
+      onChangeText={(text) => handleActualHoursChange(text, task.taskId)}
+      onFocus={() => {
+        setTimeout(() => {
+          flatListRef.current?.scrollToIndex({
+            index: index,
+            viewOffset: 50, // Adjust this value as needed
+            animated: true
+          });
+        }, 100);
+      }}
+    />
+
+              </View>
+            </View>
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              className="mx-6 mt-2 rounded-xl overflow-hidden"
+              onPress={() => handleSubmit(task.taskId)}
+              disabled={isProcessing}
+            >
+              <LinearGradient
+                colors={["#D01313", "#6A0A0A"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{paddingLeft: 10, paddingRight: 10 ,height: 50,display:"flex",justifyContent:"center",alignItems:"center"}}
+                className="py-3 px-6 rounded-xl shadow-md"
+              >
+                <View className="flex-row justify-center items-center">
+                  {isProcessing ? (
+                    <ActivityIndicator color="white" size="small" className="mr-2" />
+                  ) : (
+                    <>
+                      <MaterialCommunityIcons
+                        name="send-check"
+                        size={16}
+                        color="white"
+                        className="mr-2"
+                      />
+                      <Text className="text-white font-bold text-sm">SUBMIT HOURS</Text>
+                    </>
+                  )}
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </TouchableWithoutFeedback>
+      </Collapsible>
     </View>
   );
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && !refreshing) {
       return (
         <View className="flex-1">
           {[1, 2, 3, 4, 5].map(index => (
@@ -333,102 +338,120 @@ export default function TaskScreen() {
     return (
       <Animated.FlatList
         data={filteredTasks}
+        ref={flatListRef} 
         renderItem={({ item, index }) => renderTaskItem(item, index)}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#D01313"
+            colors={["#D01313"]}
+          />
+        }
       />
     );
   };
 
   return (
-    <View className="flex-1 bg-white">
-      <View className="p-4 pt-0">
-        <DropDown
-          open={open}
-          setActiveIndex={setActiveIndex}
-          setOpen={setOpen}
-          items={items}
-          selectedOption={selectedOption}
-          setSelectedOption={setSelectedOption}
-        />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+    >
+      <View className="flex-1 bg-white">
+        <View className="p-4 pt-0">
+          <DropDown
+            open={open}
+            setActiveIndex={setActiveIndex}
+            setOpen={setOpen}
+            items={items}
+            selectedOption={selectedOption}
+            setSelectedOption={setSelectedOption}
+          />
 
-        <View className="flex-row items-center border border-gray-300 shadow-[0px_5px_3px_1px_rgba(0,_0,_0,_0.1)] rounded-[12px] h-[60px] p-2 my-4 bg-white">
-          <TextInput
-            placeholder="Search your task"
-            className="flex-1 text-black"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <FontAwesome
-            name="search"
-            size={20}
-            color="gray"
-            style={{ marginRight: 8 }}
-          />
+          <View className="flex-row items-center border border-gray-300 shadow-[0px_5px_3px_1px_rgba(0,_0,_0,_0.1)] rounded-[12px] h-[60px] p-2 my-4 bg-white">
+            <TextInput
+              placeholder="Search your task"
+              className="flex-1 text-black"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            <FontAwesome
+              name="search"
+              size={20}
+              color="gray"
+              style={{ marginRight: 8 }}
+            />
+          </View>
+
+          {selectedOption === "last7days" && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="h-[100px] flex-grow-0 mb-2"
+            >
+              {dates.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => handleDateChange(item.date)}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={
+                      selectedDate === item.date
+                        ? ["#D01313", "#6A0A0A"]
+                        : ["#E0E0E0", "#C0C0C0"]
+                    }
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{
+                      borderRadius: 20,
+                      marginRight: 12,
+                      height: 80,
+                      width: 50,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <View className="items-center">
+                      <Text
+                        className={
+                          selectedDate === item.date
+                            ? "text-white font-bold text-xs"
+                            : "text-black font-semibold text-xs"
+                        }
+                      >
+                        {item.label.split(" ")[0]}
+                      </Text>
+                      <Text
+                        className={
+                          selectedDate === item.date
+                            ? "text-white font-bold text-base"
+                            : "text-black font-semibold text-base"
+                        }
+                      >
+                        {item.label.split(" ")[1]}
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
+          <Text style={{fontWeight:600 }} className="text-lg underline font-bold mb-2">My Task list</Text>
         </View>
 
-        {selectedOption === "last7days" && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            className="h-[100px] flex-grow-0 mb-2"
-          >
-            {dates.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => handleDateChange(item.date)}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={
-                    selectedDate === item.date
-                      ? ["#D01313", "#6A0A0A"]
-                      : ["#E0E0E0", "#C0C0C0"]
-                  }
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{
-                    borderRadius: 20,
-                    marginRight: 12,
-                    height: 80,
-                    width: 50,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <View className="items-center">
-                    <Text
-                      className={
-                        selectedDate === item.date
-                          ? "text-white font-bold text-xs"
-                          : "text-black font-semibold text-xs"
-                      }
-                    >
-                      {item.label.split(" ")[0]}
-                    </Text>
-                    <Text
-                      className={
-                        selectedDate === item.date
-                          ? "text-white font-bold text-base"
-                          : "text-black font-semibold text-base"
-                      }
-                    >
-                      {item.label.split(" ")[1]}
-                    </Text>
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-
-        <Text style={{fontWeight:600 }} className="text-lg underline font-bold mb-2">My Task list</Text>
-      </View>
-
-      <View className="flex-1 px-4">
+        <View className="flex-1 bg-white p-3">
+        {/* ... (header section remains the same) */}
+        
+        {/* Remove the View wrapper and just render the content directly */}
         {renderContent()}
       </View>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
