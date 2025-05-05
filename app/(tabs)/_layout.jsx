@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
-import { SafeAreaView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import Header from '../../components/Header';
@@ -24,7 +25,7 @@ export default function TabLayout() {
   const { user } = useContext(AuthContext);
 
   return (
-    <SafeAreaView style={{ flex: 1}}>
+    <SafeAreaView  edges={['bottom']} style={{ flex: 1}}>
       <Header />
 
       <Tab.Navigator

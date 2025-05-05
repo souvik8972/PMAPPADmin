@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import "../global.css";
 import { AuthProvider } from "../context/AuthContext";
-import { Text } from "react-native";
+import { SafeAreaView, Text } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 
@@ -20,6 +20,7 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <SafeAreaView></SafeAreaView>
         <Stack screenOptions={{ headerShown: false }} />
       </AuthProvider>
     </QueryClientProvider>

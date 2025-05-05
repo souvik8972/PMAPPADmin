@@ -1,4 +1,5 @@
-import { View, Text, Image, TouchableOpacity, Modal, SafeAreaView } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Modal} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -26,7 +27,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
   };
 
   return (
-    <SafeAreaView className="flex-row  justify-between items-center bg-white">
+    <SafeAreaView edges={['top']} className="flex-row  justify-between items-center bg-white">
       {/* Hamburger Menu */}
       {user.userType == 3 ? (<View className="flex-row w-full p-4   justify-between items-center">
       {/* Left Logo */}

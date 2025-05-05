@@ -4,15 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
-import { useNotificationPermission } from '../ReactQuery/hooks/useNotificationPermission';
-import { scheduleDailyNotification } from '../utils/notifications';
+// import { useNotificationPermission } from '../ReactQuery/hooks/useNotificationPermission';
+// import { scheduleDailyNotification } from '../utils/notifications';
 
 
 
 const { width, height } = Dimensions.get('window');
 
 const Index = () => {
-  useNotificationPermission();
+  // useNotificationPermission();
  
   // useEffect(() => {
   //   // Automatically schedule daily 9AM notification when the app is loaded

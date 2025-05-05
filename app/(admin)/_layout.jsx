@@ -8,6 +8,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Header from "../../components/Header";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Create lazy-loaded components for each screen
 const Task = lazy(() => import("./index"));
@@ -37,6 +38,7 @@ const CustomDrawerContent = (props) => {
   };
 
   return (
+    
     <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
       <View style={styles.profileContainer}>
         <Image source={require('../../assets/images/icon.png')} style={styles.profileImage} />
@@ -93,6 +95,7 @@ const CustomDrawerContent = (props) => {
         resizeMode="cover"
       />
     </DrawerContentScrollView>
+    
   );
 };
 

@@ -29,7 +29,7 @@ const AddEditTask = () => {
   const route = useRoute();
   const ids = route.params?.projectIdAndTaskId?.split("-") || [];
   const [projectId, taskId, actionType, BId] = ids;
-  const isEditMode =taskId;
+  const isEditMode =false;
   const { user } = useContext(AuthContext);
   
   // State for form fields
@@ -72,7 +72,8 @@ const AddEditTask = () => {
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg']
   });
-
+// orginal Id
+const [originalId, setOriginalId] = useState("");
   // Use the usePostData hook
   const { mutate: fetchTaskData, isLoading: isFetching } = usePostData('Task/getTaskDetailsByProjectId');
 
@@ -155,6 +156,9 @@ const AddEditTask = () => {
         util_cost: apiData.costs.util_cost || null
       });
     }
+    // originalId
+  
+      
   
     // Set team members dropdown
     if (apiData?.Emp_List && Array.isArray(apiData.Emp_List)) {
@@ -192,7 +196,8 @@ const AddEditTask = () => {
     // Set task details if in edit mode
     if (isEditMode && apiData.GetEditTaskDetails) {
       const taskDetails = apiData.GetEditTaskDetails;
-      
+//SET ORIGINAL ID
+      setOriginalId(taskDetails?.Originalempids);
       // Set task title
       setTaskName(taskDetails.TskTitle || "");
       
@@ -326,6 +331,7 @@ const AddEditTask = () => {
 
   // Form submission
   const handleSubmit = () => {
+    // Validate required fields
     if (!taskName) {
       Alert.alert("Error", "Please enter a task name");
       return;
@@ -346,15 +352,22 @@ const AddEditTask = () => {
       return;
     }
   
-    // Prepare employee data with hours
+    // Prepare employee data with hours - now includes all dates in range
     const employees = selectedResources.map(resource => {
       const hoursData = memberHours[resource.id] || {};
-      const logDetails = Object.keys(hoursData).map(date => ({
-        date,
-        hr: hoursData[date] || 0,
-        startTime: "09:00", // Default values or get from UI
-        endTime: "18:00"    // Default values or get from UI
-      }));
+      const datesInRange = getDatesInRange(startDate, endDate);
+      
+      const logDetails = datesInRange.map(date => {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        const hours = hoursData[dateStr] || 0;
+        
+        return {
+          date: dateStr,
+          hr: hours,
+          startTime: hours > 0 ? "04:00:00" : "00:00:00",
+          endTime: hours > 0 ? calculateEndTime(hours) : "00:00:00"
+        };
+      });
   
       return {
         empId: parseInt(resource.id),
@@ -363,72 +376,49 @@ const AddEditTask = () => {
       };
     });
   
-    // Prepare the task data for API
-    const currentEmpIds = selectedResources.map(r => r.id).filter(id => id).join(',');
+    // Helper function to calculate end time based on hours (starting at 04:00:00)
+    function calculateEndTime(hours) {
+      const startHour = 4; // 04:00:00
+      const endHour = startHour + hours;
+      return `${endHour.toString().padStart(2, '0')}:00:00`;
+    }
   
+    // Prepare the complete task data for API
     const taskData = {
       tskTitle: taskName,
-      startDate: format(startDate, 'MM/dd/yyyy'),
-      endDate: format(endDate, 'MM/dd/yyyy'),
+      startDate: format(startDate, 'yyyy-MM-dd'),
+      endDate: format(endDate, 'yyyy-MM-dd'),
       tskStatus: parseInt(status),
       projectId: parseInt(projectId),
       clientId: parseInt(client),
-      taskId: isEditMode ? parseInt(taskId) : 0,
-      empids: currentEmpIds, 
-      originalempids: isEditMode ? route.params?.originalEmpids || '' : '',
-      employees: selectedResources.map(resource => {
-        const hoursData = memberHours[resource.id] || {};
-        return {
-          empId: parseInt(resource.id),
-          empName: resource.label || resource.name,
-          logDetails: Object.keys(hoursData).map(date => ({
-            date,
-            hr: hoursData[date] || 0,
-            startTime: "09:00",
-            endTime: "18:00"
-          }))
-        };
-      })
+      taskId: isEditMode ? parseInt(taskId) : null,
+      Empids: selectedResources.map(r => r.id).join(','),
+      Originalempids: originalId,
+      employees
     };
   
-    console.log("Full Task Data:", JSON.stringify(taskData, null, 2));
+    console.log("Complete Task Payload:", JSON.stringify(taskData, null, 2));
   
-  
-    // Log the data before sending to API
-    console.log("Task Data to be submitted:", {
-      ...taskData,
-      employees: employees.map(emp => ({
-        empId: emp.empId,
-        empName: emp.empName,
-        logDetails: emp.logDetails.map(log => ({
-          date: log.date,
-          hours: log.hr,
-          time: `${log.startTime}-${log.endTime}`
-        }))
-      }))
-    });
-  
-    // Here you would typically call your API to update the task
-    // For example:
-    /*
-    updateTaskAPI(
-      taskData,
-      {
-        onSuccess: () => {
-          Alert.alert("Success", "Task updated successfully");
-          navigation.goBack();
-        },
-        onError: (error) => {
-          console.error("Update failed:", error);
-          Alert.alert("Error", "Failed to update task");
-        }
-      }
-    );
-    */
-  
-    // For demo purposes, we'll just show the success message
-    Alert.alert("Success", isEditMode ? "Task updated successfully" : "Task created successfully");
-    navigation.goBack();
+    // Here you would implement your actual API call
+    // const endpoint = isEditMode ? 'Task/updateTask' : 'Task/CreateTask';
+    // const { mutate: submitTask } = usePostData(endpoint);
+    
+    // submitTask(
+    //   { 
+    //     data: taskData,
+    //     token: user?.token 
+    //   },
+    //   {
+    //     onSuccess: (data) => {
+    //       Alert.alert("Success", isEditMode ? "Task updated successfully" : "Task created successfully");
+    //       navigation.goBack();
+    //     },
+    //     onError: (error) => {
+    //       console.error("Submission failed:", error);
+    //       Alert.alert("Error", error.message || "Failed to submit task");
+    //     }
+    //   }
+    // );
   };
   if (isLoading) {
     return (
