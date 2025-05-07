@@ -150,7 +150,7 @@ const TeamMember = ({ item, selectedDropdown, setSelectedDropdown  ,isLoading}) 
     ))}
   </ScrollView>
   }
- console.log("inside team member",item);
+//  console.log("inside team member",item);
  
  
   return (

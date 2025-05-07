@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useCallback } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, StyleSheet, Modal } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { DatePickerModal } from "react-native-paper-dates";
@@ -10,6 +10,7 @@ import { Link } from "expo-router";
 import { format } from "date-fns";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { AuthContext } from "../../context/AuthContext";
+import { deleteTask } from "../../ReactQuery/hooks/deleteTask";
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
@@ -23,7 +24,9 @@ export default function TaskScreen() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-const ActionType=0
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
+  const ActionType = 0;
   const token = user?.token;
 
   const formattedStartDate = selectedRange.startDate ? format(selectedRange.startDate, "MM/dd/yyyy") : "";
@@ -32,6 +35,8 @@ const ActionType=0
   const endpoint = `Task/GetTasks?st_dt=${formattedStartDate}&ed_dt=${formattedEndDate}&page=${page}&limit=20&serach=${searchQuery}`;
 
   const { data, isLoading: loading, refetch } = useFetchData(endpoint, token);
+  
+
 
   useEffect(() => {
     if (data?._Tasks) {
@@ -64,6 +69,39 @@ const ActionType=0
     }
   }, [loading, hasMore]);
 
+  const handleDelete = useCallback((taskId) => {
+    setTaskToDelete(taskId);
+    setDeleteModalVisible(true);
+  }, []);
+  const confirmDelete = async (id) => {
+    if (!id) return;
+    
+    try {
+      const result = await deleteTask(id, token);
+      console.log(result, "delete result");
+      
+      if (result.success) {
+        // Update local state
+        setTaskData(prev => prev.filter(task => task.Task_Id !== id));
+        setFilteredTasks(prev => prev.filter(task => task.Task_Id !== id));
+        
+        // Close modal and reset
+        setDeleteModalVisible(false);
+        setTaskToDelete(null);
+        
+        // Show success message
+        Alert.alert('Success', result.message);
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      Alert.alert(
+        'Error',
+        error.message || 'Failed to delete task. Please try again.'
+      );
+      setDeleteModalVisible(false);
+      setTaskToDelete(null);
+    }
+  };
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     setPage(1);
@@ -81,8 +119,7 @@ const ActionType=0
   }, [loading, page]);
 
   const renderItem = useCallback(({ item }) => (
-    <View className="bg-white rounded-xl p-4 mb-4  relative">
-      
+    <View className="bg-white rounded-xl p-4 mb-4 relative">
       {/* Status badge */}
       {item.status && (
         <View
@@ -96,21 +133,21 @@ const ActionType=0
       )}
   
       {/* Header */}
-      <View className="mb-2 flex-row  justify-between">
+      <View className="mb-2 flex-row justify-between">
         <Text className="text-lg w-[80%] font-semibold text-gray-800">
           {item.Task_Title}
         </Text>
-      <View className="w-[15%] shadow-md h-[25px] bg-gray-100 rounded-lg px-2 py-1 flex-row items-center justify-center">
-      <Text className="text-sm shadow-md   text-gray-500">{item.Project_Id}</Text>
-      </View>
+        <View className="w-[15%] shadow-md h-[25px] bg-gray-100 rounded-lg px-2 py-1 flex-row items-center justify-center">
+          <Text className="text-sm shadow-md text-gray-500">{item.Project_Id}</Text>
+        </View>
       </View>
   
       {/* Body */}
       <View className="mb-3">
         <View className="flex-row justify-between mb-2">
-          <View className="flex-row items-center space-x-1">
+          <View className="flex-row  space-x-1 w-2/3 ">
             <Feather name="user" size={14} color="#64748B" />
-            <Text className="text-sm text-gray-600">{item.Employee_Name}</Text>
+            <Text className="text-sm text-gray-600"> {item.Employee_Name}</Text>
           </View>
           <View className="flex-row items-center space-x-1">
             <Feather name="hash" size={14} color="#64748B" />
@@ -135,21 +172,21 @@ const ActionType=0
       {/* Actions */}
       <View className="flex-row justify-end space-x-3 gap-3 mt-2">
         <Link href={`/(addTask)/${item.Project_Id}-${item.Task_Id}-${ActionType}-${item.BuyingCenterId}`} asChild>
-          <TouchableOpacity className="flex-row items-center bg-white shadow-md  px-3 py-1.5 rounded-lg">
+          <TouchableOpacity className="flex-row items-center bg-white shadow-md px-3 py-1.5 rounded-lg">
             <Feather name="edit-3" size={16} color="red" />
             <Text className="ml-1 text-red-500 text-sm font-medium">Edit</Text>
           </TouchableOpacity>
         </Link>
-        <TouchableOpacity className="flex-row items-center shadow-md bg-red-500 px-3 py-1.5 rounded-lg">
+        <TouchableOpacity 
+          className="flex-row items-center shadow-md bg-red-500 px-3 py-1.5 rounded-lg"
+          onPress={() => handleDelete(item.Task_Id)}
+        >
           <Feather name="trash-2" size={16} color="white" />
           <Text className="ml-1 text-white text-sm font-medium">Delete</Text>
         </TouchableOpacity>
       </View>
     </View>
-  ), []);
-  
-
-  
+  ), [ActionType, handleDelete]);
 
   const getDisabledDates = (startDate) => {
     const disabledDates = [];
@@ -287,11 +324,40 @@ const ActionType=0
           windowSize={21}
         />
       )}
+      
+      {/* Delete Confirmation Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={deleteModalVisible}
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Confirm Delete</Text>
+            <Text style={styles.modalText}>Are you sure you want to delete this task?</Text>
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setDeleteModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.deleteButton]}
+                onPress={() => confirmDelete(taskToDelete)}
+              >
+                <Text style={styles.deleteButtonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
-  
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -359,74 +425,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 16,
   },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-    overflow: 'hidden',
-  },
-  cardContent: {
-    padding: 16,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
-  },
-  metaContainer: {
-    flexDirection: 'row',
-    marginBottom: 12,
-    flexWrap: 'wrap',
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,
-    marginBottom: 8,
-  },
-  metaText: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginLeft: 6,
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginTop: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    color: 'white',
-    fontWeight: '500',
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 12,
-    backgroundColor: '#F9FAFB',
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  actionButton: {
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  gradientButton: {
-    padding: 8,
-    borderRadius: 8,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   footer: {
     paddingVertical: 20,
     justifyContent: 'center',
@@ -443,73 +441,51 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 8,
   },
-  card: {
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
     backgroundColor: 'white',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    position: 'relative',
+    padding: 24,
+    width: '80%',
   },
-  cardContent: {
-    marginBottom: 12,
-  },
-  cardTitle: {
+  modalTitle: {
     fontSize: 18,
     fontWeight: '600',
+    marginBottom: 16,
     color: '#111827',
-    marginBottom: 12,
   },
-  metaContainer: {
-    gap: 8,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  metaText: {
-    fontSize: 13,
+  modalText: {
+    fontSize: 16,
+    marginBottom: 24,
     color: '#6B7280',
   },
-  statusBadge: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    color: 'white',
-    fontWeight: '500',
-  },
-  cardFooter: {
+  modalButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 10,
+    gap: 12,
   },
-  actionButton: {
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 8,
-    overflow: 'hidden',
   },
-  gradientButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    gap: 6,
+  cancelButton: {
+    backgroundColor: '#F3F4F6',
   },
-  buttonText: {
+  cancelButtonText: {
+    color: '#4B5563',
+    fontWeight: '600',
+  },
+  deleteButton: {
+    backgroundColor: '#D01313',
+  },
+  deleteButtonText: {
     color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-
 });

@@ -29,7 +29,7 @@ const AddEditTask = () => {
   const route = useRoute();
   const ids = route.params?.projectIdAndTaskId?.split("-") || [];
   const [projectId, taskId, actionType, BId] = ids;
-  const isEditMode =false;
+  const isEditMode =taskId;
   const { user } = useContext(AuthContext);
   
   // State for form fields

@@ -29,7 +29,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
   return (
     <SafeAreaView edges={['top']} className="flex-row  justify-between items-center bg-white">
       {/* Hamburger Menu */}
-      {user.userType == 3 ? (<View className="flex-row w-full p-4   justify-between items-center">
+      {user.userType == 3 ? (<View className="flex-row w-full p-4  pt-0 pb-0   justify-between items-center">
       {/* Left Logo */}
       <Image source={require('../assets/images/icon.png')} className="w-12 h-12" resizeMode="contain" />
       

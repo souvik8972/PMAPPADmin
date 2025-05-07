@@ -1,28 +1,21 @@
 import { View, Text, ScrollView, Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from 'react-native-chart-kit';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFetchData } from '../../ReactQuery/hooks/useFetchData';
+import { AuthContext } from '../../context/AuthContext';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 const screenWidth = Dimensions.get('window').width;
 
-const project = {
-  title: 'AbbVie_Rinvoq EULAR Booth Trivia',
-  status: 'Active',
-  manager: 'Niva Rose Jane, Karishma Reji',
-  finYear: 'FY-2024-25',
-  poValue: 20674,
-  predictedCost: 18705,
-  actualCost: 173253,
-  predictedGP: 10126,
-  actualGP: 3349,
-  predictedHours: 237.25,
-  actualHours: 299.25,
-  outshourced: 0,
-  EffortEstimateCost: 17000,
-  rateCard: "Premium Rate Card"
-};
+// Add this shimmer component at the top of your file
+const ShimmerEffect = ({ style }) => (
+  <View style={[styles.shimmer, style]}>
+    <View style={styles.shimmerInner} />
+  </View>
+);
 
 const chartConfig = {
   backgroundGradientFrom: "#ffffff",
@@ -45,19 +38,44 @@ const chartConfig = {
 
 const ProjectDetails = () => {
   const navigation = useNavigation();
+  const { user } = useContext(AuthContext);
+  const param = useLocalSearchParams();
+  const router = useRouter();
+
+  const [projectId, clientId] = param.pId ? param.pId.split("-") : [null, null];
+  console.log(projectId,clientId,"hehehhehehheh")
+  const { data, isLoading: loading, refetch } = useFetchData(`FinanceModule/GetProjectDetails?projectId=${projectId}&clientId=${clientId}`, user?.token);
+
+  const project = data?.[0] || {};
   
+  // Parse numeric values from strings
+  const parseCurrency = (value) => {
+    if (!value) return 0;
+    return parseFloat(value.replace(/[^0-9.-]+/g, ''));
+  };
+  
+  const poValue = parseCurrency(project.PO_Value);
+  const predictedCost = parseCurrency(project.predicted_Cost);
+  const actualCost = parseCurrency(project.Actual_Cost);
+  const predictedGP = parseCurrency(project.Predicted_GP);
+  const actualGP = parseCurrency(project.Actual_GP);
+  const predictedHours = project.Predicted_Hours || 0;
+  const actualHours = project.Actual_Hours || 0;
+  const outshourced = parseCurrency(project.Outsourcing_Cost);
+  const EffortEstimateCost = parseCurrency(project.effect_EstimateCost);
+
   // State to toggle charts visibility
   const [showCostChart, setShowCostChart] = useState(false);
   const [showGPChart, setShowGPChart] = useState(false);
   const [showHoursChart, setShowHoursChart] = useState(false);
 
-  const costVariance = project.predictedCost - project.actualCost;
-  const gpVariance = project.predictedGP - project.actualGP;
-  const hoursVariance = project.predictedHours - project.actualHours;
+  const costVariance = predictedCost - actualCost;
+  const gpVariance = predictedGP - actualGP;
+  const hoursVariance = predictedHours - actualHours;
 
-  const costVariancePercentage = ((costVariance / project.predictedCost) * 100).toFixed(1);
-  const gpVariancePercentage = ((gpVariance / project.predictedGP) * 100).toFixed(1);
-  const hoursVariancePercentage = ((hoursVariance / project.predictedHours) * 100).toFixed(1);
+  const costVariancePercentage = ((costVariance / predictedCost) * 100).toFixed(1);
+  const gpVariancePercentage = ((gpVariance / predictedGP) * 100).toFixed(1);
+  const hoursVariancePercentage = ((hoursVariance / predictedHours) * 100).toFixed(1);
 
   const renderValueWithLabel = (predicted, actual) => {
     return (
@@ -74,6 +92,100 @@ const ProjectDetails = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          {/* Header Shimmer */}
+          <View style={styles.headerContainer}>
+            <ShimmerEffect style={styles.shimmerBackButton} />
+            <ShimmerEffect style={styles.shimmerTitle} />
+            <ShimmerEffect style={styles.shimmerStatus} />
+          </View>
+
+          {/* Project Info Shimmer */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <ShimmerEffect style={styles.shimmerCardTitle} />
+              <ShimmerEffect style={styles.shimmerIcon} />
+            </View>
+            <View style={styles.cardBody}>
+              {[...Array(6)].map((_, i) => (
+                <View key={i} style={styles.infoRow}>
+                  <ShimmerEffect style={styles.shimmerInfoIcon} />
+                  <ShimmerEffect style={styles.shimmerInfoLabel} />
+                  <ShimmerEffect style={styles.shimmerInfoValue} />
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Metrics Shimmer */}
+          <View style={styles.metricsContainer}>
+            {[...Array(3)].map((_, i) => (
+              <View key={i} style={[styles.metricCard, i === 0 ? styles.metricCardFirst : i === 2 ? styles.metricCardLast : null]}>
+                <ShimmerEffect style={styles.shimmerMetricIcon} />
+                <ShimmerEffect style={styles.shimmerMetricLabel} />
+                <ShimmerEffect style={styles.shimmerMetricValue} />
+                <ShimmerEffect style={styles.shimmerMetricPercentage} />
+              </View>
+            ))}
+          </View>
+
+          {/* Cost Section Shimmer */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View>
+                <ShimmerEffect style={styles.shimmerSectionTitle} />
+                <View style={styles.valueContainer}>
+                  <ShimmerEffect style={styles.shimmerValueItem} />
+                  <ShimmerEffect style={styles.shimmerValueItem} />
+                </View>
+              </View>
+              <ShimmerEffect style={styles.shimmerIcon} />
+            </View>
+          </View>
+
+          {/* GP Section Shimmer */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View>
+                <ShimmerEffect style={styles.shimmerSectionTitle} />
+                <View style={styles.valueContainer}>
+                  <ShimmerEffect style={styles.shimmerValueItem} />
+                  <ShimmerEffect style={styles.shimmerValueItem} />
+                </View>
+              </View>
+              <ShimmerEffect style={styles.shimmerIcon} />
+            </View>
+          </View>
+
+          {/* Hours Section Shimmer */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View>
+                <ShimmerEffect style={styles.shimmerSectionTitle} />
+                <View style={styles.valueContainer}>
+                  <ShimmerEffect style={styles.shimmerValueItem} />
+                  <ShimmerEffect style={styles.shimmerValueItem} />
+                </View>
+              </View>
+              <ShimmerEffect style={styles.shimmerIcon} />
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  if (!project) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text>No project data found</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -86,9 +198,9 @@ const ProjectDetails = () => {
           >
             <Ionicons name="arrow-back" size={24} color="#1F2937" />
           </TouchableOpacity>
-          <Text style={styles.title}>{project.title}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: project.status === 'Active' ? '#10B981' : '#EF4444' }]}>
-            <Text style={styles.statusText}>{project.status}</Text>
+          <Text style={styles.title}>{project.project_Title}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: project.Project_Status === 'Active' ? '#10B981' : '#EF4444' }]}>
+            <Text style={styles.statusText}>{project.Project_Status}</Text>
           </View>
         </View>
 
@@ -104,7 +216,7 @@ const ProjectDetails = () => {
                 <Ionicons name="people" size={18} color="#4F46E5" />
               </View>
               <Text style={styles.infoLabel}>Manager(s)</Text>
-              <Text style={styles.infoValue}>{project.manager}</Text>
+              <Text style={styles.infoValue}>{project.Employee_Name}</Text>
             </View>
             
             <View style={styles.infoRow}>
@@ -112,7 +224,7 @@ const ProjectDetails = () => {
                 <Ionicons name="calendar" size={18} color="#4F46E5" />
               </View>
               <Text style={styles.infoLabel}>Financial Year</Text>
-              <Text style={styles.infoValue}>{project.finYear}</Text>
+              <Text style={styles.infoValue}>{project.Financial_Year}</Text>
             </View>
             
             <View style={styles.infoRow}>
@@ -120,7 +232,7 @@ const ProjectDetails = () => {
                 <Ionicons name="cash" size={18} color="#4F46E5" />
               </View>
               <Text style={styles.infoLabel}>PO Value</Text>
-              <Text style={styles.infoValue}>${project.poValue.toLocaleString()}</Text>
+              <Text style={styles.infoValue}>${poValue.toLocaleString()}</Text>
             </View>
             
             <View style={styles.infoRow}>
@@ -128,7 +240,7 @@ const ProjectDetails = () => {
                 <Ionicons name="business" size={18} color="#4F46E5" />
               </View>
               <Text style={styles.infoLabel}>Outsourced</Text>
-              <Text style={styles.infoValue}>{project.outshourced ? `${project.outshourced} hours` : "None"}</Text>
+              <Text style={styles.infoValue}>{outshourced > 0 ? `$${outshourced.toLocaleString()}` : "None"}</Text>
             </View>
             
             <View style={styles.infoRow}>
@@ -136,7 +248,7 @@ const ProjectDetails = () => {
                 <Ionicons name="pricetag" size={18} color="#4F46E5" />
               </View>
               <Text style={styles.infoLabel}>Rate Card</Text>
-              <Text style={styles.infoValue}>{project.rateCard}</Text>
+              <Text style={styles.infoValue}>Premium Rate Card</Text>
             </View>
             
             <View style={styles.infoRow}>
@@ -144,7 +256,7 @@ const ProjectDetails = () => {
                 <Ionicons name="calculator" size={18} color="#4F46E5" />
               </View>
               <Text style={styles.infoLabel}>Effort Estimate</Text>
-              <Text style={styles.infoValue}>${project.EffortEstimateCost.toLocaleString()}</Text>
+              <Text style={styles.infoValue}>${EffortEstimateCost.toLocaleString()}</Text>
             </View>
           </View>
         </ScrollView>
@@ -204,8 +316,8 @@ const ProjectDetails = () => {
                 <Text style={styles.cardTitle}>Project Cost</Text>
               </View>
               {renderValueWithLabel(
-                `$${project.predictedCost.toLocaleString()}`,
-                `$${project.actualCost.toLocaleString()}`
+                `$${predictedCost.toLocaleString()}`,
+                `$${actualCost.toLocaleString()}`
               )}
             </View>
             <Ionicons 
@@ -221,7 +333,7 @@ const ProjectDetails = () => {
                   labels: ["Predicted", "Actual"],
                   datasets: [
                     {
-                      data: [project.predictedCost, project.actualCost],
+                      data: [predictedCost, actualCost],
                       color: (opacity = 1) => `rgba(79, 70, 229, ${opacity})`,
                       strokeWidth: 3
                     }
@@ -266,8 +378,8 @@ const ProjectDetails = () => {
                 <Text style={styles.cardTitle}>Gross Profit</Text>
               </View>
               {renderValueWithLabel(
-                `$${project.predictedGP.toLocaleString()}`,
-                `$${project.actualGP.toLocaleString()}`
+                `$${predictedGP.toLocaleString()}`,
+                `$${actualGP.toLocaleString()}`
               )}
             </View>
             <Ionicons 
@@ -283,7 +395,7 @@ const ProjectDetails = () => {
                   labels: ["Predicted", "Actual"],
                   datasets: [
                     {
-                      data: [project.predictedGP, project.actualGP],
+                      data: [predictedGP, actualGP],
                       color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
                       strokeWidth: 3
                     }
@@ -323,8 +435,8 @@ const ProjectDetails = () => {
                 <Text style={styles.cardTitle}>Project Hours</Text>
               </View>
               {renderValueWithLabel(
-                `${project.predictedHours.toFixed(1)}h`,
-                `${project.actualHours.toFixed(1)}h`
+                `${predictedHours.toFixed(1)}h`,
+                `${actualHours.toFixed(1)}h`
               )}
             </View>
             <Ionicons 
@@ -340,7 +452,7 @@ const ProjectDetails = () => {
                   labels: ["Predicted", "Actual"],
                   datasets: [
                     {
-                      data: [project.predictedHours, project.actualHours],
+                      data: [predictedHours, actualHours],
                       color: (opacity = 1) => `rgba(245, 158, 11, ${opacity})`,
                       strokeWidth: 3
                     }
@@ -368,6 +480,7 @@ const ProjectDetails = () => {
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
+
   );
 };
 
@@ -561,6 +674,98 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontWeight: '600',
   },
+  shimmer: {
+    backgroundColor: '#E5E7EB',
+    borderRadius: 4,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  shimmerInner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#F3F4F6',
+  },
+  shimmerBackButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+  },
+  shimmerTitle: {
+    width: 200,
+    height: 24,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  shimmerStatus: {
+    width: 80,
+    height: 28,
+    borderRadius: 16,
+  },
+  shimmerCardTitle: {
+    width: 150,
+    height: 20,
+    borderRadius: 4,
+  },
+  shimmerIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+  },
+  shimmerInfoIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  shimmerInfoLabel: {
+    width: 110,
+    height: 14,
+    borderRadius: 4,
+  },
+  shimmerInfoValue: {
+    flex: 1,
+    height: 14,
+    borderRadius: 4,
+  },
+  shimmerMetricIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginBottom: 8,
+  },
+  shimmerMetricLabel: {
+    width: '80%',
+    height: 12,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  shimmerMetricValue: {
+    width: '60%',
+    height: 16,
+    borderRadius: 4,
+    marginBottom: 2,
+  },
+  shimmerMetricPercentage: {
+    width: '40%',
+    height: 12,
+    borderRadius: 4,
+  },
+  shimmerSectionTitle: {
+    width: 120,
+    height: 20,
+    borderRadius: 4,
+    marginBottom: 12,
+  },
+  shimmerValueItem: {
+    flex: 1,
+    height: 15,
+    borderRadius: 4,
+    marginRight: 16,
+  },
+
 });
 
 export default ProjectDetails;
