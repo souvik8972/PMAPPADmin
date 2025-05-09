@@ -23,7 +23,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import { usePostData } from '../../ReactQuery/hooks/usePostData';
 import { AuthContext } from "../../context/AuthContext";
 import { format } from 'date-fns';
-
+import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
+import extractTaskHours from "../../utils/functions/extractTaskHours";
 const AddEditTask = () => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -40,7 +41,7 @@ const AddEditTask = () => {
   const [endDate, setEndDate] = useState(new Date());
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+  // const [isLoading, setIsLoading] = useState(isEditMode);
 
   // Cost states from API
   const [costs, setCosts] = useState({
@@ -75,134 +76,83 @@ const AddEditTask = () => {
 // orginal Id
 const [originalId, setOriginalId] = useState("");
   // Use the usePostData hook
-  const { mutate: fetchTaskData, isLoading: isFetching } = usePostData('Task/getTaskDetailsByProjectId');
+  // const { mutate: fetchTaskData, isLoading: isFetching } = usePostData('Task/getTaskDetailsByProjectId');
   const { mutate: submitTask, isPending: isSubmitPending } = usePostData('Task/CreateTask', ["Task/GetTasks"]);
+  const { data, isLoading, refetch } = useFetchData(
+    isEditMode 
+      ? `Task/getTaskDetailsByProjectId?ProjectId=${projectId}&ActionType=${actionType}&TaskId=${taskId}&Bid=${BId}`
+      : `Task/getTaskDetailsByProjectId?ProjectId=${projectId}&ActionType=1&Bid=${BId || 0}`,user.token
+  );
+  console.log(data,projectId, taskId, actionType, BId,"SSSSSS")
 
   // Load task data if in edit mode
-  useEffect(() => {
-    if (isEditMode) {
-      fetchTaskDetails();
-    } else {
-      loadDropdownOptions();
-    }
-  }, [isEditMode]);
+  // Update your useEffect to include data as a dependency
+useEffect(() => {
+  if (data) {
+    processApiResponse(data);
+  }
+}, [data]); // Add data as dependency
 
-  const fetchTaskDetails = () => {
-    const queryParams = {
-      ProjectId: projectId,
-      ActionType: actionType,
-      TaskId: taskId,
-      Bid: BId
-    };
+// Modify your processApiResponse function to be more defensive
+const processApiResponse = (apiData) => {
+  console.log("API Data:", apiData);
+  if (!apiData) return;
 
-    fetchTaskData(
-      { 
-        data: null, 
-        queryParams,
-        token: user?.token 
-      },
-      {
-        onSuccess: (data) => {
-          console.log("API Response Data:", data);
-          processApiResponse(data);
-          setIsLoading(false);
-        },
-        onError: (error) => {
-          
-          Alert.alert("Error", "Failed to fetch task details");
-          setIsLoading(false);
-        }
-      }
-    );
-  };
+  try {
+    // Set costs data (with more defensive checks)
+    const costsData = apiData.costs || {};
+    setCosts({
+      PurchaseCost: costsData.PurchaseCost || "0.00",
+      PredictedCost: costsData.PredictedCost || "0.00",
+      OutSourceCost: costsData.OutSourceCost || "0.00",
+      util_cost: costsData.util_cost || null
+    });
 
-  const loadDropdownOptions = () => {
-    const queryParams = {
-      ProjectId: projectId,
-      ActionType: 1,
-      
-      Bid: BId||0
-    };
-
-    fetchTaskData(
-      { 
-        data: null, 
-        queryParams,
-        token: user?.token 
-      },
-      {
-        onSuccess: (data) => {
-          console.log("API Response Data:", data);
-          processApiResponse(data);
-          setIsLoading(false);
-        },
-        onError: (error) => {
-          
-          Alert.alert("Error", "Failed to fetch task details");
-          setIsLoading(false);
-        }
-      }
-    );
-  };
-
-  const processApiResponse = (apiData) => {
-    if (!apiData) return;
-  
-    // Set costs data
-    if (apiData?.costs) {
-      setCosts({
-        PurchaseCost: apiData.costs.PurchaseCost || "0.00",
-        PredictedCost: apiData.costs.PredictedCost || "0.00",
-        OutSourceCost: apiData.costs.OutSourceCost || "0.00",
-        util_cost: apiData.costs.util_cost || null
-      });
-    }
-    // originalId
-  
-      
-  
     // Set team members dropdown
-    if (apiData?.Emp_List && Array.isArray(apiData.Emp_List)) {
+    if (apiData.Emp_List && Array.isArray(apiData.Emp_List)) {
       const members = apiData.Emp_List.map(emp => ({
         label: emp.Employee_Name,
         value: emp.EmpId.toString(),
         name: emp.Employee_Name,
-        id: emp.EmpId
+        id: emp.EmpId.toString()
       }));
       setTeamMembers(members);
     }
-  
+
     // Set dropdown lists
-    if (apiData?.dropdownList) {
+    if (apiData.dropdownList) {
       // Set clients dropdown
       if (apiData.dropdownList.clientName) {
         setClients([{
           label: apiData.dropdownList.clientName,
-          value: apiData.dropdownList.Client_Id
+          value: apiData.dropdownList.Client_Id.toString()
         }]);
-        setClient(apiData.dropdownList.Client_Id);
+        setClient(apiData.dropdownList.Client_Id.toString());
       }
-  
+
       // Set statuses dropdown
-      if (apiData?.dropdownList.Status && Array.isArray(apiData.dropdownList.Status)) {
+      if (apiData.dropdownList.Status && Array.isArray(apiData.dropdownList.Status)) {
         const statusOptions = apiData.dropdownList.Status.map(status => ({
           label: status.Status,
-          value: status.Id.toString(), // Use ID as value for easier mapping
+          value: status.Id.toString(),
           statusName: status.Status
         }));
         setStatuses(statusOptions);
       }
     }
-  
+
     // Set task details if in edit mode
     if (isEditMode && apiData.GetEditTaskDetails) {
       const taskDetails = apiData.GetEditTaskDetails;
-//SET ORIGINAL ID
-      setOriginalId(taskDetails?.Originalempids);
+      console.log("Task Details:", taskDetails);
+      
+      // SET ORIGINAL ID
+      setOriginalId(taskDetails?.Originalempids || "");
+      
       // Set task title
       setTaskName(taskDetails.TskTitle || "");
       
-      // Set dates (convert from MM/DD/YYYY format)
+      // Set dates
       if (taskDetails.StartDate) {
         const [month, day, year] = taskDetails.StartDate.split('/');
         setStartDate(new Date(year, month - 1, day));
@@ -213,7 +163,7 @@ const [originalId, setOriginalId] = useState("");
         setEndDate(new Date(year, month - 1, day));
       }
       
-      // Set status (match the ID from dropdownList.Status)
+      // Set status
       if (taskDetails.TskStatus) {
         setStatus(taskDetails.TskStatus.toString());
       }
@@ -222,14 +172,14 @@ const [originalId, setOriginalId] = useState("");
       if (taskDetails.Empids) {
         const empIds = taskDetails.Empids.split(',').filter(id => id.trim() !== '');
         
-        // Find matching team members
-        const selectedEmps = apiData.Emp_List
+        // Find matching team members from Emp_List
+        const selectedEmps = (apiData.Emp_List || [])
           .filter(emp => empIds.includes(emp.EmpId.toString()))
           .map(emp => ({
             label: emp.Employee_Name,
             value: emp.EmpId.toString(),
             name: emp.Employee_Name,
-            id: emp.EmpId.toString() // Ensure ID is string for consistent comparison
+            id: emp.EmpId.toString()
           }));
         
         setSelectedResources(selectedEmps);
@@ -238,7 +188,8 @@ const [originalId, setOriginalId] = useState("");
         const hoursObj = {};
         selectedEmps.forEach(emp => {
           hoursObj[emp.id] = {};
-          // If existing hours data is available from API, include it
+          
+          // If existing hours data is available from API
           if (taskDetails.employees) {
             const empData = taskDetails.employees.find(e => e.empId.toString() === emp.id);
             if (empData && empData.logDetails) {
@@ -250,10 +201,11 @@ const [originalId, setOriginalId] = useState("");
         });
         setMemberHours(hoursObj);
       }
-      
-  
     }
-  };
+  } catch (error) {
+    console.error("Error processing API response:", error);
+  }
+};
 
   // Date handlers
   const handleStartDateChange = (event, selectedDate) => {

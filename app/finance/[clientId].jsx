@@ -139,7 +139,7 @@ console.log(projects,"data")
         }}
       >
         <LinearGradient
-          colors={["white", "#01a47e"]}
+          colors={["white", "#FFADB0"]}
           style={{
             padding: 16,
             width: "100%",
@@ -170,7 +170,7 @@ const TaskList = ({ projects, clientId, loading }) => {
             activeOpacity={0.7}
           >
             <LinearGradient
-              colors={["black", "gray"]}
+              colors={["black", "#C6373C"]}
               style={{
                 display: "flex",
                 justifyContent: "center",

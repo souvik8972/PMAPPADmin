@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Modal, TextInput, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, TextInput, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
@@ -7,12 +7,14 @@ import { Image } from 'react-native';
 import { useFetchData } from '@/ReactQuery/hooks/useFetchData'
 import { AuthContext } from '@/context/AuthContext';
 import { usePostData } from '@/ReactQuery/hooks/usePostData';
+import { usePostDataParam } from '@/ReactQuery/hooks/usePostDataParam';
 import RetryButton from '@/components/Retry';
 
 const IssueTracker = () => {
   const { user } = useContext(AuthContext);
   const token = user?.token || null;
-  const isAdmin = user?.userType==5; 
+  const isAdmin = user?.userType==5;
+  console.log(isAdmin) 
   
   // States for report issue modal
   const [modalVisible, setModalVisible] = useState(false);
@@ -22,6 +24,7 @@ const IssueTracker = () => {
   const [description, setDescription] = useState('');
   const [openType, setOpenType] = useState(false);
   const [openSeverity, setOpenSeverity] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // States for update issue modal
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
@@ -32,8 +35,7 @@ const IssueTracker = () => {
 
   const { data, isLoading, error, refetch, isFetching } = useFetchData("Ticket/GetAllTickets", token);
   const { mutate: submitMutate, isPending: isSubmitPending } = usePostData('Ticket/RaiseTicket', ["Ticket/GetAllTickets"]);
-  const { mutate: updateMutate, isPending: isUpdatePending } = usePostData('Ticket/UpdateTicket', ["Ticket/GetAllTickets"]);
-
+ 
   useEffect(() => {
     if (data && Array.isArray(data.ticketingIssuesClient)) {
       const formattedIssues = data.ticketingIssuesClient.map(issue => ({
@@ -51,6 +53,14 @@ const IssueTracker = () => {
       setIssues(formattedIssues);
     }
   }, [data]);
+
+  // Pull to refresh handler
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    refetch().then(() => {
+      setRefreshing(false);
+    });
+  }, []);
 
   const issueIcons = {
     'Hardware': 'hardware-chip-outline',
@@ -106,30 +116,40 @@ const IssueTracker = () => {
   const handleUpdateSubmit = async () => {
     try {
       if (!selectedIssue || !updateStatus || !updateReason) return;
-
-      const updateData = {
-        Issue_Id: selectedIssue.id,
-        Status: updateStatus,
-        Comments: updateReason
-      };
-
-      updateMutate({
-        data: updateData,
-        token: user.token
-      }, {
-        onSuccess: () => {
-          alert("Issue updated successfully");
-          setUpdateModalVisible(false);
-          setUpdateStatus(null);
-          setUpdateReason('');
-          refetch();
-        },
-        onError: (error) => {
-          alert("Failed to update issue");
-        }
+  
+      // Construct the query parameters
+      const queryParams = new URLSearchParams({
+        issue_id: selectedIssue.id.toString(),
+        status: updateStatus.toString(),
+        comments: updateReason,
       });
+  
+      // Full URL with query params
+      const fullUrl = `http://184.72.156.185/Test-APp/api/Ticket/UpdateIssueStatus?${queryParams.toString()}`;
+      console.log(fullUrl);
+  
+      const response = await fetch(fullUrl, {
+        method: "POST", // Ensure it's a POST request
+        headers: {
+          "Authorization": `Bearer ${user.token}`,
+          "Content-Type": "application/json", // Optional if no body is sent
+        },
+        body: JSON.stringify({}), // Empty body (if required)
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to update issue");
+      }
+  
+      // Success case
+      alert("Issue updated successfully");
+      setUpdateModalVisible(false);
+      setUpdateStatus(null);
+      setUpdateReason("");
+      refetch(); // Assuming this refetches data (e.g., from React Query)
     } catch (err) {
-      console.error('Error updating issue:', err);
+      console.error("Error updating issue:", err);
+      alert("Failed to update issue");
     }
   };
 
@@ -185,6 +205,14 @@ const IssueTracker = () => {
           data={issues}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#D01313']} // Android
+              tintColor="#D01313" // iOS
+            />
+          }
           renderItem={({ item }) => (
             <View className="bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-3 mb-4">
               {isAdmin ? (
@@ -192,15 +220,16 @@ const IssueTracker = () => {
                   setSelectedIssue(item);
                   setUpdateModalVisible(true);
                 }}>
-                  <IssueItemContent item={item} />
+                  <IssueItemContent isAdmin={isAdmin} item={item} />
                 </TouchableOpacity>
               ) : (
-                <IssueItemContent item={item} />
+                <IssueItemContent isAdmin={isAdmin} item={item} />
               )}
             </View>
           )}
         />
       )}
+
 
       {/* Report Issue Modal */}
       <Modal visible={modalVisible} animationType="fade" transparent>
@@ -317,9 +346,9 @@ const IssueTracker = () => {
                   open={openStatus}
                   value={updateStatus}
                   items={[
-                    { label: 'In Progress', value: 'In Progress' },
-                    { label: 'Open', value: 'Resolved' },
-                    { label: 'Closed', value: 'Closed' }
+                    { label: 'In Progress', value: '3' },
+                    { label: 'Open', value: '1' },
+                    { label: 'Closed', value: '2' }
                   ]}
                   setOpen={setOpenStatus}
                   setValue={setUpdateStatus}
@@ -379,7 +408,11 @@ const IssueTracker = () => {
 };
 
 // Helper component for issue item content
-const IssueItemContent = ({ item }) => {
+const IssueItemContent = ({ item,isAdmin }) => {
+
+
+
+
   const issueIcons = {
     'Hardware': 'hardware-chip-outline',
     'Software': 'logo-windows',
@@ -414,7 +447,9 @@ const IssueItemContent = ({ item }) => {
       </View>
 
       <View className="flex-1 pr-2">
+        {isAdmin&& <Text className="text-base font-bold text-gray-900 mb-1">{item.employeeName}</Text>}
         <Text className="text-base font-bold text-gray-900 mb-1">{item.type}</Text>
+        
         <Text className="text-xs text-gray-500 mb-1">ID: {item.id}</Text>
         <Text className="text-sm text-gray-700 mb-1">{item.description}</Text>
 

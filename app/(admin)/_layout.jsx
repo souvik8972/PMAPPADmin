@@ -32,6 +32,7 @@ const CustomDrawerContent = (props) => {
   const { user } = useContext(AuthContext);
   const router = useRouter();
   const { state, navigation } = props;
+  const isAdmin = user?.userType==5;
 
   const handleLogout = () => {
     router.replace('/login');
@@ -100,7 +101,12 @@ const CustomDrawerContent = (props) => {
 };
 
 export default function DrawerLayout() {
+
   const { user } = useContext(AuthContext);
+
+  const isSystemAdmin = user?.userType==5;
+
+console.log(isSystemAdmin,'isSystemAdmin')
 
   return (
     <Drawer.Navigator
@@ -126,9 +132,9 @@ export default function DrawerLayout() {
               <Feather name="users" size={26} color={color} />
             </View>
           ),
-        }}
+        }}q
       />
-     {user?.userType!==5&& <Drawer.Screen 
+     {!isSystemAdmin&& <Drawer.Screen 
         name="Tasks" 
         children={() => (
           <Suspense fallback={<LoadingScreen />}>
@@ -158,7 +164,7 @@ export default function DrawerLayout() {
           ),
         }}
       />
-      {user?.userType!==5&& <Drawer.Screen 
+      {!isSystemAdmin&& <Drawer.Screen 
         name="Projects" 
         children={() => (
           <Suspense fallback={<LoadingScreen />}>
@@ -203,7 +209,7 @@ export default function DrawerLayout() {
           ),
         }}
       />
-      {user?.userType!==5&& <Drawer.Screen 
+      {!isSystemAdmin&& <Drawer.Screen 
         name="Finance Module" 
         children={() => (
           <Suspense fallback={<LoadingScreen />}>
@@ -287,13 +293,13 @@ const styles = StyleSheet.create({
   
   drawerText: {
     fontSize: 16,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#333",
     marginLeft: 10,
   },
   drawerActiveText: {
     fontSize: 16,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#fff",
     marginLeft: 10,
   },

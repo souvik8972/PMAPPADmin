@@ -1,7 +1,7 @@
-import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, ActivityIndicator, Pressable } from 'react-native'
 import React, { useState, useEffect, useContext } from 'react'
 import tw from "tailwind-react-native-classnames";
-import { MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { useFetchData } from '../../ReactQuery/hooks/useFetchData';
 import { AuthContext } from '../../context/AuthContext';
@@ -55,26 +55,41 @@ const Finance = () => {
   };
 
   return (
-    <View style={{ flexGrow: 1 }} className="ml-2 mr-2">
+    <View style={[tw`flex-1 bg-white`, { paddingHorizontal: 16 }]}>
+      {/* Header Section */}
+      
+
       {/* Financial Year Dropdown */}
-      <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-lg font-semibold">Clients</Text>
+      <View style={tw`flex-row justify-between items-center mb-6`}>
+        <View>
+        <Text style={tw`text-2xl  text-gray-900 `}>Client </Text>
+        </View>
         
         {!loadingYears && (
           <TouchableOpacity 
             onPress={() => setShowDropdown(!showDropdown)}
-            style={[tw`p-2 rounded-lg`, { backgroundColor: "#EBEBEB" }]}
+            style={[
+              tw`p-3 rounded-lg flex-row items-center justify-between`,
+              { 
+                backgroundColor: "#D01313",
+                borderWidth: 1,
+                borderColor: "#E5E7EB",
+                width: 180,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 1,
+              }
+            ]}
           >
-            <View className="flex-row items-center">
-              <Text className="mr-2 font-semibold">
-                {selectedYear ? selectedYear.year : 'Select Year'}
-              </Text>
-              <MaterialIcons 
-                name={showDropdown ? "arrow-drop-up" : "arrow-drop-down"} 
-                size={24} 
-                color="black" 
-              />
-            </View>
+            <Text style={tw`text-white `}>
+              {selectedYear ? selectedYear.year : 'Select Year'}
+            </Text>
+            <MaterialIcons 
+              name={showDropdown ? "arrow-drop-up" : "arrow-drop-down"} 
+              size={20} 
+              color="white" 
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -87,18 +102,43 @@ const Finance = () => {
         onRequestClose={() => setShowDropdown(false)}
       >
         <TouchableWithoutFeedback onPress={() => setShowDropdown(false)}>
-          <View style={tw`flex-1 bg-black bg-opacity-50 justify-center items-center`}>
+          <View style={tw`flex-1 bg-black bg-opacity-30 justify-center items-center`}>
             <TouchableWithoutFeedback>
-              <View style={[tw`w-4/5 p-4 rounded-lg`, { backgroundColor: "white" }]}>
+              <View style={[
+                tw`w-4/5 rounded-lg`,
+                { 
+                  backgroundColor: "white",
+                  maxHeight: '60%',
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 20,
+                }
+              ]}>
+                <Text style={tw`p-4  text-gray-700 border-b border-gray-100`}>
+                  Select Financial Year
+                </Text>
                 <FlatList
                   data={financialYears ? [{ id: 0, year: "All Years" }, ...financialYears] : []}
                   keyExtractor={(item) => item.id.toString()}
                   renderItem={({ item }) => (
                     <TouchableOpacity 
                       onPress={() => handleYearSelect(item)}
-                      style={tw`p-3 border-b border-gray-200`}
+                      style={[
+                        tw`p-4`,
+                        { 
+                          backgroundColor: selectedYear?.id === item.id ? '#F3F4F6' : 'white',
+                          borderBottomWidth: 1,
+                          borderBottomColor: '#F3F4F6'
+                        }
+                      ]}
                     >
-                      <Text className={`text-lg ${selectedYear?.id === item.id ? 'font-bold text-blue-500' : ''}`}>
+                      <Text style={[
+                        tw`text-base`,
+                        selectedYear?.id === item.id ? 
+                          { color: '#3B82F6', fontWeight: '600' } : 
+                          { color: '#4B5563' }
+                      ]}>
                         {item.year}
                       </Text>
                     </TouchableOpacity>
@@ -112,108 +152,109 @@ const Finance = () => {
 
       {/* Loading indicators */}
       {loadingYears && (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#0000ff" />
+        <View style={tw`flex-1 justify-center items-center`}>
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text style={tw`mt-4 text-gray-600`}>Loading financial years...</Text>
         </View>
       )}
 
       {!loadingYears && loadingClients && (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#0000ff" />
-          <Text className="mt-2">Loading client data...</Text>
+        <View style={tw`flex-1 justify-center items-center`}>
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text style={tw`mt-4 text-gray-600`}>Loading client data...</Text>
         </View>
       )}
 
       {/* Client List */}
       {!loadingYears && !loadingClients && clientData?.length > 0 ? (
-        <FlatList
-          data={clientData}
-          keyExtractor={(item) => item.Client_ID.toString()}
-          renderItem={({ item }) => (
-            <View
-              style={[
-                tw`p-3 rounded-lg shadow-lg my-4 w-full`,
-                { backgroundColor: "#EBEBEB" },
-              ]}
-            >
-              <TouchableOpacity className="flex-row">
-                <Link href={`/finance/${item.Client_ID}-${selectedYear?.id}`} >
-
-                  <View className="flex-row items-start w-full">
-                    {/* Placeholder for Company Logo */}
-                    <View className="w-10 h-10 rounded-full bg-gray-300 justify-center items-center">
-                      <Text className="font-bold">
-                        {item.Client_Title?.charAt(0) || '?'}
-                      </Text>
-                    </View>
-
-                    {/* Company Details */}
-                    <View className="ml-3 flex-1">
-                      <Text className="text-lg mb-2 font-semibold">
-                        {item.Client_Title || 'Unknown Client'}
-                      </Text>
-
-                      {/* Values Section */}
-                      <View className="flex-row justify-between items-center">
-                        {/* PO Value */}
-                        <View className="justify-center items-center">
-                          <Text className="text-[#00D09E] text-2xl font-bold">
-                            |
-                          </Text>
-                        </View>
-                        <View className="items-start">
-                          <Text className="text-gray-600">PO value</Text>
-                          <Text className="font-semibold text-left">
-                           { (item.PoValue)}
-                          </Text>
-                        </View>
-
-                        {/* Divider Bar */}
-                        <View className="justify-center items-center">
-                          <Text className="text-[#00D09E] text-2xl font-bold">
-                            |
-                          </Text>
-                        </View>
-
-                        {/* Predicted GP */}
-                        <View className="items-start">
-                          <Text className="text-gray-600">Predicted GP</Text>
-                          <Text className="font-semibold text-left">
-                             {(item.Predicted_Gp)}
-                          </Text>
-                          <Text className="text-xs text-gray-500">
-                            ({item.Predicted_percentage}%)
-                          </Text>
-                        </View>
-
-                        {/* Divider Bar */}
-                        <View className="justify-center items-center">
-                          <Text className="text-[#00D09E] text-2xl font-bold">
-                            |
-                          </Text>
-                        </View>
-
-                        {/* Actual GP */}
-                        <View className="items-start">
-                          <Text className="text-gray-600">Actual GP</Text>
-                          <Text className="font-semibold text-left">
-                             {(item.Actual_Gp)}
-                          </Text>
-                          <Text className="text-xs text-gray-500">
-                            ({item.Actual_percentage}%)
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                </Link>
-              </TouchableOpacity>
-            </View>
-          )}
-        />
+     <FlatList
+     data={clientData}
+     keyExtractor={(item) => item.Client_ID.toString()}
+     contentContainerStyle={tw`pb-6 p-2`}
+     showsVerticalScrollIndicator={false}
+     renderItem={({ item }) => (
+       <Link href={`/finance/${item.Client_ID}-${selectedYear?.id}`} asChild>
+         <Pressable style={tw`mb-4 bg-gray-50 rounded-xl shadow-sm overflow-hidden`}>
+           <View style={tw`p-5`}>
+             {/* Client Header */}
+             <View style={tw`flex-row items-center mb-4`}>
+               <View style={tw`w-12 h-12 rounded-full bg-red-600 justify-center items-center mr-3`}>
+                 <Text style={tw`text-lg font-bold text-white`}>
+                   {item.Client_Title?.charAt(0) || '?'}
+                 </Text>
+               </View>
+               
+               <View style={tw`flex-1`}>
+                 <Text 
+                   style={tw`text-lg font-bold text-gray-900`}
+                   numberOfLines={1}
+                   ellipsizeMode="tail"
+                 >
+                   {item.Client_Title || 'Unknown Client'}
+                 </Text>
+                 <Text style={tw`text-xs text-gray-400 mt-1`}>
+                   Client ID: {item.Client_ID}
+                 </Text>
+               </View>
+             </View>
+   
+             {/* Financial Metrics - Single Column */}
+             <View style={tw` bg-white rounded-lg p-4`}>
+               {/* PO Value */}
+               <View style={tw`flex-row justify-between items-center`}>
+                 <Text style={tw`text-sm  text-gray-500`}>PO Value</Text>
+                 <Text style={tw`text-base  text-gray-900`}>
+                   {item.PoValue}
+                 </Text>
+               </View>
+   
+               {/* Predicted GP */}
+               <View style={tw`flex-row justify-between items-center`}>
+                 <View>
+                   <Text style={tw`text-sm  text-gray-500`}>Predicted GP</Text>
+                 </View>
+                 <Text style={tw`text-base  text-gray-900`}>
+                   {item.Predicted_Gp}
+                 </Text>
+               </View>
+   
+               {/* Actual GP */}
+               <View style={tw`flex-row justify-between items-center`}>
+                 <View>
+                   <Text style={tw`text-sm  text-gray-500`}>Actual GP</Text>
+                 </View>
+                 <Text style={tw`text-base  text-gray-900`}>
+                   {item.Actual_Gp}
+                 </Text>
+               </View>
+             </View>
+           </View>
+         </Pressable>
+       </Link>
+     )}
+     ListEmptyComponent={
+       <View style={tw`flex-1 justify-center items-center mt-10`}>
+         <Text style={tw`text-gray-400`}>No clients found for selected year</Text>
+       </View>
+     }
+   />
       ) : !loadingYears && !loadingClients && (!clientData || clientData.length === 0) ? (
-        <View className="flex-1 justify-center items-center">
-          <Text className="text-gray-500">No client data available</Text>
+        <View style={tw`flex-1 justify-center items-center`}>
+          <View style={[
+            tw`p-8 rounded-xl items-center`,
+            { backgroundColor: '#F9FAFB', width: '100%' }
+          ]}>
+            <MaterialIcons name="attach-money" size={48} color="#9CA3AF" />
+            <Text style={tw`text-lg  text-gray-500 mt-4 mb-1`}>
+              No financial data available
+            </Text>
+            <Text style={tw`text-sm text-gray-400 text-center`}>
+              {selectedYear?.id === 0 ? 
+                "No clients found across all financial years" : 
+                `No clients found for ${selectedYear?.year || 'selected year'}`
+              }
+            </Text>
+          </View>
         </View>
       ) : null}
     </View>

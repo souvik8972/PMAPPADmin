@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { View } from 'react-native';
 
 import AssetManagement from "../../components/Assets/AssetManagement";
 import MyRequest from "../../components/Assets/MyRequest";
+import { AuthContext } from '@/context/AuthContext';
 
 const Tab = createMaterialTopTabNavigator();
 
+
 const AssetsScreen = () => {
+
+  const { user } = useContext(AuthContext);
+
+  const isSystemAdmin = user?.userType==5;
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <Tab.Navigator
@@ -35,7 +41,9 @@ const AssetsScreen = () => {
         }}
       >
         <Tab.Screen name="Asset Management" component={AssetManagement} />
-        <Tab.Screen name="My Request" component={MyRequest} />
+        {!isSystemAdmin?<Tab.Screen name="My Request" component={MyRequest} />
+        :<Tab.Screen name="AllRequest" component={AssetManagement}/>}
+      
       </Tab.Navigator>
     </View>
   );

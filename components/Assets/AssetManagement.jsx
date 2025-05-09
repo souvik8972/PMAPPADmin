@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Dimensions,
+  RefreshControl,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import RenderItem from "../../components/Assets/RenderItem";
@@ -18,6 +19,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import Retry from "../../components/Retry";
 import RetryButton from "../../components/Retry";
+
 const windowWidth = Dimensions.get("window").width;
 const itemWidth = (windowWidth - 60) / 3;
 
@@ -39,18 +41,24 @@ const AssetManagement = () => {
     user?.token
   );
  
-
+  const [refreshing, setRefreshing] = useState(false);
   const [assets, setAssets] = useState([]);
   const [selectedAssets, setSelectedAssets] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Pull to refresh handler
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    refetch().then(() => {
+      setRefreshing(false);
+    });
+  }, []);
+
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
-   
-     refetch();
-     
+      refetch();
     });
     return unsubscribe;
   }, [navigation, refetch]);
@@ -142,7 +150,6 @@ const AssetManagement = () => {
           alert("Asset checkout submitted successfully.");
         },
         onError: (error) => {
-          
           alert("Failed to submit asset checkout.");
         },
       }
@@ -169,13 +176,24 @@ const AssetManagement = () => {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-      <RetryButton onRetry={refetch} message={"Failed to load assets"}/>
+        <RetryButton onRetry={refetch} message={"Failed to load assets"}/>
       </View>
     );
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
+    <ScrollView 
+      showsVerticalScrollIndicator={false} 
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#D01313']} // Android
+          tintColor="#D01313" // iOS
+        />
+      }
+    >
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={handleSubmit} activeOpacity={0.8}>
           <LinearGradient
