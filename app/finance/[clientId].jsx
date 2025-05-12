@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import { View, Text, TouchableOpacity, StatusBar, TouchableWithoutFeedback, ScrollView , Platform} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -16,11 +16,13 @@ import { AuthContext } from "../../context/AuthContext";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import ShimmerLoader from "../../components/ShimmerLoader";
 
-const  Client = () => {
+const Client = () => {
   const param = useLocalSearchParams();
   const router = useRouter();
- const { user } = useContext(AuthContext);
-
+  const { user } = useContext(AuthContext);
+  const [clientsInfo, setClientsInfo] = useState([]);
+  const [projects, setProjects] = useState([]);
+  
   // Extracting the clientId and splitting it into parts
   const clientData = param.clientId?.split('-') || [];
   const clientInfo = {
@@ -33,16 +35,27 @@ const  Client = () => {
     Actual_Gp: clientData[6] || '00',
     Actual_percentage: clientData[7] || '00',
   };
-  console.log("clientInfo",clientInfo)
-  let DummyPValue=416964
-  let DummyAvalue=-118823;
-  let PL=Number(DummyAvalue/DummyPValue *100).toFixed(2)
 
   const endpoint = `FinanceModule/GetAllProjectName_ByClientIdd?FinYrId=${clientInfo.Year_ID}&clientId=${clientInfo.Client_ID}`;
-  
-  const { data:projects, isLoading: loading, refetch } = useFetchData(endpoint, user?.token);
-  
-console.log(projects,"data")
+  const { data, isLoading: loading, refetch } = useFetchData(endpoint, user?.token);
+
+  useEffect(() => {
+    if (data) {
+      // Assuming the API response contains separate client and project data
+      setClientsInfo(data.clientGpValues || []);
+      setProjects(data.projectNames || []);
+      console.log("API response data:", data); // Better to log the raw data
+    }
+  }, [data]);
+
+  // Get the first client info if available, otherwise use the fallback from params
+  const currentClientInfo = clientsInfo.length > 0 ? clientsInfo[0] : clientInfo;
+
+  // Helper function to convert currency string to number
+  const currencyToNumber = (currency) => {
+    if (!currency) return 0;
+    return Number(currency.replace(/[^0-9.-]+/g, ""));
+  };
 
   if (!clientInfo) {
     return (
@@ -75,8 +88,11 @@ console.log(projects,"data")
             <FontAwesome6 name="arrow-trend-up" size={12} color="black" className='border-gray-100 border-2 m-1 p-1'/>
             <Text className="text-sm text-gray-500">PoValue</Text>
           </View>
-          <AnimatedNumber value={Number(clientInfo.PoValue)} color="text-black" />
-          
+          <AnimatedNumber 
+            value={currencyToNumber(currentClientInfo.PoValue)} 
+            color="text-black" 
+
+          />
         </View>
       
         {/* Predicated Gp */}
@@ -85,28 +101,43 @@ console.log(projects,"data")
             <FontAwesome6 name="arrow-trend-up" size={12} color="black" className='border-gray-100 border-2 p-1 m-1'/>
             <Text className="text-sm text-gray-500">Predicated Gp</Text>
           </View>
-          <AnimationPercentage value={Number(clientInfo.Predicted_Gp)} color="text-black" />
+          <AnimatedNumber 
+            value={currencyToNumber(currentClientInfo.Predicted_Gp)} 
+            color="text-black" 
+          />
         </View>
       
         {/* Current GP */}
         <View className="items-center w-1/3 px-1">
           <View className="flex-row items-center justify-center space-x-1 mb-1">
             <FontAwesome6 name="arrow-trend-down" size={12} color="black" className='border-gray-100 border-2 p-1 m-1'/>
-            <Text className="text-sm text-gray-500">Current GP</Text>
+            <Text className="text-sm text-gray-500">Actual GP</Text>
           </View>
-          <AnimationPercentage value={Number(clientInfo.Actual_Gp)} color="text-black" />
+          <AnimatedNumber  
+            value={currencyToNumber(currentClientInfo.Actual_Gp)} 
+            color="text-black" 
+          />
         </View>
       </View>
-
 
       {/* Progress Bar */}
       <View className="items-center justify-center w-full mt-6">
         <View className="w-[90%] h-11 bg-[#00D09E] rounded-full flex-row overflow-hidden">
-          <View style={{ width: `${ clientInfo.Actual_percentage}%` }} className="h-full items-start justify-center px-1 pl-5">
-            <Text className="text-black font-bold text-sm">{(clientInfo.Actual_percentage)}%</Text>
+          <View 
+            style={{ width: `${currentClientInfo.Predicted_percentage}%` }} 
+            className="h-full items-start justify-center px-1 pl-5"
+          >
+            <Text className="text-black font-bold text-sm">
+              {currentClientInfo.Predicted_percentage}%
+            </Text>
           </View>
-          <View style={{ width: `${Math.abs(100-clientInfo.Actual_percentage)}%`}} className={`${PL<0 ? "bg-red-500":"bg-black "} h-full rounded-full items-end justify-center px-1`}>
-            <Text className="text-white font-bold text-sm pr-2">{Math.abs(100-clientInfo.Actual_percentage)}%</Text>
+          <View 
+            style={{ width: `${Math.abs(100 - currentClientInfo.Actual_percentage)}%`}} 
+            className={`${currentClientInfo.Actual_percentage < 100 ? "bg-red-500" : "bg-black"} h-full rounded-full items-end justify-center px-1`}
+          >
+            <Text className="text-white font-bold text-sm pr-2">
+              {Math.abs( currentClientInfo.Actual_percentage)}%
+            </Text>
           </View>
         </View>
         <View className='flex-row mt-6 items-center space-x-2 mb-6'>
@@ -148,12 +179,13 @@ console.log(projects,"data")
             borderTopLeftRadius: 30,
           }}
         >
-          <TaskList projects={projects||[]}  clientId={clientInfo.Client_ID} loading={loading} />
+          <TaskList projects={projects || []} clientId={clientInfo.Client_ID} loading={loading} />
         </LinearGradient>
       </View>
     </SafeAreaView>
   );
 };
+
 
 const TaskList = ({ projects, clientId, loading }) => {
   const router = useRouter();
@@ -164,7 +196,7 @@ const TaskList = ({ projects, clientId, loading }) => {
       {/* Header with Add Button */}
       <View className="flex-row items-center justify-between mb-6 px-4">
         <Text className="text-2xl font-bold text-gray-800">Projects List</Text>
-        {user?.userType == 1 && (
+        {/* {user?.userType == 1 && (
           <TouchableOpacity
             onPress={() => router.push("/(addProject)/addProject")}
             activeOpacity={0.7}
@@ -187,7 +219,7 @@ const TaskList = ({ projects, clientId, loading }) => {
               <MaterialCommunityIcons name="plus" size={20} color="white" />
             </LinearGradient>
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
 
       {/* Projects List */}

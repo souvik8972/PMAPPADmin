@@ -1,3 +1,5 @@
+import {exp} from "../../utils/functions/exp"
+
 const postData = async ({ endpoint, data, token }) => {
   const url = `http://184.72.156.185/Test-APp/api/${endpoint}`;
 

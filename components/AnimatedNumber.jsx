@@ -20,7 +20,7 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
     return (
       <AnimatedTextInput
         editable={false}
-        className={` font-bold ${color}`}
+        className={` font-normal text-base ${color}`}
         value="0"
         animatedProps={animatedProps}
       />

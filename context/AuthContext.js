@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
       try {
         const authInfo = await getAuthInfo(); // Get user info (token, email, empId, userType)
         if (authInfo) {
-          console.log("Auth Info",authInfo.exp ); // Log the auth info for debugging
+ // Log the auth info for debugging
           const tokenExpiration = checkTokenExpiration(authInfo.exp);
           !tokenExpiration? setUser(authInfo):setUser(null); // Check token expiration
           // Store the user information in state

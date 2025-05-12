@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, ActivityIndicator, Pressable } from 'react-native'
+import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, FlatList, ActivityIndicator, Pressable, RefreshControl } from 'react-native'
 import React, { useState, useEffect, useContext } from 'react'
 import tw from "tailwind-react-native-classnames";
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import { AuthContext } from '../../context/AuthContext';
 const Finance = () => {
   const [selectedYear, setSelectedYear] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   
   const { user } = useContext(AuthContext);
   const token = user?.token || null;
@@ -17,7 +18,8 @@ const Finance = () => {
   const yearsEndpoint = `FinanceModule/GetFinancialyearData`;
   const { 
     data: financialYears, 
-    isLoading: loadingYears 
+    isLoading: loadingYears,
+    refetch: refetchYears
   } = useFetchData(yearsEndpoint, token);
 
   // Fetch client data - default to -1 to get all clients
@@ -46,6 +48,17 @@ const Finance = () => {
     refetchClients();
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchYears(), refetchClients()]);
+    } catch (error) {
+      console.error("Refresh error:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   // Helper function to format currency
   const formatCurrency = (value) => {
     if (!value) return '$0.00';
@@ -54,15 +67,38 @@ const Finance = () => {
     return isNaN(num) ? '$0.00' : '$' + num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
   };
 
+  // Shimmer Loading Component
+  const ShimmerItem = () => (
+    <View style={tw`mb-4 bg-gray-50 rounded-xl overflow-hidden`}>
+      <View style={tw`p-5`}>
+        {/* Client Header Shimmer */}
+        <View style={tw`flex-row items-center mb-4`}>
+          <View style={tw`w-12 h-12 rounded-full bg-gray-200 mr-3`} />
+          <View style={tw`flex-1`}>
+            <View style={tw`h-5 bg-gray-200 rounded w-3/4 mb-2`} />
+            <View style={tw`h-3 bg-gray-200 rounded w-1/2`} />
+          </View>
+        </View>
+        
+        {/* Financial Metrics Shimmer */}
+        <View style={tw`bg-white rounded-lg p-4`}>
+          {[1, 2, 3].map((_, i) => (
+            <View key={i} style={tw`flex-row justify-between items-center mb-3`}>
+              <View style={tw`h-4 bg-gray-200 rounded w-1/3`} />
+              <View style={tw`h-4 bg-gray-200 rounded w-1/4`} />
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+
   return (
     <View style={[tw`flex-1 bg-white`, { paddingHorizontal: 16 }]}>
       {/* Header Section */}
-      
-
-      {/* Financial Year Dropdown */}
       <View style={tw`flex-row justify-between items-center mb-6`}>
         <View>
-        <Text style={tw`text-2xl  text-gray-900 `}>Client </Text>
+          <Text style={tw`text-2xl  text-gray-900 `}>Client </Text>
         </View>
         
         {!loadingYears && (
@@ -158,105 +194,105 @@ const Finance = () => {
         </View>
       )}
 
-      {!loadingYears && loadingClients && (
-        <View style={tw`flex-1 justify-center items-center`}>
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text style={tw`mt-4 text-gray-600`}>Loading client data...</Text>
-        </View>
+      {/* Client List with Pull to Refresh */}
+      {!loadingYears && (
+        <FlatList
+          data={clientData || []}
+          keyExtractor={(item) => item.Client_ID.toString()}
+          contentContainerStyle={tw`pb-6 p-2`}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#3B82F6"
+              colors={['#3B82F6']}
+            />
+          }
+          ListEmptyComponent={
+            loadingClients ? (
+              <View>
+                {[1, 2, 3, 4].map((_, index) => (
+                  <ShimmerItem key={index} />
+                ))}
+              </View>
+            ) : (
+              <View style={tw`flex-1 justify-center items-center mt-10`}>
+                <MaterialIcons name="attach-money" size={48} color="#9CA3AF" />
+                <Text style={tw`text-lg  text-gray-500 mt-4 mb-1`}>
+                  No financial data available
+                </Text>
+                <Text style={tw`text-sm text-gray-400 text-center`}>
+                  {selectedYear?.id === 0 ? 
+                    "No clients found across all financial years" : 
+                    `No clients found for ${selectedYear?.year || 'selected year'}`
+                  }
+                </Text>
+              </View>
+            )
+          }
+          renderItem={({ item }) => (
+            <Link href={`/finance/${item.Client_ID}-${selectedYear?.id}-${item.Client_Title}`} asChild>
+              <Pressable style={tw`mb-4 bg-gray-50 rounded-xl shadow-sm overflow-hidden`}>
+                <View style={tw`p-5`}>
+                  {/* Client Header */}
+                  <View style={tw`flex-row items-center mb-4`}>
+                    <View style={tw`w-12 h-12 rounded-full bg-red-600 justify-center items-center mr-3`}>
+                      <Text style={tw`text-lg font-bold text-white`}>
+                        {item.Client_Title?.charAt(0) || '?'}
+                      </Text>
+                    </View>
+                    
+                    <View style={tw`flex-1`}>
+                      <Text 
+                        style={tw`text-lg font-bold text-gray-900`}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {item.Client_Title || 'Unknown Client'}
+                      </Text>
+                      {/* <Text style={tw`text-xs text-gray-400 mt-1`}>
+                        Client ID: {item.Client_ID}
+                      </Text> */}
+                    </View>
+                  </View>
+        
+                  {/* Financial Metrics - Single Column */}
+                  <View style={tw` bg-white rounded-lg p-4`}>
+                    {/* PO Value */}
+                    <View style={tw`flex-row justify-between items-center`}>
+                      <Text style={tw`text-sm  text-gray-500`}>PO Value</Text>
+                      <Text style={tw`text-base  text-gray-900`}>
+                        {item.PoValue}
+                      </Text>
+                    </View>
+        
+                    {/* Predicted GP */}
+                    <View style={tw`flex-row justify-between items-center`}>
+                      <View>
+                        <Text style={tw`text-sm  text-gray-500`}>Predicted GP</Text>
+                      </View>
+                      <Text style={tw`text-base  text-gray-900`}>
+                        {item.Predicted_Gp}
+                      </Text>
+                    </View>
+        
+                    {/* Actual GP */}
+                    <View style={tw`flex-row justify-between items-center`}>
+                      <View>
+                        <Text style={tw`text-sm  text-gray-500`}>Actual GP</Text>
+                      </View>
+                      <Text style={tw`text-base  text-gray-900`}>
+                        {item.Actual_Gp}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </Pressable>
+            </Link>
+          )}
+        />
       )}
-
-      {/* Client List */}
-      {!loadingYears && !loadingClients && clientData?.length > 0 ? (
-     <FlatList
-     data={clientData}
-     keyExtractor={(item) => item.Client_ID.toString()}
-     contentContainerStyle={tw`pb-6 p-2`}
-     showsVerticalScrollIndicator={false}
-     renderItem={({ item }) => (
-       <Link href={`/finance/${item.Client_ID}-${selectedYear?.id}`} asChild>
-         <Pressable style={tw`mb-4 bg-gray-50 rounded-xl shadow-sm overflow-hidden`}>
-           <View style={tw`p-5`}>
-             {/* Client Header */}
-             <View style={tw`flex-row items-center mb-4`}>
-               <View style={tw`w-12 h-12 rounded-full bg-red-600 justify-center items-center mr-3`}>
-                 <Text style={tw`text-lg font-bold text-white`}>
-                   {item.Client_Title?.charAt(0) || '?'}
-                 </Text>
-               </View>
-               
-               <View style={tw`flex-1`}>
-                 <Text 
-                   style={tw`text-lg font-bold text-gray-900`}
-                   numberOfLines={1}
-                   ellipsizeMode="tail"
-                 >
-                   {item.Client_Title || 'Unknown Client'}
-                 </Text>
-                 <Text style={tw`text-xs text-gray-400 mt-1`}>
-                   Client ID: {item.Client_ID}
-                 </Text>
-               </View>
-             </View>
-   
-             {/* Financial Metrics - Single Column */}
-             <View style={tw` bg-white rounded-lg p-4`}>
-               {/* PO Value */}
-               <View style={tw`flex-row justify-between items-center`}>
-                 <Text style={tw`text-sm  text-gray-500`}>PO Value</Text>
-                 <Text style={tw`text-base  text-gray-900`}>
-                   {item.PoValue}
-                 </Text>
-               </View>
-   
-               {/* Predicted GP */}
-               <View style={tw`flex-row justify-between items-center`}>
-                 <View>
-                   <Text style={tw`text-sm  text-gray-500`}>Predicted GP</Text>
-                 </View>
-                 <Text style={tw`text-base  text-gray-900`}>
-                   {item.Predicted_Gp}
-                 </Text>
-               </View>
-   
-               {/* Actual GP */}
-               <View style={tw`flex-row justify-between items-center`}>
-                 <View>
-                   <Text style={tw`text-sm  text-gray-500`}>Actual GP</Text>
-                 </View>
-                 <Text style={tw`text-base  text-gray-900`}>
-                   {item.Actual_Gp}
-                 </Text>
-               </View>
-             </View>
-           </View>
-         </Pressable>
-       </Link>
-     )}
-     ListEmptyComponent={
-       <View style={tw`flex-1 justify-center items-center mt-10`}>
-         <Text style={tw`text-gray-400`}>No clients found for selected year</Text>
-       </View>
-     }
-   />
-      ) : !loadingYears && !loadingClients && (!clientData || clientData.length === 0) ? (
-        <View style={tw`flex-1 justify-center items-center`}>
-          <View style={[
-            tw`p-8 rounded-xl items-center`,
-            { backgroundColor: '#F9FAFB', width: '100%' }
-          ]}>
-            <MaterialIcons name="attach-money" size={48} color="#9CA3AF" />
-            <Text style={tw`text-lg  text-gray-500 mt-4 mb-1`}>
-              No financial data available
-            </Text>
-            <Text style={tw`text-sm text-gray-400 text-center`}>
-              {selectedYear?.id === 0 ? 
-                "No clients found across all financial years" : 
-                `No clients found for ${selectedYear?.year || 'selected year'}`
-              }
-            </Text>
-          </View>
-        </View>
-      ) : null}
     </View>
   );
 }

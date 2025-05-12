@@ -1,22 +1,93 @@
-import React, { useContext, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
+import React, { useContext, useState, useMemo } from "react";
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import EvilIcons from '@expo/vector-icons/EvilIcons';
-import { useFetchData } from "../../ReactQuery/hooks/useFetchData"; 
+import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../context/AuthContext";
 
+const fetchProjectList = async (token) => {
+  const response = await fetch('http://184.72.156.185/Test-APp/api/Projects/GetAllProjectNames', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response.json();
+};
+
+const fetchProjectDetails = async (projectId, token) => {
+  const response = await fetch(`http://184.72.156.185/Test-APp/api/Projects/GetProjectDetailsById?projectId=${projectId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response.json();
+};
+
 export default function ProjectList() {
-
-const {user} =useContext(AuthContext); // Assuming you have a context for authentication
-console.log("user",user);
+  const { user } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
-  const token = user?.token; // Replace with your actual token or get it from auth context
+  const token = user?.token;
+  const [projectDetails, setProjectDetails] = useState({});
+  const [loadingDetails, setLoadingDetails] = useState({});
+  const [expandedProjects, setExpandedProjects] = useState({});
 
-  // Fetch projects data using the custom hook
-  const { data, isLoading, isError, error } ={data:[],isLoading:false,isError:null,error:null}; // useFetchData("projects", token);
+  // Fetch all projects
+  const { 
+    data: projectListData, 
+    isLoading, 
+    isError, 
+    error, 
+    refetch
+  } = useQuery({
+    queryKey: ['projectList'],
+    queryFn: () => fetchProjectList(token),
+    enabled: !!token
+  });
+
+  // Filter projects based on search query
+  const filteredProjects = useMemo(() => {
+    if (!projectListData?.projects) return [];
+    return projectListData.projects.filter(project =>
+      project.project_Title.toLowerCase().includes(searchQuery.toLowerCase())
+  )}, [projectListData, searchQuery]);
+
+  const toggleProjectDetails = async (projectId) => {
+    // Toggle expanded state
+    setExpandedProjects(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }));
+
+    // If we're expanding and don't have details yet, fetch them
+    if (!projectDetails[projectId] && expandedProjects[projectId] !== true) {
+      try {
+        setLoadingDetails(prev => ({ ...prev, [projectId]: true }));
+        const details = await fetchProjectDetails(projectId, token);
+        setProjectDetails(prev => ({
+          ...prev,
+          [projectId]: details.project_list[0]
+        }));
+      } catch (error) {
+        console.error("Error fetching project details:", error);
+      } finally {
+        setLoadingDetails(prev => ({ ...prev, [projectId]: false }));
+      }
+    }
+  };
+
+  const deleteProject = (projectId) => {
+    console.log("Delete project with ID:", projectId);
+    // Implement your delete functionality here
+  };
 
   if (isLoading) {
     return (
@@ -34,18 +105,6 @@ console.log("user",user);
     );
   }
 
-  // Filter projects based on search query
-  const filteredProjects = data?.projects?.filter((project) =>
-    project.project_Title.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
-
-  const deleteProject = (projectId) => {
-    // Implement your delete functionality here
-    console.log("Delete project with ID:", projectId);
-    // You would typically make an API call to delete the project
-    // and then update the local state or refetch the data
-  };
-
   return (
     <View className="flex-1 p-4 pt-0 bg-gray-100">
       {/* Search Bar */}
@@ -61,94 +120,144 @@ console.log("user",user);
         </View>
       </View>
       
-      <View className="flex flex-row justify-between items-center">
+      <View className="flex flex-row justify-between mb-3 items-center">
         <Text className="pl-2 font-semibold">Project List</Text>
         <Text className="text-[10px] text-red-400">
-          <EvilIcons name="exclamation" size={10} color="red" /> Click on Project Name to View Tasks.
+          <EvilIcons name="exclamation" size={10} color="red" /> Click on Project Name to View Details.
         </Text>
       </View>
 
-      {/* Project List as Cards */}
-      <ScrollView showsVerticalScrollIndicator={false} className="mt-4">
-        {filteredProjects.map((project) => (
-          <View key={project.PROJECT_ID} className="bg-white rounded-lg shadow-[0px_14px_9px_-12px_rgba(0,_0,_0,_0.1)] mb-4 p-4">
-            <View className="flex-row justify-between items-start mb-4">
+      {/* Project List as Cards with FlatList */}
+      <FlatList
+        data={filteredProjects}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={(item) => item.PROJECT_ID.toString()}
+        renderItem={({ item: project }) => {
+          const details = projectDetails[project.PROJECT_ID];
+          const isLoading = loadingDetails[project.PROJECT_ID];
+          const isExpanded = expandedProjects[project.PROJECT_ID];
+          
+          return (
+            <View className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
+            {/* Project Header - Clickable Area */}
+            <TouchableOpacity 
+              onPress={() => toggleProjectDetails(project.PROJECT_ID)}
+              className="flex-row items-center px-5 py-4 min-h-[80px]"
+            >
               <View className="flex-1">
-                <Link href={`/details/${project.PROJECT_ID}`} asChild>
-                  <TouchableOpacity>
-                    <Text className="text-black font-semibold text-[16px] mb-2 underline">
-                      {project.project_Title}
+                <Text className="text-base font-semibold text-gray-900">
+                  {project.project_Title}
+                </Text>
+              </View>
+              <MaterialCommunityIcons 
+                name={isExpanded ? "chevron-up" : "chevron-down"} 
+                size={24} 
+                color="#6B7280" 
+              />
+            </TouchableOpacity>
+          
+            {/* Loading Indicator */}
+            {isLoading && isExpanded && (
+              <View className="px-5 pb-4">
+                <ActivityIndicator size="small" color="#3B82F6" />
+              </View>
+            )}
+          
+            {/* Expanded Content */}
+            {isExpanded && details && !isLoading && (
+              <View className="px-5 pb-5 border-t border-gray-100">
+                {/* Date Row with Details Button */}
+                <View className="flex-row justify-between items-center mt-4 mb-5">
+                  <View className="flex-row items-center space-x-2">
+                    <MaterialCommunityIcons name="calendar-range" size={18} color="#6B7280" />
+                    <Text className="text-sm text-gray-600">
+                      {details.Pstart_date} - {details.end_date}
                     </Text>
+                  </View>
+                  <TouchableOpacity 
+                  style={{
+                    backgroundColor:"#940101"
+                  }}
+                    onPress={() => router.push(`/details/${project.PROJECT_ID}`)}
+                    className="flex-row items-center space-x-1  px-3 py-2 rounded-lg border border-blue-100"
+                  >
+                    <Text className="text-sm font-medium text-white">View Tasks</Text>
+                    <MaterialCommunityIcons name="arrow-right" size={16} color="white" />
                   </TouchableOpacity>
-                </Link>
-                <Text className="text-gray-500 text-sm">
-                  {project.Pstart_date} - {project.end_date}
-                </Text>
+                </View>
+          
+                {/* Client and Region */}
+                <View className="space-y-3 mb-4">
+                  <View>
+                    <Text className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Client</Text>
+                    <Text className="text-base font-medium text-gray-900">{details.Client_Title}</Text>
+                  </View>
+                  {/* <View>
+                    <Text className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Region</Text>
+                    <Text className="text-base font-medium text-gray-900">{details.Region}</Text>
+                  </View> */}
+                </View>
+          
+                {/* Value Cards */}
+                <View className="flex-row space-x-3 gap-2 mb-5">
+                  <View style={{backgroundColor:"#F4F4F4"}} className="flex-1  p-3 rounded-lg border border-gray-100">
+                    <Text className="text-xs font-medium text-[#940101] mb-1">Outsourcing Value</Text>
+                    <Text className="text-lg font-semibold text-[#940101]">${details.Outsourcing_Value}</Text>
+                  </View>
+                  <View style={{
+                    backgroundColor:"#940101"
+                  }} className="flex-1  p-3 rounded-lg border border-blue-100">
+                    <Text className="text-xs font-medium text-white mb-1">Total Value</Text>
+                    <Text className="text-lg font-semibold text-white">${details.Total_Value}</Text>
+                  </View>
+                </View>
+          
+                {/* Footer */}
+                <View className="flex-row justify-between items-center">
+                  <Text className="text-xs text-gray-500">
+                    Created: {details.Created_Date}
+                  </Text>
+                  <View className={`px-3 py-1 rounded-full ${
+                    details.Project_Status === 2 ? "bg-green-50 border border-green-100" : "bg-amber-50 border border-amber-100"
+                  }`}>
+                    <Text className={`text-xs font-medium ${
+                      details.Project_Status === 2 ? "text-green-700" : "text-amber-700"
+                    }`}>
+                      {details.Project_Status === 2 ? "Active" : "Inactive"}
+                    </Text>
+                  </View>
+                </View>
               </View>
-              
-              <TouchableOpacity onPress={() => deleteProject(project.PROJECT_ID)}>
-                <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{ borderRadius: 50, padding: 8 }}>
-                  <MaterialCommunityIcons name="delete" size={20} color="white" />
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-            
-            <View className="mb-3">
-              <Text className="text-gray-600 text-sm">Client:</Text>
-              <Text className="font-semibold">{project.Client_Title}</Text>
-            </View>
-            
-            <View className="mb-3">
-              <Text className="text-gray-600 text-sm">Region:</Text>
-              <Text className="font-semibold">{project.Region}</Text>
-            </View>
-            
-            <View className="flex flex-row justify-between w-full gap-4">
-              <View className="bg-[#F1FFF3] p-3 rounded-lg flex-1">
-                <Text className="text-gray-600 text-sm">Outsourcing Value:</Text>
-                <Text className="font-semibold">${project.Outsourcing_Value}</Text>
-              </View>
-              <View className="bg-[#00D09E] p-3 rounded-lg flex-1">
-                <Text className="text-white text-sm">Total Value:</Text>
-                <Text className="font-semibold text-white">${project.Total_Value}</Text>
-              </View>
-            </View>
-            
-            <View className="mt-3 flex-row justify-between items-center">
-              <Text className="text-gray-500 text-xs">Created: {project.Created_Date}</Text>
-              <View className={`px-2 py-1 rounded-full ${
-                project.Project_Status === 2 ? "bg-green-100" : "bg-yellow-100"
-              }`}>
-                <Text className="text-xs">
-                  {project.Project_Status === 2 ? "Active" : "Inactive"}
-                </Text>
-              </View>
-            </View>
+            )}
           </View>
-        ))}
-      </ScrollView>
+          );
+        }}
+        refreshing={isLoading}
+        onRefresh={refetch}
+      />
 
       {/* Add Button */}
-      {user?.userType==1&&<TouchableOpacity 
-        className="absolute bottom-10 right-6" 
-        onPress={() => router.push('/(addProject)/addProject')}
-      >
-        <LinearGradient 
-          colors={["#D01313", "#6A0A0A"]} 
-          style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            borderRadius: 50, 
-            padding: 16,
-            width: 60,
-            height: 60
-          }}
+      {/* {user?.userType == 1 && (
+        <TouchableOpacity 
+          className="absolute bottom-10 right-6" 
+          onPress={() => router.push('/(addProject)/addProject')}
         >
-          <MaterialCommunityIcons name="plus" size={24} color="white" />
-        </LinearGradient>
-      </TouchableOpacity>}
-      
+          <LinearGradient 
+            colors={["#D01313", "#6A0A0A"]} 
+            style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              borderRadius: 50, 
+              padding: 16,
+              width: 60,
+              height: 60
+            }}
+          >
+            <MaterialCommunityIcons name="plus" size={24} color="white" />
+          </LinearGradient>
+        </TouchableOpacity>
+      )} */}
     </View>
   );
 }
