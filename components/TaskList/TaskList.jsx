@@ -11,7 +11,7 @@ const TaskList = ({ taskData }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
   return (
-    <View>
+    <ScrollView>
       
       <View>
         {taskData.map((task, index) => (
@@ -66,7 +66,7 @@ const TaskList = ({ taskData }) => {
           </Animated.View>
         ))}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
