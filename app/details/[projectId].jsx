@@ -12,13 +12,11 @@ import { useFetchOnClick } from "../../ReactQuery/hooks/useFetchOnClick";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { FontAwesome } from "@expo/vector-icons";
-import { TouchableWithoutFeedback } from "react-native";
 
 const ProjectDetails = () => {
   const [showModal, setShowModal] = useState(false);
   const [deleteTaskId, setDeleteTaskId] = useState(null);
   const [activeIndex, setActiveIndex] = useState(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const { user } = useContext(AuthContext);
   const { projectId } = useLocalSearchParams();
   const router = useRouter();
@@ -38,6 +36,16 @@ const ProjectDetails = () => {
     setShowModal(false);
     setDeleteTaskId(null);
   };
+
+  // Fetch project details
+  const { 
+    data: projectData, 
+    isLoading: isProjectLoading,
+    error: projectError 
+  } = useFetchData(
+    `FinanceModule/GetProjectDetails_ById?projectId=${projectId}`,
+    user.token
+  );
 
   // Fetch task list (names and IDs only)
   const { 
@@ -61,37 +69,49 @@ const ProjectDetails = () => {
   } = useFetchOnClick(
     `Task/getTaskDetailsByID?taskid=${selectedTaskId}`,
     user.token,
-    !!selectedTaskId // Only fetch when selectedTaskId is set
+    !!selectedTaskId
   );
-
-  // Mock project data
-  const projectData = {
-    projectId: projectId || "10356",
-    projectName: "Stemline",
-    task: "Frontend Team - Tech",
-    amountSpent: 783.00,
-    totalValue: 1187.4,
-    progress: 0.9, // 90%
-  };
 
   // Handle task click
   const handleTaskClick = async (taskId, index) => {
     if (activeIndex === index) {
-      // If clicking the same task, close it
       setActiveIndex(null);
       setSelectedTaskId(null);
     } else {
-      // If clicking a different task, show loader and fetch details
       setActiveIndex(index);
       setSelectedTaskId(taskId);
-      setIsLoadingDetails(true);
-      try {
-        await refetchTaskDetails();
-      } finally {
-        setIsLoadingDetails(false);
-      }
+      await refetchTaskDetails();
     }
   };
+
+  // Shimmer effect component
+  const ShimmerEffect = () => (
+    <View className="animate-pulse">
+      <View className="h-4 bg-gray-200 rounded mb-2 w-3/4"></View>
+      <View className="h-4 bg-gray-200 rounded mb-2 w-1/2"></View>
+      <View className="h-4 bg-gray-200 rounded mb-2 w-2/3"></View>
+    </View>
+  );
+
+  // Calculate progress percentage
+  
+  if (isProjectLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+        <ActivityIndicator size="large" color="#00D09E" />
+      </SafeAreaView>
+    );
+  }
+
+  if (projectError || !projectData || !projectData[0]) {
+    return (
+      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+        <Text>Error loading project details</Text>
+      </SafeAreaView>
+    );
+  }
+
+  const currentProject = projectData[0];
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -103,41 +123,47 @@ const ProjectDetails = () => {
         <TouchableOpacity onPress={() => router.back()} className="z- p-2 pl-9">
           <ArrowLeft size={24} color="black" />
         </TouchableOpacity>
-        <View className="absolute left-0 right-0 items-center justify-center">
-          <Text className="text-3xl font-bold">{projectData.projectName}</Text>
+        <View className="absolute left-0 right-0   items-center justify-center">
+          <Text className="text-lg w-[50%] text-center  font-bold">{currentProject.project_Title}</Text>
         </View>
         <View className="w-10" />
       </View>
 
       {/* Project Header */}
       <View className="items-center mt-4">
-        <Text className="text-gray-500">{projectData.task}</Text>
+        <Text className="text-gray-500">{currentProject.Region || "No project code"}</Text>
       </View>
 
       {/* Financial Data */}
       <View className="flex-row justify-between mx-6 mt-4 p-2 pt-6">
         <View className="items-center w-1/2 border-r-[1px] border-gray-100">
           <Text className="text-gray-500 mb-2">
-            <FontAwesome6 name="arrow-trend-up" size={15} color="black" /> Out Starter Value
+            <FontAwesome6 name="arrow-trend-up" size={15} color="black" /> Vendor Value
           </Text>
-          <Text className="text-black">{projectData.amountSpent}</Text>
+          <Text className="text-black">${currentProject.Vendor_Value || 0}</Text>
         </View>
         <View className="items-center w-1/2">
           <Text className="text-gray-500 mb-2">
-            <FontAwesome6 name="arrow-trend-down" size={15} color="black" /> Total PO Value
+            <FontAwesome6 name="arrow-trend-down" size={15} color="black" /> Total Value
           </Text>
-          <Text className="text-[#00D09E]">{projectData.totalValue}</Text>
+          <Text className="text-[#00D09E]">${currentProject.Vendor_Value || 0}</Text>
         </View>
       </View>
 
       {/* Progress Bar */}
       <View className="items-center justify-center w-full mt-6">
         <View className="w-96 h-11 bg-[#00D09E] rounded-full flex-row overflow-hidden">
-          <View style={{ width: `${90 - 10}%` }} className="h-full items-start justify-center px-3 pl-5">
-            <Text className="text-black font-bold">{90}%</Text>
+          <View 
+            style={{ width: `50%` }} 
+            className="h-full items-start justify-center px-3 pl-5"
+          >
+            <Text className="text-black font-bold">${currentProject.Total_Value||0}</Text>
           </View>
-          <View style={{ width: `${10 + 10}%` }} className="bg-black h-full rounded-full items-end justify-center px-3">
-            <Text className="text-white font-bold">{10}%</Text>
+          <View 
+            style={{ width: `${50}%` }} 
+            className="bg-black h-full rounded-full items-end justify-center px-3"
+          >
+            <Text className="text-white font-bold">${currentProject.Total_Value||0}</Text>
           </View>
         </View>
       </View>
@@ -180,7 +206,7 @@ const ProjectDetails = () => {
               style={{ flex: 1 }}
             >
               {isTaskListLoading ? (
-                <Text>Loading tasks...</Text>
+                <ActivityIndicator size="large" color="#00D09E" />
               ) : taskListError ? (
                 <Text>Error loading tasks</Text>
               ) : taskListData?.project_list?.length > 0 ? (
@@ -194,20 +220,21 @@ const ProjectDetails = () => {
                         activeIndex === index ? "rounded-t-lg" : "rounded-lg shadow"
                       }`}
                       onPress={() => handleTaskClick(task.Task_Id, index)}
-                      disabled={isLoadingDetails}
                     >
-                      <Text className="text-black font-semibold text-[14px] truncate w-[85%]">{task.Task_Title}</Text>
-                      {activeIndex === index && isLoadingDetails ? (
-                        <ActivityIndicator size="small" color="black" />
-                      ) : (
-                        <FontAwesome name={activeIndex === index ? "angle-up" : "angle-down"} size={28} color="black" />
-                      )}
+                      <Text className="text-black font-semibold text-[14px] truncate w-[85%]">
+                        {task.Task_Title.trim()}
+                      </Text>
+                      <FontAwesome 
+                        name={activeIndex === index ? "angle-up" : "angle-down"} 
+                        size={28} 
+                        color="black" 
+                      />
                     </TouchableOpacity>
 
                     {activeIndex === index && (
-                      <View className="p-4 bg-white rounded-b-lg shadow">
-                        {isLoadingDetails || isTaskDetailsLoading ? (
-                          <ActivityIndicator size="large" color="#00D09E" />
+                      <View className="p-4 pt-0 bg-white rounded-b-lg shadow">
+                        {isTaskDetailsLoading ? (
+                          <ShimmerEffect />
                         ) : taskDetailsError ? (
                           <Text>Error loading task details</Text>
                         ) : taskDetails?.task_data?.[0] ? (
@@ -222,17 +249,24 @@ const ProjectDetails = () => {
                             <Text>
                               <MaterialCommunityIcons name="star-three-points-outline" size={12} color="black" /> Task Id:
                             </Text>
-                            <Text className="font-semibold mb-2 pl-4">{taskDetails.task_data[0].Task_Id || task.Task_Id}</Text>
+                            <Text className="font-semibold mb-2 pl-4">
+                              {taskDetails.task_data[0].Task_Id || task.Task_Id}
+                            </Text>
 
                             <View className="flex-row justify-between items-center mb-2">
                               <View>
                                 <Text>
                                   <MaterialCommunityIcons name="star-three-points-outline" size={12} color="black" /> Task Owner:
                                 </Text>
-                                <Text className="font-semibold pl-4">{taskDetails.task_data[0].Task_owner || "N/A"}</Text>
+                                <Text className="font-semibold pl-4">
+                                  {taskDetails.task_data[0].Task_owner || "N/A"}
+                                </Text>
                               </View>
                               <View className="flex-row space-x-2 gap-2">
-                                <Link href={`/(addTask)/${projectId}-${taskDetails.task_data[0].Task_Id}-${0}-${taskDetails.task_data[0].BuyingCenterId}`} asChild>
+                                <Link 
+                                  href={`/(addTask)/${projectId}-${taskDetails.task_data[0].Task_Id}-${0}-${taskDetails.task_data[0].BuyingCenterId}`} 
+                                  asChild
+                                >
                                   <TouchableOpacity>
                                     <LinearGradient colors={["#D01313", "#6A0A0A"]} style={{ borderRadius: 50, padding: 6 }} className="p-2 rounded-lg">
                                       <Feather name="edit" size={24} color="white" />
@@ -265,27 +299,35 @@ const ProjectDetails = () => {
 
       {/* Delete Confirmation Modal */}
       <Modal
-        visible={showModal}
-        animationType="fade"
-        transparent={true}
-        onRequestClose={cancelDelete}
-      >
-        <View className="flex-1 justify-center items-center bg-gray-200 bg-opacity-50">
-          <View className="bg-white p-6 rounded-lg w-4/5">
-            <Text className="text-lg font-bold mb-4">Confirm Delete</Text>
-            <Text className="mb-6">Are you sure you want to delete this task?</Text>
-            <View className="flex-row justify-end space-x-3">
-              
-              <TouchableOpacity mode="outlined" onPress={cancelDelete}>
-                <Text>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity mode="contained" TouchableOpacityColor="#D01313" onPress={confirmDelete}>
-                <Text>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+  visible={showModal}
+  animationType="fade"
+  transparent={true}
+  onRequestClose={cancelDelete}
+>
+  <View className="flex-1 justify-center items-center bg-gray-200 opacity-1/2">
+    <View className="bg-white p-6 rounded-xl w-11/12 max-w-md shadow-lg">
+      <Text className="text-xl font-bold mb-3 text-gray-800">Confirm Delete</Text>
+      <Text className="text-base text-gray-600 mb-6">
+        Are you sure you want to delete this task?
+      </Text>
+      <View className="flex-row justify-end  gap-2 space-x-4">
+        <TouchableOpacity
+          onPress={cancelDelete}
+          className="px-4 py-2 rounded-md bg-gray-200"
+        >
+          <Text className="text-gray-700 font-medium">Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={confirmDelete}
+          className="px-4 py-2 rounded-md bg-red-700"
+        >
+          <Text className="text-white font-semibold">Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
+
     </SafeAreaView>
   );
 };

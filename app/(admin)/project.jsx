@@ -72,6 +72,7 @@ export default function ProjectList() {
       try {
         setLoadingDetails(prev => ({ ...prev, [projectId]: true }));
         const details = await fetchProjectDetails(projectId, token);
+        console.log(details,"details")
         setProjectDetails(prev => ({
           ...prev,
           [projectId]: details.project_list[0]
