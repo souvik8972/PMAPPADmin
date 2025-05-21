@@ -25,7 +25,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { format } from 'date-fns';
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import extractTaskHours from "../../utils/functions/extractTaskHours";
-const AddEditTask = () => {
+export default AddEditTask = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const ids = route.params?.projectIdAndTaskId?.split("-") || [];
@@ -679,4 +679,4 @@ const processApiResponse = (apiData) => {
   );
 };
 
-export default AddEditTask;
+ 
