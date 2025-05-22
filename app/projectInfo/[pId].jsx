@@ -208,7 +208,7 @@ const ProjectDetails = () => {
         <ScrollView style={styles.card}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>Project Overview</Text>
-            <Ionicons name="information-circle-outline" size={22} color="#6B7280" />
+            
           </View>
           <View style={styles.cardBody}>
             <View style={styles.infoRow}>

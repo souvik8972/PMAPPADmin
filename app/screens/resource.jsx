@@ -30,7 +30,10 @@ export default function ResourcesScreen() {
   const TOKEN=user.token||null;
   const teamId = TABS.find((tab) => activeTab in tab)?.[activeTab]||1;
   const {data,isLoading,isError} = useFetchData(`Resource/GetTeamMembers?teamId=${teamId}`, TOKEN)
- 
+  const today = new Date();
+const formattedDate = `${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}/${today.getFullYear()}`;
+console.log(formattedDate);
+ const {data:utilData,isLoading:utillLoading,isError:utillError} = useFetchData(`Task/GetTeamUtilData?teamId=${teamId}&date_val=${formattedDate}`, TOKEN)
      
  
   const HandleTab = async (tab) => {
@@ -73,15 +76,15 @@ export default function ResourcesScreen() {
           ))}
         </View>
  
-       
-        <View className='mx-4 mt-5 mb-2'>
+       <View className='mx-4 mt-5 mb-2'>
           <Text className={`text-lg `}>Team Utilization:</Text>
-          <View className={`flex-row items-center justify-between mt-2 mr-16  `}>
-            <GradientProgressBar progress={0.5}  />
-            <Text className={'p-2'}>50%</Text>
-            <Icon name="infocirlceo" size={18} color="gray" />
+          <View className={`flex-row items-center justify-between mt-2 mr-16 gap-4  `}>
+            <GradientProgressBar progress={utilData?.utilizationPercent/100||0/100}  />
+            <Text className={'pl- pb-2 pt-2 r'}>{utilData?.utilizationPercent||0}%</Text>
+           
           </View>
         </View>
+         
          
         {/* Search Input */}
         <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-100 mx-3  shadow-lg mb-4 mt-2 pr-4 pl-3  pt-3  pb-3">

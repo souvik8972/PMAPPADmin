@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import AssetManagement from "../../components/Assets/AssetManagement";
 import MyRequest from "../../components/Assets/MyRequest";
 import { AuthContext } from '@/context/AuthContext';
-
+import AllRequest from "../../components/Assets/AllRequest"
 const Tab = createMaterialTopTabNavigator();
 
 
@@ -42,7 +42,7 @@ const AssetsScreen = () => {
       >
         <Tab.Screen name="Asset Management" component={AssetManagement} />
         {!isSystemAdmin?<Tab.Screen name="My Request" component={MyRequest} />
-        :<Tab.Screen name="AllRequest" component={AssetManagement}/>}
+        :<Tab.Screen name="AllRequest" component={AllRequest}/>}
       
       </Tab.Navigator>
     </View>
