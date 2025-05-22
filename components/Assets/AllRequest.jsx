@@ -6,7 +6,7 @@ const AllRequest = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-const data = [
+ const data = [
     {
       "Id": 1416,
       "Emp_Id": 113,
@@ -53,7 +53,7 @@ const data = [
       "Request_RaisedDate": "2025-04-24T00:00:00",
       "Request_Id": "MTHA432",
       "EmpName": "Souvik Das",
-      "ItemList": "PenDrive,Phone Chargers,IPAD PRO(12.9) 4TH GEN(MHC-003),Ipad Chargers,Ipad Cables,I pad pro 5G 13Inch(MHC-008),Android Tab Chargers"
+      "ItemList": "PenDrive, Phone Chargers, IPAD PRO(12.9) 4TH GEN(MHC-003), Ipad Chargers, Ipad Cables, I pad pro 5G 13Inch(MHC-008), Android Tab Chargers"
     },
     {
       "Id": 431,
@@ -69,16 +69,37 @@ const data = [
     },
   ];
 
+
   const getStatusDetails = (status) => {
     switch(status) {
       case 1: 
-        return { text: 'Request', color: 'bg-blue-500', icon: 'clockcircleo', iconLib: AntDesign };
+        return { 
+          text: 'Pending', 
+          color: '#F97316', // Orange
+          bgColor: '#FFEDD5',
+          icon: 'clockcircleo'
+        };
       case 2: 
-        return { text: 'Active', color: 'bg-green-500', icon: 'checkcircleo', iconLib: AntDesign };
+        return { 
+          text: 'Active', 
+          color: '#10B981', // Green
+          bgColor: '#D1FAE5',
+          icon: 'checkcircleo'
+        };
       case 3: 
-        return { text: 'Returned', color: 'bg-purple-500', icon: 'swap', iconLib: AntDesign };
+        return { 
+          text: 'Returned', 
+          color: '#7C3AED', // Purple
+          bgColor: '#EDE9FE',
+          icon: 'swap'
+        };
       default: 
-        return { text: 'Unknown', color: 'bg-gray-500', icon: 'questioncircleo', iconLib: AntDesign };
+        return { 
+          text: 'Unknown', 
+          color: '#6B7280', // Gray
+          bgColor: '#F3F4F6',
+          icon: 'questioncircleo'
+        };
     }
   };
 
@@ -86,7 +107,6 @@ const data = [
     if (!dateString || Object.keys(dateString).length === 0) return 'Not specified';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
       month: 'short', 
       day: 'numeric',
       hour: '2-digit',
@@ -95,15 +115,14 @@ const data = [
   };
 
   return (
-    <View className="flex-1 bg-gray-100">
+    <View className="flex-1 bg-white">
       {/* Header */}
       
 
       {/* Request List */}
-      <ScrollView showsVerticalScrollIndicator={false} className="px-4 pt-4">
+      <ScrollView className="px-6 pt-4" showsVerticalScrollIndicator={false}>
         {data.map((request) => {
           const status = getStatusDetails(request.status);
-          const IconComponent = status.iconLib;
           
           return (
             <TouchableOpacity 
@@ -112,175 +131,201 @@ const data = [
                 setSelectedRequest(request);
                 setIsModalVisible(true);
               }}
-              className="mb-4 bg-white rounded-xl shadow-sm p-5 border border-gray-100"
+              className="mb-4 p-5 rounded-xl border border-gray-100"
               activeOpacity={0.9}
             >
               <View className="flex-row justify-between items-start mb-3">
-                <View className="flex-row items-center">
-                  <View className={`w-3 h-3 rounded-full ${status.color} mr-2`} />
-                  <Text className="text-lg font-semibold text-gray-900">{request.Request_Id}</Text>
-                </View>
-                <View className={`flex-row items-center px-3 py-1 rounded-full ${status.color} bg-opacity-10`}>
-                  <IconComponent 
-                    name={status.icon} 
-                    size={14} 
-                    color={status.color.replace('bg-', '')} 
-                  />
-                  <Text className={`ml-2 text-xs font-medium ${status.color.replace('bg-', 'text-')}`}>
+                <Text className="text-lg font-semibold text-gray-900">{request.Request_Id}</Text>
+                <View 
+                  className="px-3 py-1 rounded-full" 
+                  style={{ backgroundColor: status.bgColor }}
+                >
+                  <Text 
+                    className="text-xs font-medium" 
+                    style={{ color: status.color }}
+                  >
                     {status.text}
                   </Text>
                 </View>
               </View>
               
-              <View className="mb-3">
-                <Text className="text-gray-500 text-sm font-medium mb-1">Employee</Text>
-                <View className="flex-row items-center">
-                  <View className="w-6 h-6 bg-indigo-100 rounded-full items-center justify-center mr-2">
-                    <FontAwesome name="user" size={12} color="#6366f1" />
-                  </View>
-                  <Text className="text-gray-800">{request.EmpName}</Text>
-                </View>
+              <View className="mb-4">
+                <Text className="text-gray-800 font-medium mb-1">{request.ItemList.split(',')[0]}</Text>
+                {request.ItemList.split(',').length > 1 && (
+                  <Text className="text-gray-500 text-sm">
+                    +{request.ItemList.split(',').length - 1} more items
+                  </Text>
+                )}
               </View>
               
-              <View className="flex-row justify-between items-end">
-                <View className="flex-1">
-                  <Text className="text-gray-500 text-sm font-medium mb-1">Items</Text>
-                  <Text className="text-gray-800" numberOfLines={1}>
-                    <MaterialIcons name="inventory" size={14} color="#4b5563" /> {request.ItemList}
-                  </Text>
+              <View className="flex-row justify-between items-center">
+                <View className="flex-row items-center">
+                  <View className="w-6 h-6 bg-gray-100 rounded-full items-center justify-center mr-2">
+                    <FontAwesome name="user" size={12} color="#6B7280" />
+                  </View>
+                  <Text className="text-gray-700">{request.EmpName}</Text>
                 </View>
-                <View className="flex-1 items-end">
-                  <Text className="text-gray-500 text-sm font-medium mb-1">Requested</Text>
-                  <Text className="text-gray-800 text-right">
-                    <Ionicons name="calendar" size={14} color="#4b5563" /> {formatDate(request.Request_RaisedDate)}
-                  </Text>
-                </View>
+                <Text className="text-gray-500 text-sm">{formatDate(request.Request_RaisedDate)}</Text>
               </View>
             </TouchableOpacity>
           );
         })}
       </ScrollView>
 
-      {/* Status Update Modal */}
+      {/* Request Details Modal */}
       <Modal
         visible={isModalVisible}
         transparent={true}
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => setIsModalVisible(false)}
       >
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-40 p-4">
-          <View className="bg-white rounded-2xl w-full max-w-md overflow-hidden">
-            {/* Modal Header */}
-            <View className="bg-indigo-600 p-5">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-white text-xl font-bold">Request Details</Text>
-                <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-                  <Ionicons name="close" size={24} color="white" />
-                </TouchableOpacity>
-              </View>
-              <Text className="text-indigo-100 mt-1">{selectedRequest?.Request_Id}</Text>
+        <View className="flex-1 bg-white p-8">
+          {/* Modal Header */}
+          <View className="pt-12 px-6 pb-4 border-b border-gray-100">
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-2xl font-bold text-gray-900">Request Details</Text>
+              {/* <TouchableOpacity 
+                onPress={() => setIsModalVisible(false)}
+                className="p-2 bg-red-100 rounded-full"
+              >
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity> */}
             </View>
-            
-            {/* Modal Content */}
-            <ScrollView className="p-5 max-h-96">
-              {selectedRequest && (
-                <>
-                  <View className="mb-6">
-                    <View className="flex-row items-center mb-4">
-                      <View className="w-10 h-10 bg-indigo-100 rounded-full items-center justify-center mr-3">
-                        <FontAwesome name="user" size={16} color="#6366f1" />
-                      </View>
-                      <View>
-                        <Text className="text-gray-500 text-sm">Employee</Text>
-                        <Text className="text-gray-900 font-medium">{selectedRequest.EmpName}</Text>
-                      </View>
+            <View className="flex-row items-center">
+              <Text className="text-gray-700 font-medium mr-3">{selectedRequest?.Request_Id}</Text>
+              <View 
+                className="px-2 py-1 rounded-full" 
+                style={{ backgroundColor: selectedRequest ? getStatusDetails(selectedRequest.status).bgColor : '#F3F4F6' }}
+              >
+                <Text 
+                  className="text-xs font-medium" 
+                  style={{ color: selectedRequest ? getStatusDetails(selectedRequest.status).color : '#6B7280' }}
+                >
+                  {selectedRequest ? getStatusDetails(selectedRequest.status).text : 'Unknown'}
+                </Text>
+              </View>
+            </View>
+          </View>
+          
+          {/* Modal Content */}
+          <ScrollView showsVerticalScrollIndicator={false} className="p-6  ">
+            {selectedRequest && (
+              <>
+                <View className="mb-6">
+                  <View className="flex-row items-center mb-5">
+                    <View className="w-12 h-12 bg-gray-100 rounded-full items-center justify-center mr-3">
+                      <FontAwesome name="user" size={16} color="#6B7280" />
                     </View>
-                    
-                    <View className="mb-4">
-                      <Text className="text-gray-500 text-sm mb-1">Items Requested</Text>
-                      <View className="bg-gray-50 p-3 rounded-lg">
-                        <Text className="text-gray-800">{selectedRequest.ItemList}</Text>
-                      </View>
-                    </View>
-                    
-                    <View className="mb-4">
-                      <Text className="text-gray-500 text-sm mb-1">Reason</Text>
-                      <View className="bg-gray-50 p-3 rounded-lg">
-                        <Text className="text-gray-800">{selectedRequest.Reason.trim()}</Text>
-                      </View>
-                    </View>
-                    
-                    <View className="flex-row justify-between mb-2">
-                      <View>
-                        <Text className="text-gray-500 text-sm">Requested</Text>
-                        <Text className="text-gray-800">{formatDate(selectedRequest.Request_RaisedDate)}</Text>
-                      </View>
-                      <View className="items-end">
-                        <Text className="text-gray-500 text-sm">Status</Text>
-                        <View className="flex-row items-center">
-                          <View className={`w-2 h-2 rounded-full ${getStatusDetails(selectedRequest.status).color} mr-2`} />
-                          <Text className="text-gray-800">{getStatusDetails(selectedRequest.status).text}</Text>
-                        </View>
-                      </View>
+                    <View>
+                      <Text className="text-gray-500 text-sm mb-1">Employee</Text>
+                      <Text className="text-gray-900 font-medium text-lg">{selectedRequest.EmpName}</Text>
                     </View>
                   </View>
                   
-                  <View className="border-t border-gray-200 pt-4">
-                    <Text className="text-gray-800 font-medium mb-3">Update Request Status</Text>
-                    <View className="flex-row justify-between space-x-2">
-                      <TouchableOpacity 
-                        className="bg-blue-50 px-4 py-3 rounded-lg flex-1 items-center"
-                        onPress={() => {
-                          // Update to Request status (1)
-                          setIsModalVisible(false);
-                        }}
-                      >
-                        <View className="flex-row items-center">
-                          <AntDesign name="clockcircleo" size={16} color="#3b82f6" />
-                          <Text className="text-blue-800 ml-2 font-medium">Request</Text>
+                  <View className="mb-6">
+                    <Text className="text-gray-500 text-sm mb-2">Items Requested</Text>
+                    <View className="bg-gray-50 p-4 rounded-lg">
+                      {selectedRequest.ItemList.split(',').map((item, index) => (
+                        <View key={index} className="flex-row items-center mb-2 last:mb-0">
+                          <View className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
+                          <Text className="text-gray-800">{item.trim()}</Text>
                         </View>
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity 
-                        className="bg-green-50 px-4 py-3 rounded-lg flex-1 items-center"
-                        onPress={() => {
-                          // Update to Active status (2)
-                          setIsModalVisible(false);
-                        }}
-                      >
-                        <View className="flex-row items-center">
-                          <AntDesign name="checkcircleo" size={16} color="#10b981" />
-                          <Text className="text-green-800 ml-2 font-medium">Active</Text>
-                        </View>
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity 
-                        className="bg-purple-50 px-4 py-3 rounded-lg flex-1 items-center"
-                        onPress={() => {
-                          // Update to Returned status (3)
-                          setIsModalVisible(false);
-                        }}
-                      >
-                        <View className="flex-row items-center">
-                          <AntDesign name="swap" size={16} color="#8b5cf6" />
-                          <Text className="text-purple-800 ml-2 font-medium">Returned</Text>
-                        </View>
-                      </TouchableOpacity>
+                      ))}
                     </View>
                   </View>
-                </>
-              )}
-            </ScrollView>
-            
-            {/* Modal Footer */}
-            <View className="border-t border-gray-200 p-4">
-              <TouchableOpacity 
-                className="bg-gray-100 py-3 rounded-lg items-center"
-                onPress={() => setIsModalVisible(false)}
-              >
-                <Text className="text-gray-800 font-medium">Close</Text>
-              </TouchableOpacity>
-            </View>
+                  
+                  <View className="mb-6">
+                    <Text className="text-gray-500 text-sm mb-2">Reason</Text>
+                    <View className="bg-gray-50 p-4 rounded-lg">
+                      <Text className="text-gray-800">
+                        {selectedRequest.Reason.trim() || "No reason provided"}
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  <View className="space-y-4 mb-6">
+                    <View>
+                      <Text className="text-gray-500 text-sm mb-1">Requested Date</Text>
+                      <Text className="text-gray-800">{formatDate(selectedRequest.Request_RaisedDate)}</Text>
+                    </View>
+                    
+                    {selectedRequest.Item_IssueDate && Object.keys(selectedRequest.Item_IssueDate).length > 0 && (
+                      <View>
+                        <Text className="text-gray-500 text-sm mb-1">Issued Date</Text>
+                        <Text className="text-gray-800">{formatDate(selectedRequest.Item_IssueDate)}</Text>
+                      </View>
+                    )}
+                    
+                    {selectedRequest.Item_TakeBackDate && Object.keys(selectedRequest.Item_TakeBackDate).length > 0 && (
+                      <View>
+                        <Text className="text-gray-500 text-sm mb-1">Returned Date</Text>
+                        <Text className="text-gray-800">{formatDate(selectedRequest.Item_TakeBackDate)}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                
+                <View className="border-t border-gray-200 pt-6">
+                  <Text className="text-gray-900 font-medium mb-4 text-center">Update Status</Text>
+                  <View className="flex-row justify-between gap-2 mb-6">
+                    <TouchableOpacity 
+                      className={`flex-1 items-center py-3 rounded-lg border ${
+                        selectedRequest.status === 1 ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-white'
+                      }`}
+                    >
+                      <AntDesign name="clockcircleo" size={16} color="#F97316" />
+                      <Text 
+                        className={`mt-1 text-sm font-medium ${
+                          selectedRequest.status === 1 ? 'text-orange-800' : 'text-gray-700'
+                        }`}
+                      >
+                        Pending
+                      </Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      className={`flex-1 items-center py-3 rounded-lg border ${
+                        selectedRequest.status === 2 ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-white'
+                      }`}
+                    >
+                      <AntDesign name="checkcircleo" size={16} color="#10B981" />
+                      <Text 
+                        className={`mt-1 text-sm font-medium ${
+                          selectedRequest.status === 2 ? 'text-green-800' : 'text-gray-700'
+                        }`}
+                      >
+                        Active
+                      </Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      className={`flex-1 items-center py-3 rounded-lg border ${
+                        selectedRequest.status === 3 ? 'border-purple-300 bg-purple-50' : 'border-gray-200 bg-white'
+                      }`}
+                    >
+                      <AntDesign name="swap" size={16} color="#7C3AED" />
+                      <Text 
+                        className={`mt-1 text-sm font-medium ${
+                          selectedRequest.status === 3 ? 'text-purple-800' : 'text-gray-700'
+                        }`}
+                      >
+                        Returned
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </>
+            )}
+          </ScrollView>
+          
+          {/* Modal Footer */}
+          <View className="px-6 pb-8 pt-4 border-t border-gray-100">
+            <TouchableOpacity 
+              className="bg-gray-900 py-4 rounded-lg items-center"
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Text className="text-black font-medium">Close</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

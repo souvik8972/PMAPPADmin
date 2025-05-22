@@ -47,7 +47,8 @@ const IssueTracker = () => {
         date: issue.Issue_Date,
         employeeName: issue.Employee_Name,
         email: issue.EmailId,
-        resolvedDate: issue.Resolved_Date,
+       resolvedDate: String(issue.Resolved_Date).split("T")[0],
+
         comments: issue.Comments
       }));
       setIssues(formattedIssues);
