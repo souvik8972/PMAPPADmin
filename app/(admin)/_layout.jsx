@@ -15,6 +15,8 @@ const Task = lazy(() => import("./index"));
 const Resource = lazy(() => import("../screens/resource"));
 const Ticket = lazy(() => import("../screens/ticket"));
 const Assets = lazy(() => import("../screens/assets"));
+const Food = lazy(() => import("../screens/food"));
+
 const Project = lazy(() => import("./project"));
 const TimeSheet = lazy(() => import("./timeSheet"));
 const Finance = lazy(() => import("./finance"));
@@ -204,6 +206,22 @@ export default function DrawerLayout() {
           drawerIcon: ({ color }) => (
             <View className="w-9">
               <FontAwesome5 name="mobile" size={26} color={color} />
+            </View>
+          ),
+        }}
+      />
+       <Drawer.Screen 
+        name="Food" 
+        children={() => (
+          <Suspense fallback={<LoadingScreen />}>
+            <Food />
+          </Suspense>
+        )}
+        options={{
+          drawerIcon: ({ color }) => (
+            <View className="w-9">
+               <Ionicons name="fast-food" size={26} color={color} />
+             
             </View>
           ),
         }}
