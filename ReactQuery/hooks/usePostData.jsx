@@ -1,9 +1,10 @@
 // src/hooks/usePostData.js
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { API_URL } from '@env';
 const postData = async ({ endpoint, data, token, queryParams = {} }) => {
   const queryString = new URLSearchParams(queryParams).toString();
-  const fullUrl = `http://184.72.156.185/Test-APp/api/${endpoint}?${queryString}`;
+  const fullUrl = `${API_URL}${endpoint}?${queryString}`;
 
 
   const response = await fetch(fullUrl, {

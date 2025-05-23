@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: "white",
     paddingHorizontal: 20,
-    paddingTop: 32,
+    paddingTop: 20,
     paddingBottom: 48,
   },
   loadingContainer: {

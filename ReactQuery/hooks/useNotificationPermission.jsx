@@ -1,5 +1,6 @@
 // hooks/useNotificationPermission.ts
 
+import { API_URL } from '@env';
 import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 

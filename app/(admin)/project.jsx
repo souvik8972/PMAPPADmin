@@ -7,9 +7,9 @@ import { router } from "expo-router";
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../context/AuthContext";
-
+import { API_URL } from '@env';
 const fetchProjectList = async (token) => {
-  const response = await fetch('http://184.72.156.185/Test-APp/api/Projects/GetAllProjectNames', {
+  const response = await fetch(`${API_URL}Projects/GetAllProjectNames`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
@@ -21,7 +21,7 @@ const fetchProjectList = async (token) => {
 };
 
 const fetchProjectDetails = async (projectId, token) => {
-  const response = await fetch(`http://184.72.156.185/Test-APp/api/Projects/GetProjectDetailsById?projectId=${projectId}`, {
+  const response = await fetch(`${API_URL}Projects/GetProjectDetailsById?projectId=${projectId}`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
