@@ -53,7 +53,7 @@ const Finance = () => {
     try {
       await Promise.all([refetchYears(), refetchClients()]);
     } catch (error) {
-      console.error("Refresh error:", error);
+      // console.error("Refresh error:", error);
     } finally {
       setRefreshing(false);
     }
@@ -138,7 +138,7 @@ const Finance = () => {
         onRequestClose={() => setShowDropdown(false)}
       >
         <TouchableWithoutFeedback onPress={() => setShowDropdown(false)}>
-          <View style={tw`flex-1 bg-black bg-opacity-30 justify-center items-center `}>
+          <View style={tw`flex-1 bg-black bg-opacity-30  justify-center items-center`}>
             <TouchableWithoutFeedback>
               <View style={[
                 tw`w-4/5 rounded-lg p-2`,

@@ -6,6 +6,8 @@ import { router } from "expo-router"
 
 
 export const exp=((time)=>{
+
+    let a=1
     const {logout}=useContext(AuthContext)
     if(! checkTokenExpiration(time)){
         logout();

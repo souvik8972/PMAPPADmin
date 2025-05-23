@@ -1,8 +1,10 @@
 
+import { useRedirectIfTokenExpired } from '@/utils/auth';
 import { useQuery } from '@tanstack/react-query';
 
+
 const fetchData = async ({ endpoint, token }) => {
-  const response = await fetch(`http://184.72.156.185/Test-APp/api/${endpoint}`, {
+  const response = await fetch(`https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/${endpoint}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -18,6 +20,7 @@ const fetchData = async ({ endpoint, token }) => {
 };
 
 export const useFetchData = (endpoint, token) => {
+  useRedirectIfTokenExpired(token)
   return useQuery({
     queryKey: [endpoint], // Unique key for caching
     queryFn: () => fetchData({ endpoint, token }),

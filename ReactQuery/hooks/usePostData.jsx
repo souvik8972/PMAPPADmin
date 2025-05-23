@@ -3,8 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const postData = async ({ endpoint, data, token, queryParams = {} }) => {
   const queryString = new URLSearchParams(queryParams).toString();
-  const fullUrl = `http://184.72.156.185/Test-APp/api/${endpoint}?${queryString}`;
-  console.log(fullUrl, "Response status:");
+  const fullUrl = `https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/${endpoint}?${queryString}`;
+
 
   const response = await fetch(fullUrl, {
     method: 'POST',

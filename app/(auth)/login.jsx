@@ -6,14 +6,19 @@ import { useMutation } from '@tanstack/react-query';
 import { loginUser } from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
 import { parseJwt } from '../../utils/auth';
+import { API_URL } from '@env';
+
+
+
 
 const Login = () => {
-  // const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
-  // const [password, setPassword] = useState('lavgZzsS');
+  console.log("My API URL:", API_URL);
+  const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
+  const [password, setPassword] = useState('lavgZzsS');
   // const [email, setEmail] = useState('system_admin@medtrixhealthcare.com');
   // const [password, setPassword] = useState('hello123');
-  const [email, setEmail] = useState('yukta.d@medtrixhealthcare.com');
-  const [password, setPassword] = useState('yoTxiPqF');
+  // const [email, setEmail] = useState('yukta.d@medtrixhealthcare.com');
+  // const [password, setPassword] = useState('yoTxiPqF');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
   const { login } = useContext(AuthContext);

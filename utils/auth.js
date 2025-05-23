@@ -1,6 +1,9 @@
 import * as SecureStore from "expo-secure-store";
 import { decode as atob } from "base-64";
 
+import { useNavigation } from '@react-navigation/native';
+import { useEffect } from 'react';
+
 const AUTH_KEY = "auth_info";
 
 export function parseJwt(token) {
@@ -45,4 +48,21 @@ export async function removeAuthInfo() {
 export const checkTokenExpiration = (exp) => {
   const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
   return exp < currentTime; // true if expired
+};
+
+
+
+export const useRedirectIfTokenExpired = (token) => {
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!token) return;
+
+    const decoded = parseJwt(token);
+    const exp = decoded?.exp;
+
+    if (!exp || checkTokenExpiration(exp)) {
+      navigation.replace('Login');
+    }
+  }, [token]);
 };

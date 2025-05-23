@@ -87,7 +87,7 @@ const FoodComponent = () => {
               Office Attendance & Lunch Preference
             </Text>
             <Text className="text-sm text-gray-500 text-center mb-6">
-              Please let us know your plans for today
+              Please let us know your plans for Tomorrow
             </Text>
 
             {/* Radio Buttons */}

@@ -10,7 +10,7 @@ const Loading = () => {
     const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
     useEffect(() => {
-        console.log("User from AuthContext:", user); // ✅ Check user value in console
+        // console.log("User from AuthContext:", user); // ✅ Check user value in console
 
         // Start animation immediately
         Animated.sequence([
@@ -38,13 +38,13 @@ const Loading = () => {
         // Check auth and redirect with delay
         const timeout = setTimeout(() => {
             if (!user) {
-                console.log("Redirecting to login");
+                // console.log("Redirecting to login");
                 router.replace("/Landing");
             } else if (typeof user === 'string' && user.toLowerCase() === "admin") {
-                console.log("Redirecting to admin");
+                // console.log("Redirecting to admin");
                 router.replace("/(admin)");
             } else {
-                console.log("Redirecting to tabs");
+                // console.log("Redirecting to tabs");
                 router.replace("/(tabs)");
             }
         }, 2500); // Wait for animation (~2.5s total)

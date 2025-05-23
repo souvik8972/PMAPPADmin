@@ -106,7 +106,6 @@ export default function DrawerLayout() {
 
   const isSystemAdmin = user?.userType==5;
 
-console.log(isSystemAdmin,'isSystemAdmin')
 
   return (
     <Drawer.Navigator

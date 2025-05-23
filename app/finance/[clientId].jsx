@@ -124,19 +124,19 @@ const Client = () => {
       <View className="items-center justify-center w-full mt-6">
         <View className="w-[90%] h-11 bg-[#00D09E] rounded-full flex-row overflow-hidden">
           <View 
-            style={{ width: `${currentClientInfo.Predicted_percentage}%` }} 
+            style={{ width: `${50}%` }} 
             className="h-full items-start justify-center px-1 pl-5"
           >
             <Text className="text-black font-bold text-sm">
-              {currentClientInfo.Predicted_percentage}%
+              $ {currencyToNumber(currentClientInfo.Predicted_Gp)}
             </Text>
           </View>
           <View 
-            style={{ width: `${Math.abs(100 - currentClientInfo.Actual_percentage)}%`}} 
-            className={`${currentClientInfo.Actual_percentage < 0 ? "bg-red-500 " : "bg-black" } h-full rounded-full items-end justify-center px-1 text-white`}
+            style={{ width: `50%`}} 
+            className={`${currentClientInfo.Actual_percentage < 100 ? "bg-red-500" : "bg-black"} h-full rounded-full items-end justify-center px-1`}
           >
-            <Text className="font-bold text-sm pr-2 ">
-              {Math.abs( currentClientInfo.Actual_percentage)}%
+            <Text className="text-white font-bold text-sm pr-2">
+              $ {currencyToNumber(currentClientInfo.Actual_Gp)}
             </Text>
           </View>
         </View>

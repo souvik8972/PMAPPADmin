@@ -83,7 +83,7 @@ const [originalId, setOriginalId] = useState("");
       ? `Task/getTaskDetailsByProjectId?ProjectId=${projectId}&ActionType=${actionType}&TaskId=${taskId}&Bid=${BId}`
       : `Task/getTaskDetailsByProjectId?ProjectId=${projectId}&ActionType=1&Bid=${BId || 0}`,user.token
   );
-  console.log(data,projectId, taskId, actionType, BId,"SSSSSS")
+  // console.log(data,projectId, taskId, actionType, BId,"SSSSSS")
 
   // Load task data if in edit mode
   // Update your useEffect to include data as a dependency
@@ -95,7 +95,7 @@ useEffect(() => {
 
 // Modify your processApiResponse function to be more defensive
 const processApiResponse = (apiData) => {
-  console.log("API Data:", apiData);
+  // console.log("API Data:", apiData);
   if (!apiData) return;
 
   try {
@@ -144,7 +144,7 @@ const processApiResponse = (apiData) => {
     // Set task details if in edit mode
     if (isEditMode && apiData.GetEditTaskDetails) {
       const taskDetails = apiData.GetEditTaskDetails;
-      console.log("Task Details:", taskDetails);
+      // console.log("Task Details:", taskDetails);
       
       // SET ORIGINAL ID
       setOriginalId(taskDetails?.Originalempids || "");
@@ -203,7 +203,7 @@ const processApiResponse = (apiData) => {
       }
     }
   } catch (error) {
-    console.error("Error processing API response:", error);
+    // console.error("Error processing API response:", error);
   }
 };
 

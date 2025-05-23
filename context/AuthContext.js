@@ -34,10 +34,10 @@ export function AuthProvider({ children }) {
     try {
       await saveAuthInfo(token);
       const authInfo = await getAuthInfo(); 
-      console.log(authInfo,"AuthInfo")
+      // console.log(authInfo,"AuthInfo")
       setUser(authInfo); 
     } catch (error) {
-      console.error("Failed to save token:", error);
+      // console.error("Failed to save token:", error);
       throw error;
     }
   };
@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
       await removeAuthInfo(); // Remove all auth info (token + user data)
       setUser(null); // Clear user state on logout
     } catch (error) {
-      console.error("Failed to remove token:", error);
+      // console.error("Failed to remove token:", error);
       throw error;
     }
   };

@@ -14,10 +14,9 @@ import ShimmerPlaceholder, { createShimmerPlaceholder } from 'react-native-shimm
  
  
  
-//
+
 const TABS = [{"Tech":1}, {"Creative":2}, {"Content":3}, {"PM":4}, ];
- 
-export default function ResourcesScreen() {
+ export default function ResourcesScreen() {
   
   const [activeTab, setActiveTab] = useState("Tech");
   const [activeData,setActiveData]=useState([]);
@@ -78,8 +77,7 @@ console.log(formattedDate);
           ))}
         </View>
  
-       
-        <View className='mx-4 mt-5 mb-2'>
+       <View className='mx-4 mt-5 mb-2'>
           <Text className={`text-lg `}>Team Utilization:</Text>
           <View className={`flex-row items-center justify-between mt-2 mr-16 gap-4  `}>
             <GradientProgressBar progress={utilData?.utilizationPercent/100||0/100}  />
@@ -87,6 +85,7 @@ console.log(formattedDate);
             
           </View>
         </View>
+         
          
         {/* Search Input */}
         <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-100 mx-4  shadow-lg mb-4 mt-2 p-3">
@@ -171,20 +170,7 @@ const TeamMember = ({ item, selectedDropdown, setSelectedDropdown  ,isLoading}) 
         <TaskDropdown emp={emp} />
       )}
      
-        {/* <TouchableOpacity className="flex-row items-center  p" onPress={handleToggle} > */}
-  {/* Logged Hours */}
-  {/* <View className="flex-row items-center space-x-1 mr-4" onPress={handleToggle}>
-    <Text className="text-green-800 text-end pr-2">🟢</Text>
-    <Text className="text-gray-500 text-lg">Logged: {item.Loggedhours} hr</Text>
-  </View>
-  */}
- 
-  {/* Available Hours */}
-  {/* <View className="flex-row items-center space-x-1 " onPress={handleToggle}>
-    <Text className="text-red-800 pr-2 text-xs">🔴</Text>
-    <Text className="text-gray-500 text-lg ">Available: {item.Available} hr</Text>
-  </View> */}
-{/* </TouchableOpacity> */}
+       
     </View>
  
       )
@@ -374,20 +360,6 @@ const TaskDropdown = ({ emp }) => {
             </View>
           </View>
         </View>
-    
-        {/* Progress Bar (optional) - uncomment if you have progress data
-        <View className="mt-3">
-          <View className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-            <View 
-              className="h-full bg-blue-500" 
-              style={{ width: `${task.progress}%` }}
-            />
-          </View>
-          <View className="flex-row justify-end mt-1">
-            <Text className="text-xs text-gray-500">{task.progress}% complete</Text>
-          </View>
-        </View>
-        */}
       </View>
     ))
   )}
