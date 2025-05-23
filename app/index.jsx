@@ -1,35 +1,41 @@
 import { View, Text, Image, Pressable, StyleSheet, Dimensions } from 'react-native';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
 // import { useNotificationPermission } from '../ReactQuery/hooks/useNotificationPermission';
 // import { scheduleDailyNotification } from '../utils/notifications';
-
+import { initNotificationListeners, registerForPushNotificationsAsync, removeNotificationListeners } from '@/services/notifications';
 
 
 const { width, height } = Dimensions.get('window');
 
 const Index = () => {
-  // useNotificationPermission();
  
-  // useEffect(() => {
-  //   // Automatically schedule daily 9AM notification when the app is loaded
-  //   const handleSchedule = () => {
-  //     scheduleDailyNotification(12, 11); // e.g., schedule for 9:00 AM daily
-  //     console.log('✅ Daily 9AM notification scheduled');
-  //   };
-
-  //   handleSchedule();  // Schedule the notification
-  // }, []); 
-
 const {user}=useContext(AuthContext)
-
+ const [expoToken, setExpoToken] = useState(null);
+ 
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(setExpoToken);
+ 
+    initNotificationListeners(
+      notification => {
+        console.log('Foreground Notification:', notification);
+      },
+      response => {
+        console.log('Tapped Notification:', response);
+      }
+    );
+ 
+    return () => {
+      removeNotificationListeners();
+    };
+  }, []);
 
   
 const handleClick = () => {
-  console.log("Userrrr",user?.checkTokenExpiration)
+ 
   
   if (!user|| user?.checkTokenExpiration) {
     router.replace('/(auth)/login');
@@ -53,7 +59,7 @@ const handleClick = () => {
         />
         
         <View style={styles.textContainer}>
-          <Text style={styles.title}>Welcome to Medtrix PM Tool</Text>
+          <Text style={[styles.title, { fontFamily: "Aladin"}]}>Welcome to Medtrix PM Tool</Text>
           <Text style={styles.subtitle}>
             Streamline your project management with ease and efficiency.
           </Text>
@@ -115,7 +121,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
     lineHeight: 34, 
-    fontFamily: 'PlayFair',
+  
   },
   subtitle: {
     fontSize: 16,

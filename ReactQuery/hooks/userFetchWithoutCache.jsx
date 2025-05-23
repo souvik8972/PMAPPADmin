@@ -1,3 +1,4 @@
+import { useRedirectIfTokenExpired } from '@/utils/auth';
 import { useQuery } from '@tanstack/react-query';
 
 const fetchData = async ({ endpoint, token }) => {
@@ -17,6 +18,7 @@ const fetchData = async ({ endpoint, token }) => {
 };
 
 export const useFetchDataNoCache = (endpoint, token) => {
+     useRedirectIfTokenExpired(token)
   return useQuery({
     queryKey: [endpoint],
     queryFn: () => fetchData({ endpoint, token }),

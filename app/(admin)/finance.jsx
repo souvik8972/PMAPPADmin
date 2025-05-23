@@ -53,7 +53,7 @@ const Finance = () => {
     try {
       await Promise.all([refetchYears(), refetchClients()]);
     } catch (error) {
-      console.error("Refresh error:", error);
+      // console.error("Refresh error:", error);
     } finally {
       setRefreshing(false);
     }

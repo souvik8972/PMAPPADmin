@@ -64,7 +64,7 @@ export default function TaskScreen() {
         }));
       }
     } catch (error) {
-      console.error('Error fetching task details:', error);
+      // console.error('Error fetching task details:', error);
       // Alert.alert('Error', 'Failed to load task details');
     } finally {
       setLoadingDetails(false);
@@ -133,7 +133,7 @@ export default function TaskScreen() {
         Alert.alert('Success', result.message);
       }
     } catch (error) {
-      console.error('Delete error:', error);
+      // console.error('Delete error:', error);
       Alert.alert(
         'Error',
         error.message || 'Failed to delete task. Please try again.'

@@ -4,16 +4,21 @@
     "slug": "pm-tool",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon.jpg",
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": [
       "**/*"
     ],
-    "splash": {
-      "image": "./assets/images/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
+   "splash": {
+  "image": "./assets/images/icon.jpg",
+  "resizeMode": "contain",
+  "backgroundColor": "white",
+  "imageResizeMode": "center",
+  "imageSize": {
+    "width": 15,
+    "height": 15
+  }
+},
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.souvik8582.pmtool",

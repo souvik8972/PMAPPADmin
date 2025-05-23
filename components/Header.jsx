@@ -36,7 +36,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
       {/* Right Profile Image */}
       <TouchableOpacity className=" py-3 flex flex-row items-center" onPress={() => setModalVisible(true)}>
         <Text className="text-[20px] mr-2 font-bold capitalize ">Hello {userName}</Text>
-        <Image source={require('../assets/images/Avatar.png')} className="w-12 h-12 bg-red-700" resizeMode="contain" />
+        <Image source={require('../assets/images/Avatar.png')} className="w-12 h-12 " resizeMode="contain" />
       </TouchableOpacity></View>): <View className='flex-row w-full  p-4 pl-0 justify-between items-center '>
       <TouchableOpacity onPress={() => navigation.toggleDrawer()} className="p-2 "> 
         <Ionicons name="menu" size={28} color="black" />
