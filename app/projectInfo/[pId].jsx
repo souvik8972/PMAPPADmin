@@ -79,8 +79,8 @@ const ProjectDetails = () => {
 
   const renderValueWithLabel = (predicted, actual) => {
     return (
-      <View style={styles.valueContainer}>
-        <View style={styles.valueItem}>
+      <View style={styles.valueContainer} className=' flex gap-5'>
+        <View style={styles.valueItem} className=''>
           <Text style={styles.valueSubLabel}>Predicted</Text>
           <Text style={styles.valueText}>{predicted}</Text>
         </View>
@@ -208,7 +208,7 @@ const ProjectDetails = () => {
         <ScrollView style={styles.card}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>Project Overview</Text>
-            <Ionicons name="information-circle-outline" size={22} color="#6B7280" />
+            
           </View>
           <View style={styles.cardBody}>
             <View style={styles.infoRow}>
@@ -309,22 +309,24 @@ const ProjectDetails = () => {
           activeOpacity={0.9}
           onPress={() => setShowCostChart(!showCostChart)}
         >
-          <View style={styles.cardHeader}>
-            <View>
-              <View style={styles.sectionTitleContainer}>
-                <Ionicons name="wallet" size={20} color="#4F46E5" style={styles.sectionIcon} />
+          <View style={styles.cardHeader} >
+            <View  className = 'flex-row justify-between'>
+              <View style={styles.sectionTitleContainer}  className='gap-2'>
                 <Text style={styles.cardTitle}>Project Cost</Text>
+                <Ionicons name="wallet" size={20} color="#4F46E5" style={styles.sectionIcon} />
+                
               </View>
-              {renderValueWithLabel(
-                `$${predictedCost.toLocaleString()}`,
-                `$${actualCost.toLocaleString()}`
-              )}
-            </View>
-            <Ionicons 
+              <Ionicons 
               name={showCostChart ? "chevron-up" : "chevron-down"} 
               size={22} 
               color="#6B7280" 
             />
+            </View>
+            
+            {renderValueWithLabel(
+                `$${predictedCost.toLocaleString()}`,
+                `$${actualCost.toLocaleString()}`
+              )}
           </View>
           {showCostChart && (
             <View style={styles.cardBody}>
@@ -372,21 +374,22 @@ const ProjectDetails = () => {
           onPress={() => setShowGPChart(!showGPChart)}
         >
           <View style={styles.cardHeader}>
-            <View>
-              <View style={styles.sectionTitleContainer}>
-                <Ionicons name="trending-up" size={20} color="#10B981" style={styles.sectionIcon} />
+            <View className='flex-row justify-between'>
+              <View style={styles.sectionTitleContainer} className='gap-2'>
                 <Text style={styles.cardTitle}>Gross Profit</Text>
+                <Ionicons name="trending-up" size={20} color="#10B981" style={styles.sectionIcon} />
               </View>
-              {renderValueWithLabel(
-                `$${predictedGP.toLocaleString()}`,
-                `$${actualGP.toLocaleString()}`
-              )}
-            </View>
-            <Ionicons 
+               <Ionicons 
               name={showGPChart ? "chevron-up" : "chevron-down"} 
               size={22} 
               color="#6B7280" 
             />
+            </View>
+           
+             {renderValueWithLabel(
+                `$${predictedGP.toLocaleString()}`,
+                `$${actualGP.toLocaleString()}`
+              )}
           </View>
           {showGPChart && (
             <View style={styles.cardBody}>
@@ -429,21 +432,23 @@ const ProjectDetails = () => {
           onPress={() => setShowHoursChart(!showHoursChart)}
         >
           <View style={styles.cardHeader}>
-            <View>
-              <View style={styles.sectionTitleContainer}>
-                <Ionicons name="time" size={20} color="#F59E0B" style={styles.sectionIcon} />
+            <View className='flex-row justify-between'>
+              <View style={styles.sectionTitleContainer} className='gap-2'>
+                
                 <Text style={styles.cardTitle}>Project Hours</Text>
+                <Ionicons name="time" size={20} color="#F59E0B" style={styles.sectionIcon} />
               </View>
-              {renderValueWithLabel(
-                `${predictedHours.toFixed(1)}h`,
-                `${actualHours.toFixed(1)}h`
-              )}
-            </View>
-            <Ionicons 
+             <Ionicons 
               name={showHoursChart ? "chevron-up" : "chevron-down"} 
               size={22} 
               color="#6B7280" 
             />
+            </View>
+            
+             {renderValueWithLabel(
+                `${predictedHours.toFixed(1)}h`,
+                `${actualHours.toFixed(1)}h`
+              )}
           </View>
           {showHoursChart && (
             <View style={styles.cardBody}>
@@ -547,9 +552,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
     padding: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    
   },
   cardTitle: {
     fontSize: 17,

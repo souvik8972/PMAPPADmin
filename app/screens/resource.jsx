@@ -30,8 +30,13 @@ export default function ResourcesScreen() {
   const TOKEN=user.token||null;
   const teamId = TABS.find((tab) => activeTab in tab)?.[activeTab]||1;
   const {data,isLoading,isError} = useFetchData(`Resource/GetTeamMembers?teamId=${teamId}`, TOKEN)
- 
-     
+ const today = new Date();
+const formattedDate = `${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}/${today.getFullYear()}`;
+console.log(formattedDate);
+
+  const {data:utilData,isLoading:utillLoading,isError:utillError} = useFetchData(`Task/GetTeamUtilData?teamId=${teamId}&date_val=${formattedDate}`, TOKEN)
+   console.log(utilData);
+   
  
   const HandleTab = async (tab) => {
     setSearchText("");
@@ -64,7 +69,7 @@ export default function ResourcesScreen() {
      <View style={{flex:1}}>
      
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={tw`flex-1 bg-white`}>
-      <Text className='mx-3 mb-6  text-lg font-medium'>Task Availability</Text>
+      <Text className='mx-4 mb-6  text-lg font-medium'>Task Availability</Text>
        
     <ScrollView style={{flexGrow:1}}>
         <View className="flex-row  justify-evenly m-0 p-0 ">
@@ -76,15 +81,15 @@ export default function ResourcesScreen() {
        
         <View className='mx-4 mt-5 mb-2'>
           <Text className={`text-lg `}>Team Utilization:</Text>
-          <View className={`flex-row items-center justify-between mt-2 mr-16  `}>
-            <GradientProgressBar progress={0.5}  />
-            <Text className={'p-2'}>50%</Text>
-            <Icon name="infocirlceo" size={18} color="gray" />
+          <View className={`flex-row items-center justify-between mt-2 mr-16 gap-4  `}>
+            <GradientProgressBar progress={utilData?.utilizationPercent/100||0/100}  />
+            <Text className={'pl- pb-2 pt-2 r'}>{utilData?.utilizationPercent||0}%</Text>
+            
           </View>
         </View>
          
         {/* Search Input */}
-        <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-100 mx-3  shadow-lg mb-4 mt-2 pr-4 pl-3  pt-3  pb-3">
+        <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-100 mx-4  shadow-lg mb-4 mt-2 p-3">
           <TextInput
             placeholder="Search"
             value={searchText}
@@ -156,11 +161,11 @@ const TeamMember = ({ item, selectedDropdown, setSelectedDropdown  ,isLoading}) 
   return (
  
     <View>
-   {item && item.map((emp)=>{ return(<View style={[tw`p-3 rounded-lg shadow-md my-3 mx-3 `, {backgroundColor:'#EBEBEB'}]} key={emp.EmpId}  >
+   {item && item.map((emp)=>{ return(<View style={[tw`p-3 rounded-lg shadow-md my-3 mx-4 `, {backgroundColor:'#EBEBEB'}]} key={emp.EmpId}  >
      
       <TouchableOpacity onPress={()=>{handleToggle(emp.EmpId)}} className='flex-row justify-between  items-center'>
         <Text className=' text-center'>{emp.Employee_Name}</Text>
-          <MaterialIcons name={selectedDropdown === emp.EmpId ? "keyboard-arrow-down" : "chevron-right"} size={35} color="black" />
+          <MaterialIcons name={selectedDropdown === emp.EmpId ? "keyboard-arrow-down" : "chevron-right"} size={32} color="black" />
           </TouchableOpacity>
           {selectedDropdown === emp.EmpId && (
         <TaskDropdown emp={emp} />
@@ -284,8 +289,8 @@ const TaskDropdown = ({ emp }) => {
  
           {/* Google search bar */}
          
-          <View className="flex-row space-x-3 items-center border border-gray-300 rounded-full   w-2/3 text-white mb-2 mt-2" style={{backgroundColor:'#B4B4B4'}}>
-          <Icon name="search1" size={20} color="white" className="p-2" />
+          <View className="flex-row space-x-3 items-center border border-gray-200 rounded-full   w-2/3 text-white mb-2 mt-2" style={{backgroundColor:'#B4B4B4'}}>
+          <Icon name="search1" size={20} color="gray" className="p-3" />
      
             <TextInput
              placeholder="Search here "
@@ -325,7 +330,7 @@ const TaskDropdown = ({ emp }) => {
     FilterTaskData.map((task) => (
       <View
         key={task.Task_Id}
-        className="bg-white rounded-lg shadow-sm border border-gray-100 mb-3 p-4 mx-2"
+        className="bg-white rounded-lg shadow-sm border border-gray-100 mb-3 p-2 "
         style={{
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 1 },
@@ -354,12 +359,12 @@ const TaskDropdown = ({ emp }) => {
         <View className="space-y-2">
           <View className="flex-row justify-between">
             <Text className="text-sm font-medium text-gray-500">Logged Hours</Text>
-            <Text className="text-sm font-semibold text-gray-800">{task.Working_hours}h</Text>
+            <Text className="text-sm font-semibold text-gray-800">{task.Working_hours} hr</Text>
           </View>
           
           <View className="flex-row justify-between">
             <Text className="text-sm font-medium text-gray-500">Production Hours</Text>
-            <Text className="text-sm font-semibold text-gray-800">{task.Working_hours}h</Text>
+            <Text className="text-sm font-semibold text-gray-800">{task.Working_hours} hr</Text>
           </View>
           
           <View className="flex-row justify-between items-center pt-1">

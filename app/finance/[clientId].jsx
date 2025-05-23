@@ -133,9 +133,9 @@ const Client = () => {
           </View>
           <View 
             style={{ width: `${Math.abs(100 - currentClientInfo.Actual_percentage)}%`}} 
-            className={`${currentClientInfo.Actual_percentage < 100 ? "bg-red-500" : "bg-black"} h-full rounded-full items-end justify-center px-1`}
+            className={`${currentClientInfo.Actual_percentage < 0 ? "bg-red-500 " : "bg-black" } h-full rounded-full items-end justify-center px-1 text-white`}
           >
-            <Text className="text-white font-bold text-sm pr-2">
+            <Text className="font-bold text-sm pr-2 ">
               {Math.abs( currentClientInfo.Actual_percentage)}%
             </Text>
           </View>
@@ -170,7 +170,7 @@ const Client = () => {
         }}
       >
         <LinearGradient
-          colors={["white", "#FFADB0"]}
+          colors={["#f3e7e9", "#e3eeff"]}
           style={{
             padding: 16,
             width: "100%",
@@ -194,7 +194,7 @@ const TaskList = ({ projects, clientId, loading }) => {
   return (
     <View className="flex-1 pt-0 ">
       {/* Header with Add Button */}
-      <View className="flex-row items-center justify-between mb-6 px-4">
+      <View className="flex-row items-center justify-between mb-6 px-3">
         <Text className="text-2xl font-bold text-gray-800">Projects List</Text>
         {/* {user?.userType == 1 && (
           <TouchableOpacity
@@ -225,7 +225,7 @@ const TaskList = ({ projects, clientId, loading }) => {
       {/* Projects List */}
       <ScrollView 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+        contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 20 }}
       >
         {loading ? (
           // Show shimmer loaders while loading
