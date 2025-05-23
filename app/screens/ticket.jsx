@@ -9,7 +9,7 @@ import { AuthContext } from '@/context/AuthContext';
 import { usePostData } from '@/ReactQuery/hooks/usePostData';
 import { usePostDataParam } from '@/ReactQuery/hooks/usePostDataParam';
 import RetryButton from '@/components/Retry';
-
+import { API_URL } from '@env';
 const IssueTracker = () => {
   const { user } = useContext(AuthContext);
   const token = user?.token || null;
@@ -126,7 +126,7 @@ const IssueTracker = () => {
       });
   
       // Full URL with query params
-      const fullUrl = `http://184.72.156.185/Test-APp/api/Ticket/UpdateIssueStatus?${queryParams.toString()}`;
+      const fullUrl = `${API_URL}Ticket/UpdateIssueStatus?${queryParams.toString()}`;
       console.log(fullUrl);
   
       const response = await fetch(fullUrl, {

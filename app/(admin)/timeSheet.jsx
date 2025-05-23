@@ -23,7 +23,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { usePostData } from "../../ReactQuery/hooks/usePostData";
-
+import { API_URL } from '@env';
 export default function TaskScreen() {
   const { user } = useContext(AuthContext);
   const scrollViewRef = useRef();
@@ -134,7 +134,7 @@ export default function TaskScreen() {
   
     try {
       const response = await fetch(
-        `http://184.72.156.185/Test-APp/api/Task/SendActualHours?TimelogId=${task.LogId}&TaskId=${task.Task_Id}&Emp_Id=${user.empId}&logDate=${encodeURIComponent(selectedDate)}&Log=${logValue}&Billing_type=${task.Billing_Type}&Notes=Na`,
+        `${API_URL}Task/SendActualHours?TimelogId=${task.LogId}&TaskId=${task.Task_Id}&Emp_Id=${user.empId}&logDate=${encodeURIComponent(selectedDate)}&Log=${logValue}&Billing_type=${task.Billing_Type}&Notes=Na`,
         {
           method: 'POST',
           headers: {

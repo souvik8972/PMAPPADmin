@@ -11,7 +11,7 @@ import { format } from "date-fns";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { AuthContext } from "../../context/AuthContext";
 import { deleteTask } from "../../ReactQuery/hooks/deleteTask";
-
+import { API_URL } from '@env';
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
 export default function TaskScreen() {
@@ -39,7 +39,7 @@ export default function TaskScreen() {
   const basicTaskEndpoint = `Task/GetTskNameByDate?st_dt=${formattedStartDate}&ed_dt=${formattedEndDate}&page=${page}&limit=20&search=${searchQuery}`;
   
   // API endpoint for task details (will be called when a task is clicked)
-  const taskDetailsEndpoint = (taskId) => `http://184.72.156.185/Test-APp/api/Task/getTaskDetailsByID?taskid=${taskId}`;
+  const taskDetailsEndpoint = (taskId) => `${API_URL}Task/getTaskDetailsByID?taskid=${taskId}`;
 
   const { data: basicTaskData, isLoading: loadingBasicTasks, refetch: refetchBasicTasks } = useFetchData(basicTaskEndpoint, token);
 

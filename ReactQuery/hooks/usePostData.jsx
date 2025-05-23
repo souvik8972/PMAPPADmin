@@ -1,9 +1,10 @@
 // src/hooks/usePostData.js
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { API_URL } from '@env';
 const postData = async ({ endpoint, data, token, queryParams = {} }) => {
   const queryString = new URLSearchParams(queryParams).toString();
-  const fullUrl = `https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/${endpoint}?${queryString}`;
+  const fullUrl = `${API_URL}${endpoint}?${queryString}`;
 
 
   const response = await fetch(fullUrl, {

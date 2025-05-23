@@ -1,7 +1,12 @@
+
+
+import { API_URL } from '@env';
+
+
 export const deleteTask = async (taskId, token) => {
   try {
     const response = await fetch(
-      `http://184.72.156.185/Test-APp/api/Task/DeleteTask?TaskId=${taskId}`,
+      `${API_URL}Task/DeleteTask?TaskId=${taskId}`,
       {
         method: 'GET', // Using GET as required by backend
         headers: {

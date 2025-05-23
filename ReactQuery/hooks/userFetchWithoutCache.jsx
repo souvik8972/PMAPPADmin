@@ -1,8 +1,9 @@
 import { useRedirectIfTokenExpired } from '@/utils/auth';
 import { useQuery } from '@tanstack/react-query';
 
+import { API_URL } from '@env';
 const fetchData = async ({ endpoint, token }) => {
-  const response = await fetch(`https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/${endpoint}`, {
+  const response = await fetch(`${API_URL}${endpoint}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

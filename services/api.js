@@ -1,7 +1,10 @@
 // apo.js
+
+
+import { API_URL } from '@env';
 export const loginUser = async ({ email, password }) => {
 
-    const response = await fetch('http://184.72.156.185/Test-APp/api/Auth/login', {
+    const response = await fetch(`${API_URL}Auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -20,7 +23,7 @@ export const loginUser = async ({ email, password }) => {
   
   export const requestAssets = async ({ empId,reason,productDetail }) => {
 
-    const response = await fetch('http://184.72.156.185/Test-APp/api/Assests/SendAssestdetails', {
+    const response = await fetch(`${API_URL}Assests/SendAssestdetails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
