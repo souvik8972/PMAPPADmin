@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import React, { useState } from 'react';
 import { Ionicons, MaterialIcons, FontAwesome, AntDesign } from '@expo/vector-icons';
-
+import ComingSoonScreen from "../ComingSoonScreen"
 const AllRequest = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -117,10 +117,10 @@ const AllRequest = () => {
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
-      
+      <ComingSoonScreen/>
 
       {/* Request List */}
-      <ScrollView className="px-6 pt-4" showsVerticalScrollIndicator={false}>
+      {/* <ScrollView className="px-6 pt-4" showsVerticalScrollIndicator={false}>
         {data.map((request) => {
           const status = getStatusDetails(request.status);
           
@@ -170,7 +170,7 @@ const AllRequest = () => {
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
+      </ScrollView> */}
 
       {/* Request Details Modal */}
       <Modal
@@ -184,12 +184,7 @@ const AllRequest = () => {
           <View className="pt-12 px-6 pb-4 border-b border-gray-100">
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-2xl font-bold text-gray-900">Request Details</Text>
-              {/* <TouchableOpacity 
-                onPress={() => setIsModalVisible(false)}
-                className="p-2 bg-red-100 rounded-full"
-              >
-                <Ionicons name="close" size={24} color="#6B7280" />
-              </TouchableOpacity> */}
+              
             </View>
             <View className="flex-row items-center">
               <Text className="text-gray-700 font-medium mr-3">{selectedRequest?.Request_Id}</Text>
