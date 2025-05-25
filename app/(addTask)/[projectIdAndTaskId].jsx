@@ -22,15 +22,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome } from '@expo/vector-icons';
 import { usePostData } from '../../ReactQuery/hooks/usePostData';
 import { AuthContext } from "../../context/AuthContext";
-import { format } from 'date-fns';
+import { format, isWeekend, addDays } from 'date-fns';
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
-import extractTaskHours from "../../utils/functions/extractTaskHours";
+
 export default AddEditTask = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const ids = route.params?.projectIdAndTaskId?.split("-") || [];
   const [projectId, taskId, actionType, BId] = ids;
-  const isEditMode =taskId;
+  const isEditMode = taskId;
   const { user } = useContext(AuthContext);
   
   // State for form fields
@@ -41,7 +41,6 @@ export default AddEditTask = () => {
   const [endDate, setEndDate] = useState(new Date());
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  // const [isLoading, setIsLoading] = useState(isEditMode);
 
   // Cost states from API
   const [costs, setCosts] = useState({
@@ -67,153 +66,177 @@ export default AddEditTask = () => {
   const [showHoursInput, setShowHoursInput] = useState(false);
   const [memberHours, setMemberHours] = useState({});
   const [rotateAnim] = useState(new Animated.Value(0));
+  const [originalId, setOriginalId] = useState("");
 
   // Animation interpolation
   const rotateInterpolate = rotateAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg']
   });
-// orginal Id
-const [originalId, setOriginalId] = useState("");
+
   // Use the usePostData hook
-  // const { mutate: fetchTaskData, isLoading: isFetching } = usePostData('Task/getTaskDetailsByProjectId');
   const { mutate: submitTask, isPending: isSubmitPending } = usePostData('Task/CreateTask', ["Task/GetTasks"]);
+  
+  // Fetch task details
   const { data, isLoading, refetch } = useFetchData(
     isEditMode 
       ? `Task/getTaskDetailsByProjectId?ProjectId=${projectId}&ActionType=${actionType}&TaskId=${taskId}&Bid=${BId}`
-      : `Task/getTaskDetailsByProjectId?ProjectId=${projectId}&ActionType=1&Bid=${BId || 0}`,user.token
+      : `Task/getTaskDetailsByProjectId?ProjectId=${projectId}&ActionType=1&Bid=${BId || 0}`,
+    user.token
   );
-  // console.log(data,projectId, taskId, actionType, BId,"SSSSSS")
 
-  // Load task data if in edit mode
-  // Update your useEffect to include data as a dependency
-useEffect(() => {
-  if (data) {
-    processApiResponse(data);
-  }
-}, [data]); // Add data as dependency
+  // Fetch allocation time if in edit mode
+  const { data: allocationTime, isLoading: allocationLoader } = useFetchData(
+    isEditMode ? `Task/getTaskHoursDetailsByID?taskid=${taskId}` : null,
+    user.token
+  );
 
-// Modify your processApiResponse function to be more defensive
-const processApiResponse = (apiData) => {
-  // console.log("API Data:", apiData);
-  if (!apiData) return;
+  // Function to skip weekends when setting dates
+  const skipWeekends = (date) => {
+    let newDate = new Date(date);
+    while (isWeekend(newDate)) {
+      newDate = addDays(newDate, 1);
+    }
+    return newDate;
+  };
 
-  try {
-    // Set costs data (with more defensive checks)
-    const costsData = apiData.costs || {};
-    setCosts({
-      PurchaseCost: costsData.PurchaseCost || "0.00",
-      PredictedCost: costsData.PredictedCost || "0.00",
-      OutSourceCost: costsData.OutSourceCost || "0.00",
-      util_cost: costsData.util_cost || null
+  // Process API response for task details
+  useEffect(() => {
+    if (data) {
+      processApiResponse(data);
+    }
+  }, [data]);
+
+  // Process allocation time data when it's available
+  useEffect(() => {
+    if (allocationTime && isEditMode) {
+      processAllocationTime(allocationTime);
+    }
+  }, [allocationTime]);
+
+  const processAllocationTime = (allocData) => {
+    if (!allocData || !Array.isArray(allocData)) return;
+
+    const hoursObj = {...memberHours};
+
+    allocData.forEach(employee => {
+      if (!employee.allocations || !Array.isArray(employee.allocations)) return;
+
+      const empId = employee.empId.toString();
+      hoursObj[empId] = hoursObj[empId] || {};
+
+      employee.allocations.forEach(allocation => {
+        if (allocation.date && allocation.hours !== undefined) {
+          hoursObj[empId][allocation.date] = allocation.hours;
+        }
+      });
     });
 
-    // Set team members dropdown
-    if (apiData.Emp_List && Array.isArray(apiData.Emp_List)) {
-      const members = apiData.Emp_List.map(emp => ({
-        label: emp.Employee_Name,
-        value: emp.EmpId.toString(),
-        name: emp.Employee_Name,
-        id: emp.EmpId.toString()
-      }));
-      setTeamMembers(members);
-    }
+    setMemberHours(hoursObj);
+  };
 
-    // Set dropdown lists
-    if (apiData.dropdownList) {
-      // Set clients dropdown
-      if (apiData.dropdownList.clientName) {
-        setClients([{
-          label: apiData.dropdownList.clientName,
-          value: apiData.dropdownList.Client_Id.toString()
-        }]);
-        setClient(apiData.dropdownList.Client_Id.toString());
-      }
+  const processApiResponse = (apiData) => {
+    if (!apiData) return;
 
-      // Set statuses dropdown
-      if (apiData.dropdownList.Status && Array.isArray(apiData.dropdownList.Status)) {
-        const statusOptions = apiData.dropdownList.Status.map(status => ({
-          label: status.Status,
-          value: status.Id.toString(),
-          statusName: status.Status
+    try {
+      // Set costs data
+      const costsData = apiData.costs || {};
+      setCosts({
+        PurchaseCost: costsData.PurchaseCost || "0.00",
+        PredictedCost: costsData.PredictedCost || "0.00",
+        OutSourceCost: costsData.OutSourceCost || "0.00",
+        util_cost: costsData.util_cost || null
+      });
+
+      // Set team members dropdown
+      if (apiData.Emp_List && Array.isArray(apiData.Emp_List)) {
+        const members = apiData.Emp_List.map(emp => ({
+          label: emp.Employee_Name,
+          value: emp.EmpId.toString(),
+          name: emp.Employee_Name,
+          id: emp.EmpId.toString()
         }));
-        setStatuses(statusOptions);
+        setTeamMembers(members);
       }
-    }
 
-    // Set task details if in edit mode
-    if (isEditMode && apiData.GetEditTaskDetails) {
-      const taskDetails = apiData.GetEditTaskDetails;
-      // console.log("Task Details:", taskDetails);
-      
-      // SET ORIGINAL ID
-      setOriginalId(taskDetails?.Originalempids || "");
-      
-      // Set task title
-      setTaskName(taskDetails.TskTitle || "");
-      
-      // Set dates
-      if (taskDetails.StartDate) {
-        const [month, day, year] = taskDetails.StartDate.split('/');
-        setStartDate(new Date(year, month - 1, day));
-      }
-      
-      if (taskDetails.EndDate) {
-        const [month, day, year] = taskDetails.EndDate.split('/');
-        setEndDate(new Date(year, month - 1, day));
-      }
-      
-      // Set status
-      if (taskDetails.TskStatus) {
-        setStatus(taskDetails.TskStatus.toString());
-      }
-      
-      // Set selected team members
-      if (taskDetails.Empids) {
-        const empIds = taskDetails.Empids.split(',').filter(id => id.trim() !== '');
-        
-        // Find matching team members from Emp_List
-        const selectedEmps = (apiData.Emp_List || [])
-          .filter(emp => empIds.includes(emp.EmpId.toString()))
-          .map(emp => ({
-            label: emp.Employee_Name,
-            value: emp.EmpId.toString(),
-            name: emp.Employee_Name,
-            id: emp.EmpId.toString()
+      // Set dropdown lists
+      if (apiData.dropdownList) {
+        // Set clients dropdown
+        if (apiData.dropdownList.clientName) {
+          setClients([{
+            label: apiData.dropdownList.clientName,
+            value: apiData.dropdownList.Client_Id.toString()
+          }]);
+          setClient(apiData.dropdownList.Client_Id.toString());
+        }
+
+        // Set statuses dropdown
+        if (apiData.dropdownList.Status && Array.isArray(apiData.dropdownList.Status)) {
+          const statusOptions = apiData.dropdownList.Status.map(status => ({
+            label: status.Status,
+            value: status.Id.toString(),
+            statusName: status.Status
           }));
-        
-        setSelectedResources(selectedEmps);
-        
-        // Initialize hours
-        const hoursObj = {};
-        selectedEmps.forEach(emp => {
-          hoursObj[emp.id] = {};
-          
-          // If existing hours data is available from API
-          if (taskDetails.employees) {
-            const empData = taskDetails.employees.find(e => e.empId.toString() === emp.id);
-            if (empData && empData.logDetails) {
-              empData.logDetails.forEach(log => {
-                hoursObj[emp.id][log.date] = log.hr;
-              });
-            }
-          }
-        });
-        setMemberHours(hoursObj);
+          setStatuses(statusOptions);
+        }
       }
-    }
-  } catch (error) {
-    // console.error("Error processing API response:", error);
-  }
-};
 
-  // Date handlers
+      // Set task details if in edit mode
+      if (isEditMode && apiData.GetEditTaskDetails) {
+        const taskDetails = apiData.GetEditTaskDetails;
+        
+        setOriginalId(taskDetails?.Originalempids || "");
+        setTaskName(taskDetails.TskTitle || "");
+        
+        // Set dates (skip weekends)
+        if (taskDetails.StartDate) {
+          const [month, day, year] = taskDetails.StartDate.split('/');
+          const initialStartDate = new Date(year, month - 1, day);
+          setStartDate(skipWeekends(initialStartDate));
+        }
+        
+        if (taskDetails.EndDate) {
+          const [month, day, year] = taskDetails.EndDate.split('/');
+          const initialEndDate = new Date(year, month - 1, day);
+          setEndDate(skipWeekends(initialEndDate));
+        }
+        
+        // Set status
+        if (taskDetails.TskStatus) {
+          setStatus(taskDetails.TskStatus.toString());
+        }
+        
+        // Set selected team members
+        if (taskDetails.Empids) {
+          const empIds = taskDetails.Empids.split(',').filter(id => id.trim() !== '');
+          
+          const selectedEmps = (apiData.Emp_List || [])
+            .filter(emp => empIds.includes(emp.EmpId.toString()))
+            .map(emp => ({
+              label: emp.Employee_Name,
+              value: emp.EmpId.toString(),
+              name: emp.Employee_Name,
+              id: emp.EmpId.toString()
+            }));
+          
+          setSelectedResources(selectedEmps);
+        }
+      }
+    } catch (error) {
+      console.error("Error processing API response:", error);
+    }
+  };
+
+  // Date handlers with weekend skipping
   const handleStartDateChange = (event, selectedDate) => {
     setShowStartDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
-      setStartDate(selectedDate);
-      if (selectedDate > endDate) {
-        setEndDate(selectedDate);
+      const newDate = skipWeekends(selectedDate);
+      setStartDate(newDate);
+      
+      // Adjust end date if needed
+      if (newDate > endDate) {
+        setEndDate(skipWeekends(newDate));
       }
     }
   };
@@ -221,17 +244,17 @@ const processApiResponse = (apiData) => {
   const handleEndDateChange = (event, selectedDate) => {
     setShowEndDatePicker(Platform.OS === 'ios');
     if (selectedDate && selectedDate >= startDate) {
-      setEndDate(selectedDate);
+      setEndDate(skipWeekends(selectedDate));
     }
   };
 
   // Team member handlers
   const addResource = (resource) => {
-    if (!selectedResources.includes(resource)) {
+    if (!selectedResources.some(r => r.id === resource.id)) {
       setSelectedResources([...selectedResources, resource]);
       setMemberHours(prev => ({
         ...prev,
-        [resource]: {}
+        [resource.id]: prev[resource.id] || {}
       }));
     }
     setResourceInput('');
@@ -239,9 +262,9 @@ const processApiResponse = (apiData) => {
   };
 
   const removeResource = (resource) => {
-    setSelectedResources(selectedResources.filter(r => r !== resource));
+    setSelectedResources(selectedResources.filter(r => r.id !== resource.id));
     const newMemberHours = {...memberHours};
-    delete newMemberHours[resource];
+    delete newMemberHours[resource.id];
     setMemberHours(newMemberHours);
   };
 
@@ -257,30 +280,38 @@ const processApiResponse = (apiData) => {
   };
 
   // Handle hours change for each member
-  const handleHoursChange = (member, date, hours) => {
+  const handleHoursChange = (memberId, date, hours) => {
     setMemberHours(prev => ({
       ...prev,
-      [member]: {
-        ...prev[member],
+      [memberId]: {
+        ...prev[memberId],
         [date]: hours ? parseInt(hours) : 0
       }
     }));
   };
 
-  // Generate dates between start and end date
+  // Generate dates between start and end date, skipping weekends
   const getDatesInRange = (start, end) => {
-    const dates = [];
-    let currentDate = new Date(start);
-    
-    while (currentDate <= end) {
+  const dates = [];
+  // Create new Date objects to avoid modifying the original dates
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  
+  // Reset time components to ensure pure date comparison
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setHours(0, 0, 0, 0);
+  
+  let currentDate = new Date(startDate);
+  
+  while (currentDate <= endDate) {
+    if (!isWeekend(currentDate)) {
       dates.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + 1);
     }
-    
-    return dates;
-  };
-
- 
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return dates;
+};
 
   // Form submission
   const handleSubmit = () => {
@@ -312,14 +343,13 @@ const processApiResponse = (apiData) => {
       
       const logDetails = datesInRange.map(date => {
         const dateStr = format(date, 'MM/dd/yyyy');
-        console.log(hoursData,dateStr,"dateStr)")
         const hours = hoursData[dateStr] || 0;
         
         return {
           date: dateStr,
           hr: hours,
-          startTime: "00:00:00", // Fixed value
-          endTime: "00:00:00"    // Fixed value
+          startTime: "00:00:00",
+          endTime: "00:00:00"
         };
       });
   
@@ -344,11 +374,6 @@ const processApiResponse = (apiData) => {
       employees
     };
   
-    console.log("Complete Task Payload:", JSON.stringify(taskData, null, 2));
-  
-  
-  
-    
     submitTask(
       { 
         data: taskData,
@@ -366,7 +391,8 @@ const processApiResponse = (apiData) => {
       }
     );
   };
-  if (isLoading) {
+
+  if (isLoading || (isEditMode && allocationLoader)) {
     return (
       <SafeAreaView className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#D01313" />
@@ -374,6 +400,7 @@ const processApiResponse = (apiData) => {
       </SafeAreaView>
     );
   }
+
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -500,140 +527,152 @@ const processApiResponse = (apiData) => {
                 ArrowUpIconComponent={() => <Feather name="chevron-up" size={18} color="#64748b" />}
               />
             </View>
+{/* Date Pickers */}
+<View className="flex-row justify-between mb-3">
+  <View className="w-[48%]">
+    <Text className="text-sm font-medium text-slate-600 mb-1">Start Date</Text>
+    <TouchableOpacity 
+      onPress={() => setShowStartDatePicker(true)} 
+      className="rounded-lg border bg-red-800 h-12 px-4 flex-row items-center justify-between"
+    >
+      <Text className="text-white">{format(startDate, 'MM/dd/yyyy')}</Text>
+      <Feather name="calendar" size={18} color="white" />
+    </TouchableOpacity>
+    {showStartDatePicker && (
+      <DateTimePicker
+        value={startDate}
+        mode="date"
+        display="default"
+        onChange={handleStartDateChange}
+        minimumDate={isEditMode ? undefined : new Date()}
+      />
+    )}
+  </View>
+  <View className="w-[48%]">
+    <Text className="text-sm font-medium text-slate-600 mb-1">End Date</Text>
+    <TouchableOpacity 
+      onPress={() => setShowEndDatePicker(true)} 
+      className="rounded-lg border bg-red-800 h-12 px-4 flex-row items-center justify-between"
+    >
+      <Text className="text-white">{format(endDate, 'MM/dd/yyyy')}</Text>
+      <Feather name="calendar" size={18} color="white" />
+    </TouchableOpacity>
+    {showEndDatePicker && (
+      <DateTimePicker
+        value={endDate}
+        mode="date"
+        display="default"
+        onChange={handleEndDateChange}
+        minimumDate={startDate}
+      />
+    )}
+  </View>
+</View>
 
-            {/* Date Pickers */}
-            <View className="flex-row justify-between mb-3">
-              <View className="w-[48%]">
-                <Text className="text-sm font-medium text-slate-600 mb-1">Start Date</Text>
-                <TouchableOpacity 
-                  onPress={() => setShowStartDatePicker(true)} 
-                  className="rounded-lg border bg-red-800 h-12 px-4 flex-row items-center justify-between"
-                >
-                  <Text className="text-white">{format(startDate, 'MM/dd/yyyy')}</Text>
-                  <Feather name="calendar" size={18} color="white" />
-                </TouchableOpacity>
-                {showStartDatePicker && (
-                  <DateTimePicker
-                    value={startDate}
-                    mode="date"
-                    display="default"
-                    onChange={handleStartDateChange}
-                    minimumDate={isEditMode ? undefined : new Date()}
-                  />
-                )}
-              </View>
-              <View className="w-[48%]">
-                <Text className="text-sm font-medium text-slate-600 mb-1">End Date</Text>
-                <TouchableOpacity 
-                  onPress={() => setShowEndDatePicker(true)} 
-                  className="rounded-lg border bg-red-800 h-12 px-4 flex-row items-center justify-between"
-                >
-                  <Text className="text-white">{format(endDate, 'MM/dd/yyyy')}</Text>
-                  <Feather name="calendar" size={18} color="white" />
-                </TouchableOpacity>
-                {showEndDatePicker && (
-                  <DateTimePicker
-                    value={endDate}
-                    mode="date"
-                    display="default"
-                    onChange={handleEndDateChange}
-                    minimumDate={startDate}
-                  />
-                )}
-              </View>
-            </View>
-
-            {/* Team Members Section */}
-            <Text className="text-sm font-medium text-slate-600 mb-1">Team Members</Text>
-            <View className="mb-3">
-              <View className="bg-white rounded-lg border border-slate-200 shadow-xs">
-                <TextInput
-                  value={resourceInput}
-                  onChangeText={(text) => {
-                    setResourceInput(text);
-                    setShowResourceDropdown(text.length > 0);
-                  }}
-                  placeholder="Add team members"
-                  placeholderTextColor="#9ca3af"
-                  className="h-12 px-4 text-slate-800"
-                />
-              </View>
-              
-              {showResourceDropdown && (
-                <View className="mt-1 bg-white border border-slate-200 rounded-lg max-h-40">
-                  <ScrollView style={{zIndex: 100}} nestedScrollEnabled={true}>
-
-                    {teamMembers
-                      .filter(member => 
-                        member.label.toLowerCase().includes(resourceInput.toLowerCase()) &&
-                        !selectedResources.some(r => r.id === member.id)
-                      )
-                      .map((member, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          onPress={() => addResource(member)}
-                          className="px-4 py-2 border-b border-slate-100"
-                        >
-                          <Text className="text-slate-800">{member.label}</Text>
-                        </TouchableOpacity>
-                      ))}
-                  </ScrollView>
-                </View>
-              )}
-              
-              {selectedResources.length > 0 && (
-                <View className="flex-row flex-wrap mt-2">
-                  {selectedResources.map((resource, index) => (
-                    <View key={index} className="flex-row items-center bg-slate-100 rounded-full px-3 py-1 mr-2 mb-2">
-                      <Text className="text-slate-700 mr-1">{resource.label || resource.name}</Text>
-                      <TouchableOpacity onPress={() => removeResource(resource)}>
-                        <Feather name="x" size={16} color="#64748b" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-
-            {/* Hours Input Section */}
-            <TouchableOpacity 
-              onPress={toggleHoursInput}
-              className="flex-row items-center justify-between bg-slate-50 p-3 rounded-lg mb-3"
+{/* Team Members Section */}
+<Text className="text-sm font-medium text-slate-600 mb-1">Team Members</Text>
+<View className="mb-3">
+  <View className="bg-white rounded-lg border border-slate-200 shadow-xs">
+    <TextInput
+      value={resourceInput}
+      onChangeText={(text) => {
+        setResourceInput(text);
+        setShowResourceDropdown(text.length > 0);
+      }}
+      placeholder="Add team members"
+      placeholderTextColor="#9ca3af"
+      className="h-12 px-4 text-slate-800"
+    />
+  </View>
+  
+  {showResourceDropdown && (
+    <View className="mt-1 bg-white border border-slate-200 rounded-lg max-h-40">
+      <ScrollView style={{zIndex: 100}} nestedScrollEnabled={true}>
+        {teamMembers
+          .filter(member => 
+            member.label.toLowerCase().includes(resourceInput.toLowerCase()) &&
+            !selectedResources.some(r => r.id === member.id)
+          )
+          .map((member, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => addResource(member)}
+              className="px-4 py-2 border-b border-slate-100"
             >
-              <Text className="text-slate-700 font-medium">Add Hours for Team Members</Text>
-              <Animated.View style={{ transform: [{ rotate: rotateInterpolate }] }}>
-                <Feather name="chevron-down" size={20} color="#64748b" />
-              </Animated.View>
+              <Text className="text-slate-800">{member.label}</Text>
             </TouchableOpacity>
+          ))}
+      </ScrollView>
+    </View>
+  )}
+  
+  {selectedResources.length > 0 && (
+    <View className="flex-row flex-wrap mt-2">
+      {selectedResources.map((resource, index) => (
+        <View key={index} className="flex-row items-center bg-slate-100 rounded-full px-3 py-1 mr-2 mb-2">
+          <Text className="text-slate-700 mr-1">{resource.label || resource.name}</Text>
+          <TouchableOpacity onPress={() => removeResource(resource)}>
+            <Feather name="x" size={16} color="#64748b" />
+          </TouchableOpacity>
+        </View>
+      ))}
+    </View>
+  )}
+</View>
 
-            {showHoursInput && selectedResources.length > 0 && (
-              <View className="mb-4 border border-slate-200 rounded-lg p-3">
-                <Text className="text-sm font-medium text-slate-600 mb-2">Enter Hours for Each Member</Text>
-                
-                {selectedResources.map((member, memberIndex) => (
-                  <View key={memberIndex} className="mb-4">
-                    <Text className="font-medium text-slate-700 mb-2">{member.label || member.name}</Text>
-                    
-                    {getDatesInRange(startDate, endDate).map((date, dateIndex) => {
-                      const dateStr = format(date, 'MM/dd/yyyy');
-                      return (
-                        <View key={dateIndex} className="flex-row items-center justify-between mb-2">
-                          <Text className="text-slate-600 w-24">{dateStr}</Text>
-                          <TextInput
-                            value={memberHours[member.id]?.[dateStr] ? memberHours[member.id][dateStr].toString() : ""}
-                            onChangeText={(text) => handleHoursChange(member.id, dateStr, text)}
-                            placeholder="0"
-                            keyboardType="numeric"
-                            className="flex-1 ml-2 bg-white border border-slate-200 rounded px-3 py-2 text-slate-800"
-                          />
-                          <Text className="text-slate-500 ml-2">hours</Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-                ))}
-              </View>
-            )}
+{/* Hours Input Section */}
+<TouchableOpacity 
+  onPress={toggleHoursInput}
+  className="flex-row items-center justify-between bg-slate-50 p-3 rounded-lg mb-3"
+>
+  <Text className="text-slate-700 font-medium">Add Hours for Team Members</Text>
+  <Animated.View style={{ transform: [{ rotate: rotateInterpolate }] }}>
+    <Feather name="chevron-down" size={20} color="#64748b" />
+  </Animated.View>
+</TouchableOpacity>
+
+{showHoursInput && selectedResources.length > 0 && (
+  <View className="mb-4 border border-slate-200 rounded-lg p-3">
+    <Text className="text-sm font-medium text-slate-600 mb-2">Enter Hours for Each Member</Text>
+    
+    {selectedResources.map((member, memberIndex) => (
+      <View key={memberIndex} className="mb-4">
+        <Text className="font-medium text-slate-700 mb-2">{member.label || member.name}</Text>
+        
+        {getDatesInRange(startDate, endDate).map((date, dateIndex) => {
+          const dateStr = format(date, 'MM/dd/yyyy');
+          const isWeekendDay = isWeekend(date);
+          
+          return (
+            <View 
+              key={dateIndex} 
+              className={`flex-row items-center justify-between mb-2 ${isWeekendDay ? 'opacity-50' : ''}`}
+            >
+              <Text className="text-slate-600 w-24">
+                {dateStr} {isWeekendDay ? '(Weekend)' : ''}
+              </Text>
+              <TextInput
+                value={memberHours[member.id]?.[dateStr] ? memberHours[member.id][dateStr].toString() : "0"}
+                onChangeText={(text) => {
+                  if (!isWeekendDay) {
+                    handleHoursChange(member.id, dateStr, text);
+                  }
+                }}
+                placeholder="0"
+                keyboardType="numeric"
+                editable={!isWeekendDay}
+                className={`flex-1 ml-2 bg-white border border-slate-200 rounded px-3 py-2 text-slate-800 ${
+                  isWeekendDay ? 'bg-gray-100' : ''
+                }`}
+              />
+              <Text className="text-slate-500 ml-2">hours</Text>
+            </View>
+          );
+        })}
+      </View>
+    ))}
+  </View>
+)}
 
             {/* Submit Button */}
             <TouchableOpacity 
