@@ -34,7 +34,11 @@ const formattedDate = `${String(today.getMonth() + 1).padStart(2, '0')}/${String
 console.log(formattedDate);
 
   const {data:utilData,isLoading:utillLoading,isError:utillError} = useFetchData(`Task/GetTeamUtilData?teamId=${teamId}&date_val=${formattedDate}`, TOKEN)
-   console.log(utilData);
+  
+const parseTheData = Math.min(utilData?.utilizationPercent ?? 0, 100);
+
+
+  
    
  
   const HandleTab = async (tab) => {
@@ -79,16 +83,18 @@ console.log(formattedDate);
  
        <View className='mx-4 mt-5 mb-2'>
           <Text className={`text-lg `}>Team Utilization:</Text>
-          <View className={`flex-row items-center justify-between mt-2 mr-16 gap-4  `}>
-            <GradientProgressBar progress={utilData?.utilizationPercent/100||0/100}  />
-            <Text className={'pl- pb-2 pt-2 r'}>{utilData?.utilizationPercent||0}%</Text>
+          <View className={`flex-row items-center justify-between mt-2 mr-12 gap-2 `}>
+            <GradientProgressBar 
+            progress={parseTheData/100 }  
+            />
+            <Text className={'pl- pb-2 pt-2 '}>{utilData?.utilizationPercent||0/10}%</Text>
             
           </View>
         </View>
          
          
         {/* Search Input */}
-        <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-100 mx-4  shadow-lg mb-4 mt-2 p-3">
+        <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-100 mx-4  shadow-lg mb-4 mt-2 p-2">
           <TextInput
             placeholder="Search"
             value={searchText}
@@ -125,7 +131,7 @@ const TabButton = ({ tab, activeTab, setActiveTab }) => (
 );
  
 const GradientProgressBar = ({ progress }) => (
-  <View className={`w-full h-2 bg-gray-300 rounded-lg`}>
+  <View className={`w-full h-3 bg-gray-300 rounded-lg`}>
     <LinearGradient
       colors={["#D01313", "#6A0A0A"]}
       start={{ x: 0, y: 0 }}
@@ -160,7 +166,7 @@ const TeamMember = ({ item, selectedDropdown, setSelectedDropdown  ,isLoading}) 
   return (
  
     <View>
-   {item && item.map((emp)=>{ return(<View style={[tw`p-3 rounded-lg shadow-md my-3 mx-4 `, {backgroundColor:'#EBEBEB'}]} key={emp.EmpId}  >
+   {item && item.map((emp)=>{ return(<View style={[tw`p-3 rounded-lg shadow-md my-2 mx-4 `, {backgroundColor:'#EBEBEB'}]} key={emp.EmpId}  >
      
       <TouchableOpacity onPress={()=>{handleToggle(emp.EmpId)}} className='flex-row justify-between  items-center'>
         <Text className=' text-center'>{emp.Employee_Name}</Text>

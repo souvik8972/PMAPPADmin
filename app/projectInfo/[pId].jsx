@@ -73,9 +73,9 @@ const ProjectDetails = () => {
   const gpVariance = predictedGP - actualGP;
   const hoursVariance = predictedHours - actualHours;
 
-  const costVariancePercentage = ((costVariance / predictedCost) * 100).toFixed(1);
-  const gpVariancePercentage = ((gpVariance / predictedGP) * 100).toFixed(1);
-  const hoursVariancePercentage = ((hoursVariance / predictedHours) * 100).toFixed(1);
+  const costVariancePercentage = ((costVariance / predictedCost) * 100).toFixed(2);
+  const gpVariancePercentage = ((gpVariance / predictedGP) * 100).toFixed(2);
+  const hoursVariancePercentage = ((hoursVariance / predictedHours) * 100).toFixed(2);
 
   const renderValueWithLabel = (predicted, actual) => {
     return (
@@ -188,18 +188,29 @@ const ProjectDetails = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Header */}
         <View style={styles.headerContainer}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => navigation.goBack()}
             activeOpacity={0.7}
           >
             <Ionicons name="arrow-back" size={24} color="#1F2937" />
           </TouchableOpacity>
           <Text style={styles.title}>{project.project_Title}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: project.Project_Status === 'Active' ? '#10B981' : '#EF4444' }]}>
+          <View
+            style={[
+              styles.statusBadge,
+              {
+                backgroundColor:
+                  project.Project_Status === "Active" ? "#10B981" : "#EF4444",
+              },
+            ]}
+          >
             <Text style={styles.statusText}>{project.Project_Status}</Text>
           </View>
         </View>
@@ -208,7 +219,6 @@ const ProjectDetails = () => {
         <ScrollView style={styles.card}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>Project Overview</Text>
-            
           </View>
           <View style={styles.cardBody}>
             <View style={styles.infoRow}>
@@ -218,7 +228,7 @@ const ProjectDetails = () => {
               <Text style={styles.infoLabel}>Manager(s)</Text>
               <Text style={styles.infoValue}>{project.Employee_Name}</Text>
             </View>
-            
+
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="calendar" size={18} color="#4F46E5" />
@@ -226,7 +236,7 @@ const ProjectDetails = () => {
               <Text style={styles.infoLabel}>Financial Year</Text>
               <Text style={styles.infoValue}>{project.Financial_Year}</Text>
             </View>
-            
+
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="cash" size={18} color="#4F46E5" />
@@ -234,15 +244,17 @@ const ProjectDetails = () => {
               <Text style={styles.infoLabel}>PO Value</Text>
               <Text style={styles.infoValue}>${poValue.toLocaleString()}</Text>
             </View>
-            
+
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="business" size={18} color="#4F46E5" />
               </View>
               <Text style={styles.infoLabel}>Outsourced</Text>
-              <Text style={styles.infoValue}>{outshourced > 0 ? `$${outshourced.toLocaleString()}` : "None"}</Text>
+              <Text style={styles.infoValue}>
+                {outshourced > 0 ? `$${outshourced.toLocaleString()}` : "None"}
+              </Text>
             </View>
-            
+
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="pricetag" size={18} color="#4F46E5" />
@@ -250,13 +262,15 @@ const ProjectDetails = () => {
               <Text style={styles.infoLabel}>Rate Card</Text>
               <Text style={styles.infoValue}>Premium Rate Card</Text>
             </View>
-            
+
             <View style={styles.infoRow}>
               <View style={styles.infoIcon}>
                 <Ionicons name="calculator" size={18} color="#4F46E5" />
               </View>
               <Text style={styles.infoLabel}>Effort Estimate</Text>
-              <Text style={styles.infoValue}>${EffortEstimateCost.toLocaleString()}</Text>
+              <Text style={styles.infoValue}>
+                ${EffortEstimateCost.toLocaleString()}
+              </Text>
             </View>
           </View>
         </ScrollView>
@@ -268,65 +282,99 @@ const ProjectDetails = () => {
               <Ionicons name="trending-down" size={20} color="#EF4444" />
             </View>
             <Text style={styles.metricLabel}>Cost Variance</Text>
-            <Text style={[styles.metricValue, costVariance >= 0 ? styles.positive : styles.negative]}>
+            <Text
+              style={[
+                styles.metricValue,
+                costVariance >= 0 ? styles.positive : styles.negative,
+              ]}
+            >
               ${Math.abs(costVariance).toLocaleString()}
             </Text>
-            <Text style={[styles.metricPercentage, costVariance >= 0 ? styles.positive : styles.negative]}>
+            <Text
+              style={[
+                styles.metricPercentage,
+                costVariance >= 0 ? styles.positive : styles.negative,
+              ]}
+            >
               ({costVariancePercentage}%)
             </Text>
           </View>
-          
+
           <View style={styles.metricCard}>
             <View style={styles.metricIconContainer}>
               <Ionicons name="trending-up" size={20} color="#10B981" />
             </View>
             <Text style={styles.metricLabel}>GP Variance</Text>
-            <Text style={[styles.metricValue, gpVariance >= 0 ? styles.positive : styles.negative]}>
+            <Text
+              style={[
+                styles.metricValue,
+                gpVariance >= 0 ? styles.positive : styles.negative,
+              ]}
+            >
               ${Math.abs(gpVariance).toLocaleString()}
             </Text>
-            <Text style={[styles.metricPercentage, gpVariance >= 0 ? styles.positive : styles.negative]}>
+            <Text
+              style={[
+                styles.metricPercentage,
+                gpVariance >= 0 ? styles.positive : styles.negative,
+              ]}
+            >
               ({gpVariancePercentage}%)
             </Text>
           </View>
-          
+
           <View style={[styles.metricCard, styles.metricCardLast]}>
             <View style={styles.metricIconContainer}>
               <Ionicons name="time" size={20} color="#F59E0B" />
             </View>
             <Text style={styles.metricLabel}>Hours Variance</Text>
-            <Text style={[styles.metricValue, hoursVariance >= 0 ? styles.positive : styles.negative]}>
+            <Text
+              style={[
+                styles.metricValue,
+                hoursVariance >= 0 ? styles.positive : styles.negative,
+              ]}
+            >
               {Math.abs(hoursVariance).toFixed(1)}h
             </Text>
-            <Text style={[styles.metricPercentage, hoursVariance >= 0 ? styles.positive : styles.negative]}>
+            <Text
+              style={[
+                styles.metricPercentage,
+                hoursVariance >= 0 ? styles.positive : styles.negative,
+              ]}
+            >
               ({hoursVariancePercentage}%)
             </Text>
           </View>
         </View>
 
         {/* Cost Section */}
-        <TouchableOpacity 
-          style={styles.card} 
+        <TouchableOpacity
+          style={styles.card}
           activeOpacity={0.9}
           onPress={() => setShowCostChart(!showCostChart)}
         >
-          <View style={styles.cardHeader} >
-            <View  className = 'flex-row justify-between'>
-              <View style={styles.sectionTitleContainer}  className='gap-2'>
+          <View style={styles.cardHeader}>
+            <View className="flex-row justify-between">
+              <View style={styles.sectionTitleContainer} className="gap-2">
                 <Text style={styles.cardTitle}>Project Cost</Text>
-                <Ionicons name="wallet" size={20} color="#4F46E5" style={styles.sectionIcon} />
-                
+                <Ionicons
+                  name="wallet"
+                  size={20}
+                  color="#4F46E5"
+                  style={styles.sectionIcon}
+                />
               </View>
-              <Ionicons 
-              name={showCostChart ? "chevron-up" : "chevron-down"} 
-              size={22} 
-              color="#6B7280" 
-            />
+              <Ionicons
+                name={showCostChart ? "chevron-up" : "chevron-down"}
+                size={22}
+                color="#6B7280"
+              />
             </View>
-            
+
             {renderValueWithLabel(
-                `$${predictedCost.toLocaleString()}`,
-                `$${actualCost.toLocaleString()}`
-              )}
+              `$${predictedCost.toLocaleString()}`,
+              `$${actualCost.toLocaleString()}`
+            )}
           </View>
           {showCostChart && (
             <View style={styles.cardBody}>
@@ -337,8 +385,8 @@ const ProjectDetails = () => {
                     {
                       data: [predictedCost, actualCost],
                       color: (opacity = 1) => `rgba(79, 70, 229, ${opacity})`,
-                      strokeWidth: 3
-                    }
+                      strokeWidth: 3,
+                    },
                   ],
                 }}
                 width={screenWidth - 48}
@@ -350,7 +398,13 @@ const ProjectDetails = () => {
                   propsForBackgroundLines: {
                     strokeDasharray: "", // solid background lines
                     stroke: "#E5E7EB",
-                    strokeWidth: 1
+                    strokeWidth: 1,
+                  },
+                  formatYLabel: (yValue) => {
+                    return parseFloat(yValue).toLocaleString("en-US", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2,
+                    });
                   },
                 }}
                 bezier
@@ -368,28 +422,33 @@ const ProjectDetails = () => {
         </TouchableOpacity>
 
         {/* GP Section */}
-        <TouchableOpacity 
-          style={styles.card} 
+        <TouchableOpacity
+          style={styles.card}
           activeOpacity={0.9}
           onPress={() => setShowGPChart(!showGPChart)}
         >
           <View style={styles.cardHeader}>
-            <View className='flex-row justify-between'>
-              <View style={styles.sectionTitleContainer} className='gap-2'>
+            <View className="flex-row justify-between">
+              <View style={styles.sectionTitleContainer} className="gap-2">
                 <Text style={styles.cardTitle}>Gross Profit</Text>
-                <Ionicons name="trending-up" size={20} color="#10B981" style={styles.sectionIcon} />
+                <Ionicons
+                  name="trending-up"
+                  size={20}
+                  color="#10B981"
+                  style={styles.sectionIcon}
+                />
               </View>
-               <Ionicons 
-              name={showGPChart ? "chevron-up" : "chevron-down"} 
-              size={22} 
-              color="#6B7280" 
-            />
+              <Ionicons
+                name={showGPChart ? "chevron-up" : "chevron-down"}
+                size={22}
+                color="#6B7280"
+              />
             </View>
-           
-             {renderValueWithLabel(
-                `$${predictedGP.toLocaleString()}`,
-                `$${actualGP.toLocaleString()}`
-              )}
+
+            {renderValueWithLabel(
+              `$${predictedGP.toLocaleString()}`,
+              `$${actualGP.toLocaleString()}`
+            )}
           </View>
           {showGPChart && (
             <View style={styles.cardBody}>
@@ -400,8 +459,8 @@ const ProjectDetails = () => {
                     {
                       data: [predictedGP, actualGP],
                       color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
-                      strokeWidth: 3
-                    }
+                      strokeWidth: 3,
+                    },
                   ],
                 }}
                 width={screenWidth - 48}
@@ -409,9 +468,16 @@ const ProjectDetails = () => {
                 chartConfig={{
                   ...chartConfig,
                   color: () => "#10B981",
-                  fillShadowGradient: '#10B981',
+                  fillShadowGradient: "#10B981",
                   fillShadowGradientOpacity: 0.2,
+                  formatYLabel: (yValue) => {
+                    return parseFloat(yValue).toLocaleString("en-US", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2,
+                    });
+                  },
                 }}
+                
                 bezier
                 style={styles.chart}
                 fromZero={true}
@@ -426,29 +492,33 @@ const ProjectDetails = () => {
         </TouchableOpacity>
 
         {/* Hours Section */}
-        <TouchableOpacity 
-          style={styles.card} 
+        <TouchableOpacity
+          style={styles.card}
           activeOpacity={0.9}
           onPress={() => setShowHoursChart(!showHoursChart)}
         >
           <View style={styles.cardHeader}>
-            <View className='flex-row justify-between'>
-              <View style={styles.sectionTitleContainer} className='gap-2'>
-                
+            <View className="flex-row justify-between">
+              <View style={styles.sectionTitleContainer} className="gap-2">
                 <Text style={styles.cardTitle}>Project Hours</Text>
-                <Ionicons name="time" size={20} color="#F59E0B" style={styles.sectionIcon} />
+                <Ionicons
+                  name="time"
+                  size={20}
+                  color="#F59E0B"
+                  style={styles.sectionIcon}
+                />
               </View>
-             <Ionicons 
-              name={showHoursChart ? "chevron-up" : "chevron-down"} 
-              size={22} 
-              color="#6B7280" 
-            />
+              <Ionicons
+                name={showHoursChart ? "chevron-up" : "chevron-down"}
+                size={22}
+                color="#6B7280"
+              />
             </View>
-            
-             {renderValueWithLabel(
-                `${predictedHours.toFixed(1)}h`,
-                `${actualHours.toFixed(1)}h`
-              )}
+
+            {renderValueWithLabel(
+              `${predictedHours.toFixed(1)}h`,
+              `${actualHours.toFixed(1)}h`
+            )}
           </View>
           {showHoursChart && (
             <View style={styles.cardBody}>
@@ -459,8 +529,8 @@ const ProjectDetails = () => {
                     {
                       data: [predictedHours, actualHours],
                       color: (opacity = 1) => `rgba(245, 158, 11, ${opacity})`,
-                      strokeWidth: 3
-                    }
+                      strokeWidth: 3,
+                    },
                   ],
                 }}
                 width={screenWidth - 48}
@@ -468,8 +538,14 @@ const ProjectDetails = () => {
                 chartConfig={{
                   ...chartConfig,
                   color: () => "#F59E0B",
-                  fillShadowGradient: '#F59E0B',
+                  fillShadowGradient: "#F59E0B",
                   fillShadowGradientOpacity: 0.2,
+                  formatYLabel: (yValue) => {
+                    return parseFloat(yValue).toLocaleString("en-US", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2,
+                    });
+                  },
                 }}
                 bezier
                 style={styles.chart}
@@ -485,7 +561,6 @@ const ProjectDetails = () => {
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
-
   );
 };
 

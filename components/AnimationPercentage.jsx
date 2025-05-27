@@ -18,7 +18,7 @@ const AnimationPercentage = ({ value, color }) => {
   }, [value]);
  
   const derivedText = useDerivedValue(() => {
-    return `${animatedValue.value.toFixed(2)}%`;
+    return `${animatedValue.value.toLocaleString()}%`;
   });
  
   // Push derived value into React state

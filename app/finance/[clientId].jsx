@@ -8,7 +8,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import ClientList from "../../components/StaticClientData";
 import AnimatedNumber from "../../components/AnimatedNumber";
 import AnimationPercentage from "../../components/AnimationPercentage";
-import { EvilIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { EvilIcons, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Collapsible from "react-native-collapsible";
 import Animated, { SlideInDown, SlideOutUp } from "react-native-reanimated";
 import { Link } from 'expo-router'
@@ -85,7 +85,7 @@ const Client = () => {
         {/* PoValue */}
         <View className="items-center w-1/3 border-r border-gray-200 px-1">
           <View className="flex-row items-center justify-center space-x-1 mb-1">
-            <FontAwesome6 name="arrow-trend-up" size={12} color="black" className='border-gray-100 border-2 m-1 p-1'/>
+            <Ionicons name="trending-up" size={20} color="#10B981" />
             <Text className="text-sm text-gray-500">PoValue</Text>
           </View>
           <AnimatedNumber 
@@ -98,7 +98,7 @@ const Client = () => {
         {/* Predicated Gp */}
         <View className="items-center w-1/3 border-r border-gray-200 px-1 m-1">
           <View className="flex-row items-center justify-center space-x-1 mb-1">
-            <FontAwesome6 name="arrow-trend-up" size={12} color="black" className='border-gray-100 border-2 p-1 m-1'/>
+           <Ionicons name="trending-up" size={20} color="#10B981" />
             <Text className="text-sm text-gray-500">Predicated Gp</Text>
           </View>
           <AnimatedNumber 
@@ -110,7 +110,7 @@ const Client = () => {
         {/* Current GP */}
         <View className="items-center w-1/3 px-1">
           <View className="flex-row items-center justify-center space-x-1 mb-1">
-            <FontAwesome6 name="arrow-trend-down" size={12} color="black" className='border-gray-100 border-2 p-1 m-1'/>
+           <Ionicons name="trending-down" size={20} color="#EF4444" />
             <Text className="text-sm text-gray-500">Actual GP</Text>
           </View>
           <AnimatedNumber  
@@ -128,7 +128,7 @@ const Client = () => {
             className="h-full items-start justify-center px-1 pl-5"
           >
             <Text className="text-black font-bold text-sm">
-              $ {currencyToNumber(currentClientInfo.Predicted_Gp)}
+              $ {currencyToNumber(currentClientInfo.Predicted_Gp).toLocaleString()}
             </Text>
           </View>
           <View 
@@ -136,13 +136,13 @@ const Client = () => {
             className={`${currentClientInfo.Actual_percentage < 100 ? "bg-red-500" : "bg-black"} h-full rounded-full items-end justify-center px-1`}
           >
             <Text className="text-white font-bold text-sm pr-2">
-              $ {currencyToNumber(currentClientInfo.Actual_Gp)}
+              $ {currencyToNumber(currentClientInfo.Actual_Gp).toLocaleString()}
             </Text>
           </View>
         </View>
-        <View className='flex-row mt-6 items-center space-x-2 mb-6'>
+        <View className='flex-row mt-6 items-center space-x-2 mb-6 gap-2'>
           <Text className='w-3 h-3 bg-[#00D09E] rounded-full text-center mr-1'></Text>
-          <Text className='font-semibold text-sm italic'>Predicted</Text>
+          <Text className='font-semibold text-sm '>Predicted</Text>
           <Text className='w-3 h-3 bg-[#052224] rounded-full text-center ml-2 mr-1'></Text>
           <Text className='font-semibold text-sm'>Actual</Text>
         </View>
@@ -170,7 +170,7 @@ const Client = () => {
         }}
       >
         <LinearGradient
-          colors={["#f3e7e9", "#e3eeff"]}
+          colors={["#FFF", "#FFF"]}
           style={{
             padding: 16,
             width: "100%",
@@ -225,8 +225,9 @@ const TaskList = ({ projects, clientId, loading }) => {
       {/* Projects List */}
       <ScrollView 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 20 }}
-      >
+        contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 30 }}
+        
+      ><View className="pb-6">
         {loading ? (
           // Show shimmer loaders while loading
           <>
@@ -241,6 +242,7 @@ const TaskList = ({ projects, clientId, loading }) => {
               href={`/projectInfo/${project.project_ID}-${clientId}`}
               key={project.project_ID}
               asChild
+              className=""
             >
               <TouchableOpacity 
                 activeOpacity={0.8}
@@ -274,7 +276,7 @@ const TaskList = ({ projects, clientId, loading }) => {
             </Link>
           ))
         )}
-      </ScrollView>
+      </View></ScrollView>
 
       {/* Floating Add Button */}
       {user?.userType == 1 && !loading && (

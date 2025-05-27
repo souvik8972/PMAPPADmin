@@ -13,7 +13,7 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
   
     const animatedProps = useAnimatedProps(() => {
       return {
-        text: `$${animatedValue.value.toFixed(2)}`, // Format with 2 decimal places
+        text: `$${animatedValue.value.toLocaleString()}`, // Format with 2 decimal places
       };
     });
   
