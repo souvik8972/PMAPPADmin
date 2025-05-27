@@ -24,6 +24,7 @@ import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { usePostData } from "../../ReactQuery/hooks/usePostData";
 import { API_URL } from '@env';
+
 export default function TaskScreen() {
   const { user } = useContext(AuthContext);
   const scrollViewRef = useRef();
@@ -52,7 +53,7 @@ export default function TaskScreen() {
     user.token
   );
   const flatListRef = useRef(null);
-  // Initialize localTaskData when apiData changes
+
   useEffect(() => {
     if (apiData?._Tasks) {
       const initialData = {};
@@ -82,7 +83,6 @@ export default function TaskScreen() {
     }
   }, [selectedOption]);
 
-  // Pull-to-refresh handler
   const onRefresh = () => {
     setRefreshing(true);
     refetch().then(() => {
@@ -124,7 +124,7 @@ export default function TaskScreen() {
     const task = apiData?._Tasks?.find(t => t.Task_Id.toString() === taskId);
     if (!task) return;
   
-    const logValue = localTaskData[taskId];
+    const logValue = localTaskData[taskId]||0;
     if (!logValue || isNaN(logValue)) {
       Alert.alert("Error", "Invalid log value");
       return;
@@ -171,57 +171,61 @@ export default function TaskScreen() {
   );
 
   const renderTaskItem = (task, index) => (
-    <View key={`${task.taskId}-${index}`} className="mb-2">
+    <View key={`${task.taskId}-${index}`} className="mb-4 ">
       <TouchableOpacity
-        className={`p-3 h-[80px] pl-5 pr-5 flex-row justify-between items-center ${
-          activeIndex === index
-            ? "bg-white rounded-none rounded-t-lg border-[0.5px] border-b-0"
-            : "bg-[#EBEBEB] rounded-lg shadow-[0px_5px_3px_1px_rgba(0,_0,_0,_0.1)]"
-        }`}
+        className={`p-4 rounded-lg ${activeIndex === index ? "bg-white" : "bg-gray-50"}`}
         onPress={() => setActiveIndex(activeIndex === index ? null : index)}
         activeOpacity={0.8}
+        style={{
+          shadowColor: "#000",
+         
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
       >
-        <Text className="text-black font-semibold text-[14px] truncate w-[85%]">
-          {task.title}
-        </Text>
-        <FontAwesome
-          name={activeIndex === index ? "angle-up" : "angle-down"}
-          size={28}
-          color="black"
-        />
-      </TouchableOpacity>
+        <View className="flex-row justify-between items-center">
+          <Text className="text-gray-800 font-semibold text-[15px] flex-1 pr-2" numberOfLines={1}>
+            {task.title}
+          </Text>
+          <FontAwesome
+            name={activeIndex === index ? "angle-up" : "angle-down"}
+            size={24}
+            color="#6b7280"
+          />
+        </View>
 
-      <Collapsible collapsed={activeIndex !== index}>
-        <TouchableWithoutFeedback onPress={() => setActiveIndex(null)}>
-          <View className="border-[0.5px] rounded-xl rounded-t-none pb-6">
+        <Collapsible collapsed={activeIndex !== index}>
+          <View className="mt-4">
             {/* Task ID */}
-            <View className="px-4 pt-4 pb-4 border-b border-gray-200">
+            <View className="mb-4 ">
               <View className="flex-row items-center mb-1">
-                <MaterialCommunityIcons name="identifier" size={16} color="#6b7280" className="mr-2" />
-                <Text className="text-gray-500 text-sm font-medium">Task ID</Text>
+                <Text className="text-gray-500 text-sm font-medium">#</Text>
+                <Text className="text-gray-500 text-sm font-medium ml-2">Task ID</Text>
               </View>
-              <Text className="text-gray-900 text-base font-semibold pl-6">{task.taskId}</Text>
+              <Text className="text-gray-900 text-base font-semibold ml-6">{task.taskId}</Text>
             </View>
 
             {/* Task Owner */}
-            <View className="px-4 pt-5 pb-4 border-b border-gray-200">
+            <View className="mb-4">
               <View className="flex-row items-center mb-1">
-                <MaterialCommunityIcons name="account" size={16} color="#6b7280" className="mr-2" />
-                <Text className="text-gray-500 text-sm font-medium">Task Owner</Text>
+                <MaterialCommunityIcons name="account" size={16} color="#6b7280" />
+                <Text className="text-gray-500 text-sm font-medium ml-2">Task Owner</Text>
               </View>
-              <Text className="text-gray-900 text-base font-semibold pl-6">{task.owner}</Text>
+              <Text className="text-gray-900 text-base font-semibold ml-6">{task.owner}</Text>
             </View>
 
             {/* Hours Section */}
-            <View className="flex-row justify-between px-4 py-6">
+            <View className="flex-row justify-between  m-0 mb-6">
               {/* Planned Hours */}
-              <View className="items-center">
+              <View className="  flex-1 pl-2">
                 <View className="flex-row items-center mb-2">
-                  <MaterialCommunityIcons name="clock-outline" size={16} color="#6b7280" className="mr-1" />
-                  <Text className="text-gray-600 text-sm font-medium">Planned Hours</Text>
+                  <MaterialCommunityIcons name="clock-outline" size={16} color="#6b7280" />
+                  <Text className="text-gray-600 text-sm font-medium ml-1">Planned</Text>
                 </View>
                 <TextInput
-                  className="bg-gray-100 border border-gray-300 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800"
+                  className="bg-gray-100 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800"
                   value={task.planned}
                   style={{textAlign: "center"}}
                   editable={false}
@@ -229,35 +233,34 @@ export default function TaskScreen() {
               </View>
 
               {/* Actual Hours */}
-              <View className="items-center">
+              <View className="items-end flex-1 pr-2">
                 <View className="flex-row items-center mb-2">
-                  <MaterialCommunityIcons name="clock-check-outline" size={16} color="#6b7280" className="mr-1" />
-                  <Text className="text-gray-600 text-sm font-medium">Actual Hours</Text>
+                  <MaterialCommunityIcons name="clock-check-outline" size={16} color="#6b7280" />
+                  <Text className="text-gray-600 text-sm font-medium ml-1">Actual</Text>
                 </View>
                 <TextInput
-      className="bg-white border border-gray-300 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800 focus:border-red-500"
-      keyboardType="decimal-pad"
-      placeholder="0"
-      maxLength={5}
-      value={task.actual}
-      onChangeText={(text) => handleActualHoursChange(text, task.taskId)}
-      onFocus={() => {
-        setTimeout(() => {
-          flatListRef.current?.scrollToIndex({
-            index: index,
-            viewOffset: 50, // Adjust this value as needed
-            animated: true
-          });
-        }, 100);
-      }}
-    />
-
+                  className="bg-white border border-gray-200 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800"
+                  keyboardType="decimal-pad"
+                  placeholder=""
+                  maxLength={5}
+                  value={task.actual}
+                  onChangeText={(text) => handleActualHoursChange(text, task.taskId)}
+                  onFocus={() => {
+                    setTimeout(() => {
+                      flatListRef.current?.scrollToIndex({
+                        index: index,
+                        viewOffset: 50,
+                        animated: true
+                      });
+                    }, 100);
+                  }}
+                />
               </View>
             </View>
 
             {/* Submit Button */}
             <TouchableOpacity
-              className="mx-6 mt-2 rounded-xl overflow-hidden"
+              className="rounded-lg overflow-hidden"
               onPress={() => handleSubmit(task.taskId)}
               disabled={isProcessing}
             >
@@ -265,8 +268,7 @@ export default function TaskScreen() {
                 colors={["#D01313", "#6A0A0A"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={{paddingLeft: 10, paddingRight: 10 ,height: 50,display:"flex",justifyContent:"center",alignItems:"center"}}
-                className="py-3 px-6 rounded-xl shadow-md"
+                className="py-3 rounded-lg"
               >
                 <View className="flex-row justify-center items-center">
                   {isProcessing ? (
@@ -286,8 +288,8 @@ export default function TaskScreen() {
               </LinearGradient>
             </TouchableOpacity>
           </View>
-        </TouchableWithoutFeedback>
-      </Collapsible>
+        </Collapsible>
+      </TouchableOpacity>
     </View>
   );
 
@@ -339,10 +341,11 @@ export default function TaskScreen() {
       <Animated.FlatList
         data={filteredTasks}
         ref={flatListRef} 
+        style={{marginBottom: 10,padding:8}}
         renderItem={({ item, index }) => renderTaskItem(item, index)}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        // contentContainerStyle={{  }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -356,12 +359,12 @@ export default function TaskScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
-    >
-      <View className="flex-1 bg-white">
+   <KeyboardAvoidingView
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  style={{ flex: 1 }}
+  keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}  // Increased offset
+>
+      <View className="flex-1 bg-gray-50">
         <View className="p-4 pt-0">
           <DropDown
             open={open}
@@ -372,17 +375,18 @@ export default function TaskScreen() {
             setSelectedOption={setSelectedOption}
           />
 
-          <View className="flex-row items-center border border-gray-300 shadow-[0px_5px_3px_1px_rgba(0,_0,_0,_0.1)] rounded-[12px] h-[60px] p-2 my-4 bg-white">
+          <View className="flex-row items-center border border-gray-200 rounded-lg h-[50px] px-4 my-4 bg-white">
             <TextInput
               placeholder="Search your task"
-              className="flex-1 text-black"
+              className="flex-1 text-gray-800"
+              placeholderTextColor="#9ca3af"
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
             <FontAwesome
               name="search"
-              size={20}
-              color="gray"
+              size={18}
+              color="#9ca3af"
               style={{ marginRight: 8 }}
             />
           </View>
@@ -391,66 +395,47 @@ export default function TaskScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              className="h-[100px] flex-grow-0 mb-2"
+              className="h-[80px] flex-grow-0 mb-2"
+              contentContainerStyle={{ paddingHorizontal: 8 }}
             >
               {dates.map((item, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => handleDateChange(item.date)}
                   activeOpacity={0.8}
+                  className="mr-3"
                 >
-                  <LinearGradient
-                    colors={
-                      selectedDate === item.date
-                        ? ["#D01313", "#6A0A0A"]
-                        : ["#E0E0E0", "#C0C0C0"]
-                    }
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{
-                      borderRadius: 20,
-                      marginRight: 12,
-                      height: 80,
-                      width: 50,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
+                  <View
+                    className={`h-[70px] w-[50px] rounded-xl justify-center items-center ${
+                      selectedDate === item.date ? "bg-[#D01313]" : "bg-gray-200"
+                    }`}
                   >
-                    <View className="items-center">
-                      <Text
-                        className={
-                          selectedDate === item.date
-                            ? "text-white font-bold text-xs"
-                            : "text-black font-semibold text-xs"
-                        }
-                      >
-                        {item.label.split(" ")[0]}
-                      </Text>
-                      <Text
-                        className={
-                          selectedDate === item.date
-                            ? "text-white font-bold text-base"
-                            : "text-black font-semibold text-base"
-                        }
-                      >
-                        {item.label.split(" ")[1]}
-                      </Text>
-                    </View>
-                  </LinearGradient>
+                    <Text
+                      className={`${
+                        selectedDate === item.date ? "text-white" : "text-gray-800"
+                      } font-bold text-xs`}
+                    >
+                      {item.label.split(" ")[0]}
+                    </Text>
+                    <Text
+                      className={`${
+                        selectedDate === item.date ? "text-white" : "text-gray-800"
+                      } font-bold text-base mt-1`}
+                    >
+                      {item.label.split(" ")[1]}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           )}
 
-          <Text style={{fontWeight:600 }} className="text-lg underline font-bold mb-2">My Task list</Text>
+          <Text className="text-lg font-semibold text-gray-800 ">My Task List</Text>
         </View>
 
-        <View className="flex-1 bg-white p-3">
-        {/* ... (header section remains the same) */}
-        
-        {/* Remove the View wrapper and just render the content directly */}
-        {renderContent()}
-      </View>
+        <View className="flex-1 px-2">
+          {renderContent()}
+        </View>
       </View>
     </KeyboardAvoidingView>
   );

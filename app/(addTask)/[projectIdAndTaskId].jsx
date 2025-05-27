@@ -658,7 +658,7 @@ export default AddEditTask = () => {
                     handleHoursChange(member.id, dateStr, text);
                   }
                 }}
-                placeholder="0"
+                placeholder=""
                 keyboardType="numeric"
                 editable={!isWeekendDay}
                 className={`flex-1 ml-2 bg-white border border-slate-200 rounded px-3 py-2 text-slate-800 ${

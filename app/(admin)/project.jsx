@@ -167,7 +167,7 @@ export default function ProjectList() {
   return (
     <View className="flex-1 p-4 pt-0 bg-gray-100">
       {/* Search Bar */}
-      <View className="flex-row items-center border border-gray-300 shadow rounded-[12px] h-[60px] p-2 my-4 bg-white">
+      <View className="flex-row items-center border border-gray-300 shadow rounded-[12px] h-[50px]  p-1 my-4 bg-white">
         <TextInput
           placeholder="Search project"
           className="flex-1 text-black"

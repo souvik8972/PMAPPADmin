@@ -1,8 +1,10 @@
-import React, { useContext, useEffect, useState, useCallback } from "react";
+import React, { useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, StyleSheet, Modal } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { DatePickerModal } from "react-native-paper-dates";
+import { registerTranslation } from 'react-native-paper-dates'
+import en from 'react-native-paper-dates/lib/module/translations/en'
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Feather from "@expo/vector-icons/Feather";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
@@ -12,41 +14,169 @@ import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { AuthContext } from "../../context/AuthContext";
 import { deleteTask } from "../../ReactQuery/hooks/deleteTask";
 import { API_URL } from '@env';
+
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
+
+// Memoized Task Item Component
+const TaskItem = React.memo(({ 
+  item, 
+  isSelected, 
+  details, 
+  loadingDetails, 
+  onPress, 
+  onDelete,
+  ActionType 
+}) => {
+  return (
+    <TouchableOpacity 
+      onPress={() => onPress(item.Task_Id)} 
+      className="bg-white rounded-xl min-h-[80px] flex justify-center items-center p-5 mb-4 relative shadow-sm border border-gray-100"
+    >
+      {/* Basic Task Info (always visible) */}
+      <View className="w-full">
+        <View className="mb-3 flex-row justify-between items-start">
+          <Text className="text-base w-[75%] font-medium text-gray-800">
+            {item.Task_Title}
+          </Text>
+          <View className="w-[20%] h-[28px] bg-gray-50 rounded-md px-2 py-1 flex-row items-center justify-center border border-gray-200">
+            <Text className="text-xs font-semibold text-gray-600">#{item.Task_Id}</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Task Details (shown when expanded) */}
+      {isSelected && (
+        <View className="border-t border-gray-100 pt-4 w-full">
+          {loadingDetails ? (
+            <View className="py-4">
+              <ActivityIndicator size="small" color="#940101" />
+            </View>
+          ) : details ? (
+            <>
+              <View className="mb-4 space-y-3">
+                {/* Improved User Display Section */}
+                <View className="mb-3">
+                  <View className="flex-row items-center mb-2">
+                    <Feather name="users" size={16} color="#64748B" />
+                    <Text className="text-sm text-gray-500 ml-2">Assigned to:</Text>
+                  </View>
+                  <View className="flex-row flex-wrap gap-2">
+                    {details.Employee_Name.split(',').map((employee, index) => (
+                      <View 
+                        key={`employee-${index}`} 
+                        className="flex-row items-center bg-gray-50 rounded-full px-3 py-1 border border-gray-200"
+                      >
+                        <View className="w-5 h-5 rounded-full bg-red-100 mr-2 flex items-center justify-center">
+                          <Feather name="user" size={12} color="#940101" />
+                        </View>
+                        <Text className="text-sm text-gray-700">{employee.trim()}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+
+                <View className="flex-row justify-between">
+                  <View className="flex-row items-center space-x-2">
+                    <Feather name="hash" size={16} color="#64748B" />
+                    <Text className="text-sm text-gray-700">{details.Project_Id}</Text>
+                  </View>
+                  <View className="flex-row items-center space-x-2">
+                    <Feather name="calendar" size={16} color="#64748B" />
+                    <Text className="text-sm text-gray-500">Start:</Text>
+                    <Text className="text-sm font-medium text-gray-700">{details.Start_Date}</Text>
+                  </View>
+                  <View className="flex-row items-center space-x-2">
+                    <Feather name="calendar" size={16} color="#64748B" />
+                    <Text className="text-sm text-gray-500">End:</Text>
+                    <Text className="text-sm font-medium text-gray-700">{details.End_Date}</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Actions */}
+              <View className="flex-row justify-end space-x-4 gap-2 mt-4">
+                <Link href={`/(addTask)/${details.Project_Id}-${details.Task_Id}-${ActionType}-${details.BuyingCenterId}`} asChild>
+                  <TouchableOpacity className="flex-row items-center bg-white border border-red-100 px-4 py-2 rounded-lg shadow-sm">
+                    <Feather name="edit-3" size={16} color="red" />
+                    <Text className="ml-2 text-red-500 text-sm font-medium">Edit</Text>
+                  </TouchableOpacity>
+                </Link>
+                <TouchableOpacity 
+                  className="flex-row items-center bg-red-500 px-4 py-2 rounded-lg shadow-sm"
+                  onPress={() => onDelete(details.Task_Id)}
+                >
+                  <Feather name="trash-2" size={16} color="white" />
+                  <Text className="ml-2 text-white text-sm font-medium">Delete</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <Text className="text-gray-500 text-center py-3">Failed to load details</Text>
+          )}
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+});
 
 export default function TaskScreen() {
   const { user } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [selectedRange, setSelectedRange] = useState({ startDate: new Date(), endDate: null });
-  const [basicTaskList, setBasicTaskList] = useState([]); // Stores basic task info (id + title)
-  const [taskDetails, setTaskDetails] = useState({}); // Stores full details keyed by task ID
+  const [basicTaskList, setBasicTaskList] = useState([]);
+  const [taskDetails, setTaskDetails] = useState({});
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
-  const [selectedTaskId, setSelectedTaskId] = useState(null); // Track which task is selected
-  const [loadingDetails, setLoadingDetails] = useState(false); // Loading state for details API
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const ActionType = 0;
   const token = user?.token;
+
+  registerTranslation('en', en);
 
   const formattedStartDate = selectedRange.startDate ? format(selectedRange.startDate, "MM/dd/yyyy") : "";
   const formattedEndDate = selectedRange.endDate ? format(selectedRange.endDate, "MM/dd/yyyy") : formattedStartDate;
 
-  // API endpoint for basic task list
   const basicTaskEndpoint = `Task/GetTskNameByDate?st_dt=${formattedStartDate}&ed_dt=${formattedEndDate}`;
-  
-  // API endpoint for task details (will be called when a task is clicked)
   const taskDetailsEndpoint = (taskId) => `${API_URL}Task/getTaskDetailsByID?taskid=${taskId}`;
 
   const { data: basicTaskData, isLoading: loadingBasicTasks, refetch: refetchBasicTasks } = useFetchData(basicTaskEndpoint, token);
 
-  // Fetch task details when a task is selected
-  const fetchTaskDetails = async (taskId) => {
-    if (taskDetails[taskId]) return; // Already have details for this task
-    
+  // Memoize filtered tasks to prevent unnecessary recalculations
+  const memoizedFilteredTasks = useMemo(() => {
+    if (searchQuery.trim() === "") {
+      return basicTaskList;
+    }
+    return basicTaskList.filter(task =>
+      task.Task_Title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.Task_Id.toString().includes(searchQuery)
+    );
+  }, [searchQuery, basicTaskList]);
+
+  useEffect(() => {
+    setFilteredTasks(memoizedFilteredTasks);
+  }, [memoizedFilteredTasks]);
+
+  useEffect(() => {
+    if (basicTaskData?._Tasks) {
+      const newTasks = basicTaskData._Tasks || [];
+      if (page === 1) {
+        setBasicTaskList(newTasks);
+      } else {
+        setBasicTaskList(prev => [...prev, ...newTasks]);
+      }
+      setHasMore(newTasks.length === 20);
+    }
+  }, [basicTaskData, page]);
+
+  const fetchTaskDetails = useCallback(async (taskId) => {
+    if (taskDetails[taskId]) return;
+
     try {
       setLoadingDetails(true);
       const response = await fetch(taskDetailsEndpoint(taskId), {
@@ -60,40 +190,15 @@ export default function TaskScreen() {
       if (data && data.task_data && data.task_data.length > 0) {
         setTaskDetails(prev => ({
           ...prev,
-          [taskId]: data.task_data[0] // Store details keyed by task ID
+          [taskId]: data.task_data[0]
         }));
       }
     } catch (error) {
-      // console.error('Error fetching task details:', error);
-      // Alert.alert('Error', 'Failed to load task details');
+      console.error('Error fetching task details:', error);
     } finally {
       setLoadingDetails(false);
     }
-  };
-
-  useEffect(() => {
-    if (basicTaskData?._Tasks) {
-      const newTasks = basicTaskData._Tasks || [];
-      if (page === 1) {
-        setBasicTaskList(newTasks);
-      } else {
-        setBasicTaskList(prev => [...prev, ...newTasks]);
-      }
-      setHasMore(newTasks.length === 20);
-    }
-  }, [basicTaskData]);
-
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredTasks(basicTaskList);
-    } else {
-      const filtered = basicTaskList.filter(task =>
-        task.Task_Title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.Task_Id.toString().includes(searchQuery)
-      );
-      setFilteredTasks(filtered);
-    }
-  }, [searchQuery, basicTaskList]);
+  }, [taskDetails, token]);
 
   const handleLoadMore = useCallback(() => {
     if (!loadingBasicTasks && hasMore) {
@@ -111,29 +216,20 @@ export default function TaskScreen() {
     
     try {
       const result = await deleteTask(id, token);
-      console.log(result, "delete result");
       
       if (result.success) {
-        // Update local state
         setBasicTaskList(prev => prev.filter(task => task.Task_Id !== id));
-        setFilteredTasks(prev => prev.filter(task => task.Task_Id !== id));
-        
-        // Remove from details cache if present
         setTaskDetails(prev => {
           const newDetails = {...prev};
           delete newDetails[id];
           return newDetails;
         });
         
-        // Close modal and reset
         setDeleteModalVisible(false);
         setTaskToDelete(null);
-        
-        // Show success message
         Alert.alert('Success', result.message);
       }
     } catch (error) {
-      // console.error('Delete error:', error);
       Alert.alert(
         'Error',
         error.message || 'Failed to delete task. Please try again.'
@@ -148,14 +244,26 @@ export default function TaskScreen() {
     setPage(1);
     setHasMore(true);
     refetchBasicTasks().finally(() => setIsRefreshing(false));
-  }, []);
+  }, [refetchBasicTasks]);
 
   const handleTaskPress = useCallback((taskId) => {
-    setSelectedTaskId(prevId => prevId === taskId ? null : taskId); // Toggle selection
+    setSelectedTaskId(prevId => prevId === taskId ? null : taskId);
     if (!taskDetails[taskId]) {
       fetchTaskDetails(taskId);
     }
-  }, [taskDetails]);
+  }, [taskDetails, fetchTaskDetails]);
+
+  const renderItem = useCallback(({ item }) => (
+    <TaskItem
+      item={item}
+      isSelected={selectedTaskId === item.Task_Id}
+      details={taskDetails[item.Task_Id]}
+      loadingDetails={loadingDetails}
+      onPress={handleTaskPress}
+      onDelete={handleDelete}
+      ActionType={ActionType}
+    />
+  ), [selectedTaskId, taskDetails, loadingDetails, handleTaskPress, handleDelete, ActionType]);
 
   const renderFooter = useCallback(() => {
     if (!loadingBasicTasks || page === 1) return null;
@@ -166,111 +274,7 @@ export default function TaskScreen() {
     );
   }, [loadingBasicTasks, page]);
 
-  const renderItem = useCallback(({ item }) => {
-    const isSelected = selectedTaskId === item.Task_Id;
-    const details = taskDetails[item.Task_Id];
-    
-    return (
-      <TouchableOpacity 
-  onPress={() => handleTaskPress(item.Task_Id)} 
-  className="bg-white rounded-xl min-h-[80px] flex justify-center items-center p-5 mb-4 relative shadow-sm  border-gray-100"
->
-  {/* Basic Task Info (always visible) */}
-  <View className="w-full">
-    <View className="mb-3 flex-row justify-between items-start">
-      <Text className="text-base w-[75%] font-medium text-gray-800">
-        {item.Task_Title}
-      </Text>
-      <View className="w-[20%] h-[28px] bg-gray-50 rounded-md px-2 py-1 flex-row items-center justify-center  border-gray-200">
-        <Text className="text-xs font-semibold text-gray-600">#{item.Task_Id}</Text>
-      </View>
-    </View>
-  </View>
-
-  {/* Task Details (shown when expanded) */}
-  {isSelected && (
-    <View className=" border-gray-100 pt-4 w-full">
-      {loadingDetails ? (
-        <View className="py-4">
-          <ActivityIndicator size="small" color="#940101" />
-        </View>
-      ) : details ? (
-        <>
-          <View className="mb-4 space-y-3">
-            <View className="flex-row justify-between gap-2">
-              <View className="flex-row items-center space-x-2 mb-2 w-[60%]">
-                <Feather name="user" size={16} color="#64748B" />
-                <Text className="text-sm text-gray-700 ">{details.Employee_Name}</Text>
-              </View>
-              <View className="flex-row items-center space-x-2">
-                <Feather name="hash" size={16} color="#64748B" />
-                <Text className="text-sm text-gray-700">{details.Project_Id}</Text>
-              </View>
-            </View>
-
-            <View className="flex-row justify-between">
-              <View className="flex-row items-center space-x-2">
-                <Feather name="calendar" size={16} color="#64748B" />
-                <Text className="text-sm text-gray-500">Start:</Text>
-                <Text className="text-sm font-medium text-gray-700">{details.Start_Date}</Text>
-              </View>
-              <View className="flex-row items-center space-x-2">
-                <Feather name="calendar" size={16} color="#64748B" />
-                <Text className="text-sm text-gray-500">End:</Text>
-                <Text className="text-sm font-medium text-gray-700">{details.End_Date}</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Actions */}
-          <View className="flex-row justify-end space-x-4 gap-2 mt-4">
-            <Link href={`/(addTask)/${details.Project_Id}-${details.Task_Id}-${ActionType}-${details.BuyingCenterId}`} asChild>
-              <TouchableOpacity className="flex-row items-center bg-white border border-red-100 px-4 py-2 rounded-lg shadow-sm">
-                <Feather name="edit-3" size={16} color="red" />
-                <Text className="ml-2 text-red-500 text-sm font-medium">Edit</Text>
-              </TouchableOpacity>
-            </Link>
-            <TouchableOpacity 
-              className="flex-row items-center bg-red-500 px-4 py-2 rounded-lg shadow-sm"
-              onPress={() => handleDelete(details.Task_Id)}
-            >
-              <Feather name="trash-2" size={16} color="white" />
-              <Text className="ml-2 text-white text-sm font-medium">Delete</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      ) : (
-        <Text className="text-gray-500 text-center py-3">Failed to load details</Text>
-      )}
-    </View>
-  )}
-</TouchableOpacity>
-    );
-  }, [selectedTaskId, taskDetails, loadingDetails, ActionType, handleDelete, handleTaskPress]);
-
-
-  const getDisabledDates = (startDate) => {
-    const disabledDates = [];
-    for (let i = 1; i <= 30; i++) {
-      const disabledDate = new Date(startDate);
-      disabledDate.setDate(startDate.getDate() + i);
-      if (disabledDate > new Date(startDate).setDate(startDate.getDate() + 7)) {
-        disabledDates.push(disabledDate);
-      }
-    }
-    return disabledDates;
-  };
-
-  const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
-      case 'pending': return '#F59E0B';
-      case 'completed': return '#10B981';
-      case 'in progress': return '#3B82F6';
-      default: return '#6B7280';
-    }
-  };
-
-  const onDateConfirm = (params) => {
+  const onDateConfirm = useCallback((params) => {
     setDatePickerOpen(false);
     if (params.startDate) {
       const startDate = params.startDate;
@@ -286,12 +290,11 @@ export default function TaskScreen() {
 
       setSelectedRange({ startDate, endDate });
       setPage(1);
-      // setTaskData([]);
       setFilteredTasks([]);
       setHasMore(true);
-      refetchBasicTasks()
+      refetchBasicTasks();
     }
-  };
+  }, [refetchBasicTasks]);
 
   return (
     <View style={styles.container}>
@@ -319,14 +322,15 @@ export default function TaskScreen() {
   
       {/* Date Picker Modal */}
       <DatePickerModal
-        // locale="en-GB"
+        locale="en"
         mode="range"
         visible={datePickerOpen}
         onDismiss={() => setDatePickerOpen(false)}
         startDate={selectedRange.startDate}
         endDate={selectedRange.endDate}
         onConfirm={onDateConfirm}
-        dateDisabled={getDisabledDates(selectedRange.startDate)}
+        presentationStyle="fullScreen"
+        allowFontScaling={false}
       />
   
       {/* Task List Header */}
@@ -351,7 +355,6 @@ export default function TaskScreen() {
           keyExtractor={(item) => item.toString()}
         />
       ) : filteredTasks.length === 0 ? (
-        // No task fallback
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <Text style={{ fontSize: 16, color: '#6B7280', marginBottom: 12 }}>No tasks found.</Text>
           <TouchableOpacity
@@ -370,8 +373,7 @@ export default function TaskScreen() {
         <FlatList
           data={filteredTasks}
           renderItem={renderItem}
-          keyExtractor={(item) => `${item.Task_Id}-${Math.random().toString(36).substr(2, 9)}`}
-
+          keyExtractor={(item) => item.Task_Id.toString()}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
@@ -382,6 +384,8 @@ export default function TaskScreen() {
           initialNumToRender={10}
           maxToRenderPerBatch={5}
           windowSize={21}
+          removeClippedSubviews={true}
+          updateCellsBatchingPeriod={50}
         />
       )}
       
@@ -431,7 +435,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 7,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

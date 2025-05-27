@@ -14,7 +14,7 @@ const IssueTracker = () => {
   const { user } = useContext(AuthContext);
   const token = user?.token || null;
   const isAdmin = user?.userType==5;
-  console.log(isAdmin) 
+  
   
   // States for report issue modal
   const [modalVisible, setModalVisible] = useState(false);
@@ -106,6 +106,7 @@ const IssueTracker = () => {
           refetch(); 
         },
         onError: (error) => {
+        console.log(error,`Error submitting ticket`);
           alert("Failed to submit ticket.");
         }
       });

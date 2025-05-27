@@ -62,7 +62,7 @@ export const useRedirectIfTokenExpired = (token) => {
     const exp = decoded?.exp;
 
     if (!exp || checkTokenExpiration(exp)) {
-      navigation.replace('Login');
+      navigation.replace('/login');
     }
   }, [token]);
 };
