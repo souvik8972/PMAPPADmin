@@ -13,12 +13,12 @@ import { API_URL } from '@env';
 
 const Login = () => {
   console.log("My API URL:", API_URL);
-  // const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
-  // const [password, setPassword] = useState('lavgZzsS');
+  const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
+  const [password, setPassword] = useState('lavgZzsS');
   // const [email, setEmail] = useState('system_admin@medtrixhealthcare.com');
   // const [password, setPassword] = useState('hello123');
-    const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  //   const [email, setEmail] = useState('');
+  // const [password, setPassword] = useState('');
   // const [email, setEmail] = useState('yukta.d@medtrixhealthcare.com');
   // const [password, setPassword] = useState('yoTxiPqF');
   const [rememberMe, setRememberMe] = useState(false);
@@ -42,6 +42,7 @@ const Login = () => {
       });
     },
     onError: (error) => {
+      console.error("Login failed", error);
       setError({
         email: error.message,
         password: error.message,
@@ -71,6 +72,7 @@ const Login = () => {
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
+        className="bg-white"
       >
         <View className="flex-1 bg-white px-6 relative items-center pb-10">
           <View style={{ marginTop: 80, marginBottom: 30 }} className="items-center mb-8">
@@ -101,7 +103,7 @@ const Login = () => {
               <TextInput
                 placeholder={error.email && error.email !== 'Invalid email or password' ? error.email : "Enter email"}
                 keyboardType="email-address"
-                placeholderTextColor={error.email ? "red" : "black"}
+                placeholderTextColor={error.email ? "red" : "#D3D3D3"}
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
@@ -124,7 +126,7 @@ const Login = () => {
               <Text className="text-gray-700 text-[15px] pl-1 font-medium mb-1">Password</Text>
               <TextInput
                 placeholder={error.password && error.password !== 'Invalid email or password' ? error.password : "Enter your password"}
-                placeholderTextColor={error.password ? "red" : "black"}
+                placeholderTextColor={error.password ? "red" : "#D3D3D3"}
                 secureTextEntry
                 value={password}
                 onChangeText={(text) => {
@@ -146,12 +148,12 @@ const Login = () => {
 
             <View className="flex-row justify-between items-center mb-6">
               <View className="flex-row items-center">
-                <Checkbox
+                {/* <Checkbox
                   value={rememberMe}
                   onValueChange={setRememberMe}
                   color={rememberMe ? 'red' : 'gray'}
                 />
-                <Text className="pl-2">Remember Me</Text>
+                <Text className="pl-2">Remember Me</Text> */}
               </View>
               <TouchableOpacity>
                 <Text className="text-red-700 font-medium">Forgot Password?</Text>
@@ -172,11 +174,11 @@ const Login = () => {
           </View>
 
           <View style={styles.waveContainer}>
-            <Image
+            {/* <Image
               source={require('../../assets/images/svg2.png')}
               style={styles.waveImage}
               resizeMode="stretch"
-            />
+            /> */}
           </View>
         </View>
       </ScrollView>
