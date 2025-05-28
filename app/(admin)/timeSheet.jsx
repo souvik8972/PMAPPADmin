@@ -446,9 +446,7 @@ export default function TaskScreen() {
         </View>
 
         <View className="flex-1 bg-white p-3">
-        {/* ... (header section remains the same) */}
-        
-        {/* Remove the View wrapper and just render the content directly */}
+     
         {renderContent()}
       </View>
       </View>

@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, Image, Animated, Easing } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, Text, TouchableOpacity, Modal, Image, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { format } from 'date-fns';
+import { AuthContext } from '@/context/AuthContext';
+import { usePostData } from '@/ReactQuery/hooks/usePostData';
 
 const FoodComponent = () => {
   const [selectedValue, setSelectedValue] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [recordId, setRecordId] = useState(0); // Track the record ID for updates
   const fadeAnim = useState(new Animated.Value(0))[0];
   const scaleAnim = useState(new Animated.Value(0.9))[0];
+  
+  const { user } = useContext(AuthContext);
+  const { mutate: postFoodData, isLoading } = usePostData('Food/SendFoodDetails');
 
   const handleSubmit = () => {
     if (selectedValue) {
-      // Animation when submitting
       Animated.sequence([
         Animated.timing(scaleAnim, {
           toValue: 1.05,
@@ -24,14 +31,58 @@ const FoodComponent = () => {
           useNativeDriver: true,
         }),
       ]).start(() => {
-        setModalVisible(true);
-        setHasSubmitted(true);
+        const foodOpt = getFoodOptionValue(selectedValue);
+        const today = new Date();
+        const formattedDate = format(today, 'MM/dd/yyyy');
+        
+        const queryParams = {
+          id: recordId, // Use recordId (0 for insert, existing ID for update)
+          foodOpt: foodOpt,
+          Empid: user?.empId,
+          FoodDate: formattedDate,
+          action: recordId === 0 ? 'Insert' : 'Update' // Determine action based on recordId
+        };
+
+        postFoodData(
+          { 
+            data: null,
+            token: user?.token,
+            queryParams 
+          },
+          {
+            onSuccess: (response) => {
+              setModalVisible(true);
+              setHasSubmitted(true);
+              setIsEditing(false);
+              // If this was an insert, store the returned ID for future updates
+              if (recordId === 0 && response?.id) {
+                setRecordId(response.id);
+              }
+            },
+            onError: (error) => {
+              console.log('API Error:', error);
+            }
+          }
+        );
       });
     }
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+    setHasSubmitted(false);
+  };
+
+  const getFoodOptionValue = (value) => {
+    switch(value) {
+      case 'yes_coming': return 1;
+      case 'yes_own_lunch': return 2;
+      case 'no_coming': return 3;
+      default: return 0;
+    }
+  };
+
   React.useEffect(() => {
-    // Fade in animation when component mounts
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 500,
@@ -42,7 +93,7 @@ const FoodComponent = () => {
   return (
     <Animated.View 
       style={{ opacity: fadeAnim }}
-      className="flex-1 items-center bg-white justify-center 0 p-5 pt-0"
+      className="flex-1 items-center bg-white justify-center p-5 pt-0"
     >
       {/* Header with logo */}
       <View className="w-full h-[140px] mb-4 justify-center items-center">
@@ -72,7 +123,7 @@ const FoodComponent = () => {
           borderColor: '#f3f4f6',
         }}
       >
-        {hasSubmitted ? (
+        {hasSubmitted && !isEditing ? (
           <View className="flex-1 justify-center items-center">
             <Text className="text-lg font-medium text-gray-700 text-center p-4">
               Thank you for your response. We appreciate your participation.
@@ -80,6 +131,13 @@ const FoodComponent = () => {
             <View className="w-16 h-16 bg-green-100 rounded-full items-center justify-center mt-4">
               <Text className="text-2xl">✓</Text>
             </View>
+            <TouchableOpacity
+              onPress={handleEdit}
+              className="mt-6 bg-gray-100 px-6 py-2 rounded-lg"
+              activeOpacity={0.7}
+            >
+              <Text className="text-gray-700 font-medium">Edit Response</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <>
@@ -117,7 +175,7 @@ const FoodComponent = () => {
             <View className="mt-auto mb-4">
               <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
                 <TouchableOpacity
-                  disabled={!selectedValue}
+                  disabled={!selectedValue || isLoading}
                   onPress={handleSubmit}
                   className="rounded-lg overflow-hidden"
                   activeOpacity={0.8}
@@ -129,7 +187,9 @@ const FoodComponent = () => {
                       alignItems: 'center', 
                       backgroundColor: '#e5e7eb' 
                     }}>
-                      <Text className="text-gray-400 text-center text-base font-semibold">Submit</Text>
+                      <Text className="text-gray-400 text-center text-base font-semibold">
+                        {isLoading ? 'Submitting...' : 'Submit'}
+                      </Text>
                     </View>
                   ) : (
                     <LinearGradient
@@ -147,7 +207,9 @@ const FoodComponent = () => {
                         elevation: 3,
                       }}
                     >
-                      <Text className="text-white text-center text-base font-semibold">Submit</Text>
+                      <Text className="text-white text-center text-base font-semibold">
+                        {isLoading ? 'Submitting...' : isEditing ? 'Update' : 'Submit'}
+                      </Text>
                     </LinearGradient>
                   )}
                 </TouchableOpacity>
@@ -188,7 +250,7 @@ const FoodComponent = () => {
               </View>
             </View>
             <Text className="text-lg text-center mt-8 font-medium text-gray-800">
-              Response Recorded
+              Response {isEditing ? 'Updated' : 'Recorded'}
             </Text>
             <Text className="text-sm text-center text-gray-500 mt-2">
               Thank you for letting us know your plans.

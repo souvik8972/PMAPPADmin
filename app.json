@@ -4,20 +4,17 @@
     "slug": "pm-tool",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.jpg",
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": [
       "**/*"
     ],
    "splash": {
-  "image": "./assets/images/icon.jpg",
+  "image": "./assets/images/Splash3.png",
   "resizeMode": "contain",
-  "backgroundColor": "white",
-  "imageResizeMode": "center",
-  "imageSize": {
-    "width": 15,
-    "height": 15
-  }
+  "backgroundColor": "#FFFFFF"
+ 
+  
 },
     "ios": {
       "supportsTablet": true,

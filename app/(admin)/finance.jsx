@@ -251,9 +251,7 @@ const Finance = () => {
                       >
                         {item.Client_Title || 'Unknown Client'}
                       </Text>
-                      {/* <Text style={tw`text-xs text-gray-400 mt-1`}>
-                        Client ID: {item.Client_ID}
-                      </Text> */}
+                      
                     </View>
                   </View>
         

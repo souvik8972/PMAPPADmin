@@ -251,10 +251,7 @@ export default function ProjectList() {
                     <Text className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Client</Text>
                     <Text className="text-base font-medium text-gray-900">{details.Client_Title}</Text>
                   </View>
-                  {/* <View>
-                    <Text className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Region</Text>
-                    <Text className="text-base font-medium text-gray-900">{details.Region}</Text>
-                  </View> */}
+                  
                 </View>
           
                 {/* Value Cards */}
@@ -295,28 +292,7 @@ export default function ProjectList() {
         onRefresh={refetch}
       />
 
-      {/* Add Button */}
-      {/* {user?.userType == 1 && (
-        <TouchableOpacity 
-          className="absolute bottom-10 right-6" 
-          onPress={() => router.push('/(addProject)/addProject')}
-        >
-          <LinearGradient 
-            colors={["#D01313", "#6A0A0A"]} 
-            style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              borderRadius: 50, 
-              padding: 16,
-              width: 60,
-              height: 60
-            }}
-          >
-            <MaterialCommunityIcons name="plus" size={24} color="white" />
-          </LinearGradient>
-        </TouchableOpacity>
-      )} */}
+    
     </View>
   );
 }

@@ -36,7 +36,7 @@ export default function TaskScreen() {
   const formattedEndDate = selectedRange.endDate ? format(selectedRange.endDate, "MM/dd/yyyy") : formattedStartDate;
 
   // API endpoint for basic task list
-  const basicTaskEndpoint = `Task/GetTskNameByDate?st_dt=${formattedStartDate}&ed_dt=${formattedEndDate}&page=${page}&limit=20&search=${searchQuery}`;
+  const basicTaskEndpoint = `Task/GetTskNameByDate?st_dt=${formattedStartDate}&ed_dt=${formattedEndDate}`;
   
   // API endpoint for task details (will be called when a task is clicked)
   const taskDetailsEndpoint = (taskId) => `${API_URL}Task/getTaskDetailsByID?taskid=${taskId}`;
@@ -64,8 +64,7 @@ export default function TaskScreen() {
         }));
       }
     } catch (error) {
-      // console.error('Error fetching task details:', error);
-      // Alert.alert('Error', 'Failed to load task details');
+      
     } finally {
       setLoadingDetails(false);
     }
