@@ -18,7 +18,7 @@ const ProjectDetails = () => {
   const [showModal, setShowModal] = useState(false);
   const [deleteTaskId, setDeleteTaskId] = useState(null);
   const [activeIndex, setActiveIndex] = useState(null);
-  const { user } = useContext(AuthContext);
+
   const { projectId } = useLocalSearchParams();
   const router = useRouter();
 

@@ -1,0 +1,31 @@
+{
+  "project_info": {
+    "project_number": "162017625321",
+    "project_id": "pm-tool-push-notificatio-6402b",
+    "storage_bucket": "pm-tool-push-notificatio-6402b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:162017625321:android:f4b38e0fa8319518e81c78",
+        "android_client_info": {
+          "package_name": "com.souvik8582.pmtool"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSVJ8b-31abQiEUgx-nzL7TBgadku5-tk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+  
+}
+

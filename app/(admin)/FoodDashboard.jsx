@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { FlatList, View, Text } from "react-native";
 import GradientCard from '../../components/GradientCard'
+import { API_URL } from '@env';
+import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
+import { AuthContext } from "../../context/AuthContext";
+import GetCurrentDate from "../../components/GetCurrentDate";
 
 const data = {
   totalPeople: 30,
@@ -39,6 +43,24 @@ const summaryText = `Out of ${data.totalPeople} people, ${data.veg} prefer Veg, 
 
 
 export default function FoodDashboard() {
+   const { user } = useContext(AuthContext);
+   const currentDate=GetCurrentDate();
+   console.log(currentDate);
+   
+    
+     const {
+       data: apiData,
+       isLoading,
+       error: apiError,
+       refetch,
+     } = useFetchData(
+       `Food/GetFoodDetails?st_dt=${currentDate}`,
+       user?.token
+     );
+     console.log(apiData);
+     
+  
+
   return (
      <View className="flex-1 bg-[#f1f5f9] px-4 py-6">
     

@@ -6,7 +6,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import { useQuery } from "@tanstack/react-query";
-import { AuthContext } from "../../context/AuthContext";
+
 import { API_URL } from '@env';
 const fetchProjectList = async (token) => {
   const response = await fetch(`${API_URL}Projects/GetAllProjectNames`, {
