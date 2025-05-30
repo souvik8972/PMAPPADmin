@@ -9,13 +9,11 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-   "splash": {
-  "image": "./assets/images/Splash3.png",
-  "resizeMode": "contain",
-  "backgroundColor": "#FFFFFF"
- 
-  
-},
+    "splash": {
+      "image": "./assets/images/Splash3.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.souvik8582.pmtool",
@@ -41,7 +39,8 @@
             "useFrameworks": "static"
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {

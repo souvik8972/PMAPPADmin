@@ -32,6 +32,7 @@ export default function TabLayout() {
         tabBar={(props) => <MyTabBar {...props} />}
         screenOptions={{
           headerShown: false,
+
         }}
         sceneContainerStyle={{
          
