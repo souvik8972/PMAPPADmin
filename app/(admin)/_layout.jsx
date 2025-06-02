@@ -10,13 +10,14 @@ import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+
 // Create lazy-loaded components for each screen
 const Task = lazy(() => import("./index"));
 const Resource = lazy(() => import("../screens/resource"));
 const Ticket = lazy(() => import("../screens/ticket"));
 const Assets = lazy(() => import("../screens/assets"));
 const Food = lazy(() => import("../screens/food"));
-
+const FoodDashboard= lazy(()=> import("./FoodDashboard"));
 const Project = lazy(() => import("./project"));
 const TimeSheet = lazy(() => import("./timeSheet"));
 const Finance = lazy(() => import("./finance"));
@@ -226,6 +227,21 @@ export default function DrawerLayout() {
           ),
         }}
       />
+       {isSystemAdmin&& <Drawer.Screen 
+        name="Food Dashbord" 
+        children={() => (
+          <Suspense fallback={<LoadingScreen />}>
+            <FoodDashboard />
+          </Suspense>
+        )}
+        options={{
+          drawerIcon: ({ color }) => (
+            <View className="w-9">
+              <FontAwesome name="tasks" size={26} color={color}/>
+            </View>
+          ),
+        }}
+      />}
       {!isSystemAdmin&& <Drawer.Screen 
         name="Finance Module" 
         children={() => (
