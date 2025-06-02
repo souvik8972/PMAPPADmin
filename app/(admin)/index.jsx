@@ -275,6 +275,7 @@ export default function TaskScreen() {
   }, [loadingBasicTasks, page]);
 
   const onDateConfirm = useCallback((params) => {
+ 
     setDatePickerOpen(false);
     if (params.startDate) {
       const startDate = params.startDate;
@@ -294,7 +295,8 @@ export default function TaskScreen() {
       setHasMore(true);
       refetchBasicTasks();
     }
-  }, [refetchBasicTasks]);
+      console.log(('Selected Date Range:', params));
+  }, [refetchBasicTasks,selectedRange]);
 
   return (
     <View style={styles.container}>
