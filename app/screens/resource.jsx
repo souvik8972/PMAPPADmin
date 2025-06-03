@@ -223,7 +223,7 @@ const TaskDropdown = ({ emp }) => {
  
       })
     }
-    setThisWeek(Dates)
+    setThisWeek(Dates)  
   },[])
   useEffect(() => {
     if (data?._Tasks) {

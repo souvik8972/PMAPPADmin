@@ -13,8 +13,8 @@ import { API_URL } from '@env';
 
 const Login = () => {
   console.log("My API URL:", API_URL);
-  const [email, setEmail] = useState('yukta.d@medtrixhealthcare.com');
-  const [password, setPassword] = useState('yoTxiPqF');
+  const [email, setEmail] = useState('ratheesh.pp@medtrixhealthcare.com');
+  const [password, setPassword] = useState('O6jKuNRv');
   // const [email, setEmail] = useState('system_admin@medtrixhealthcare.com');
   // const [password, setPassword] = useState('hello123');
   //   const [email, setEmail] = useState('');
