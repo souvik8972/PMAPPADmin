@@ -282,7 +282,7 @@ const TaskDropdown = ({ emp }) => {
              
             </TextInput>
           </View> */}
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} className="h-[60px] flex-grow-0 mt-2">
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} className="h-[60px] flex-grow-0 mt-2 mb-2">
   {thisWeek && thisWeek.map((date) => (
     <TouchableOpacity key={date.value} onPress={() => setSelectedDate(date.value)}>
       <LinearGradient
@@ -294,7 +294,7 @@ const TaskDropdown = ({ emp }) => {
           marginRight: 10,
           height: 60,
           borderWidth: selectedDate === date.value ? 0 : 1,
-          borderColor: selectedDate === date.value ? 'transparent' : '#D1D5DB', // gray-300
+          borderColor: selectedDate === date.value ? 'transparent' : '#D1D5DB', 
         }}
       >
         <View className="px-1 py-1 h-[60px] flex justify-center items-center w-[50px] rounded-full">
@@ -322,7 +322,7 @@ const TaskDropdown = ({ emp }) => {
       style={{
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
+        shadowOpacity: 0.8,
         shadowRadius: 4,
         elevation: 3,
       }}
@@ -334,7 +334,7 @@ const TaskDropdown = ({ emp }) => {
         >
           {task.Task_Title}
         </Text>
-        <Text className="text-[11px] text-white bg-blue-500 px-2 py-0.5 rounded-md">
+        <Text className="text-[11px] font-medium text-white bg-blue-500 px-2 py-0.5 rounded-md">
           #{task.Task_Id}
         </Text>
       </View>

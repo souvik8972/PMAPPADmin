@@ -213,7 +213,7 @@ export default function TaskScreen() {
                 {/* <MaterialCommunityIcons name="account" size={16} color="#6b7280" /> */}
                 <Text className="text-gray-500 text-sm font-medium ">Task Owner</Text>
               </View>
-              <Text className="text-gray-900 text-base font-semibold ">{task.owner}</Text>
+              <Text className="text-gray-900 text-base font-semibold ">👤 {task.owner}</Text>
             </View>
 
             {/* Hours Section */}

@@ -19,7 +19,7 @@ const DropDown = ({ open, setOpen, selectedOption, setSelectedOption,items }) =>
       value={selectedOption}
       setValue={setSelectedOption}
       items={items}
-      style={{ borderColor: "transparent", backgroundColor: "#A31D1D", height: 60 }}
+      style={{ borderColor: "transparent", backgroundColor: "#A31D1D", height: 50 }}
       textStyle={{ color: "white" }}
       dropDownContainerStyle={{
         borderColor: "#8B0000",
@@ -29,7 +29,7 @@ const DropDown = ({ open, setOpen, selectedOption, setSelectedOption,items }) =>
       }}
       listItemLabelStyle={{ color: "black" }}
       selectedItemLabelStyle={{ color: "white" }}
-      selectedItemContainerStyle={{ backgroundColor: "#8B0000" }}
+      selectedItemContainerStyle={{ backgroundColor: "#C5172E" }}
       arrowIconStyle={{ tintColor: "white" }}
       animationDuration={300} 
     />
