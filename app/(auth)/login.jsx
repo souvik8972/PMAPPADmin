@@ -13,13 +13,15 @@ import { API_URL } from '@env';
 
 const Login = () => {
   console.log("My API URL:", API_URL);
-  const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
-  const [password, setPassword] = useState('lavgZzsS');
+  // const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
+  // const [password, setPassword] = useState('lavgZzsS');
   // const [email, setEmail] = useState('system_admin@medtrixhealthcare.com');
   // const [password, setPassword] = useState('hello123');
-  //   const [email, setEmail] = useState('');
-  // const [password, setPassword] = useState('');
+  //   const [email, setEmail] = useState('vignesh.vc@medtrixhealthcare.com');
+  // const [password, setPassword] = useState('vyl7IvKM');
   // const [email, setEmail] = useState('yukta.d@medtrixhealthcare.com');
+  const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
   // const [password, setPassword] = useState('yoTxiPqF');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });

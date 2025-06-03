@@ -1,117 +1,125 @@
-import React, { useContext } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { FlatList, View, Text } from "react-native";
 import GradientCard from '../../components/GradientCard'
 import { API_URL } from '@env';
-import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
+
 import { AuthContext } from "../../context/AuthContext";
 import GetCurrentDate from "../../components/GetCurrentDate";
+import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 
-const data = {
-  totalPeople: 30,
-  veg: 10,
-  nonVeg: 15,
-  noChoice: 5,
-};
-
-const cards = [
-  {
-    icon: "account-group",
-    label: "Total People",
-    count: data.totalPeople,
-    gradient: ["#3b82f6", "#60a5fa"],
-  },
-  {
-    icon: "leaf",
-    label: "Veg",
-    count: data.veg,
-    gradient: ["#22c55e", "#86efac"],
-  },
-  {
-    icon: "food-drumstick",
-    label: "Non-Veg",
-    count: data.nonVeg,
-    gradient: ["#ef4444", "#f87171"],
-  },
-  {
-    icon: "help-circle-outline",
-    label: "No Choice",
-    count: data.noChoice,
-    gradient: ["#64748b", "#cbd5e1"],
-  },
-];
-const summaryText = `Out of ${data.totalPeople} people, ${data.veg} prefer Veg, ${data.nonVeg} prefer Non-Veg, and ${data.noChoice} made no choice.`;
 
 
 export default function FoodDashboard() {
-   const { user } = useContext(AuthContext);
-   const currentDate=GetCurrentDate();
-   console.log(currentDate);
-   
-    
-     const {
-       data: apiData,
-       isLoading,
-       error: apiError,
-       refetch,
-     } = useFetchData(
-       `Food/GetFoodDetails?st_dt=${currentDate}`,
-       user?.token
-     );
-     console.log(apiData);
-     
+     const { user } = useContext(AuthContext);
+  const currentDate = GetCurrentDate();
+
+ const { data: apiData, isLoading, error: apiError, refetch } = useFetchData(
+  `Food/GetFoodDetailsByDate?st_dt=${currentDate}`,
+  user?.token
   
+);
 
+const {
+  data: Emp,
+  isLoading: TotalCountLoad,
+  error: resourcesError,
+} = useFetchData(`Resource/GetResourceCount`, user?.token);
+  const FoodApiData = useMemo(() => apiData || {}, [apiData]);
+
+  const OptforFood = useMemo(() => {
+    return FoodApiData?.assests_requests?.filter((ele) => ele.FoodOption === 1) || [];
+  }, [FoodApiData]);
+
+  const NotOptForFood = useMemo(() => {
+    return FoodApiData?.assests_requests?.filter((ele) => ele.FoodOption !== 1) || [];
+  }, [FoodApiData]);
+
+
+    if(isLoading&&TotalCountLoad){
+      return <View><Text>Loading.....</Text></View>
+    }
+    const NotDecided = (Emp?.teamMembers ?? 0) - (OptforFood.length + NotOptForFood.length);
+
+     
   return (
-     <View className="flex-1 bg-[#f1f5f9] px-4 py-6">
-    
+    <View className="flex-1 bg-[#f1f5f9] px-4 py-6">
       <View className="bg-white shadow-md p-5 rounded-3xl mb-6 items-center">
-        <Text className="text-3xl font-bold text-gray-800">🍱 Food Dashboard</Text>
-        <Text className="text-sm text-gray-500 mt-1">Monitor today’s office food preferences</Text>
+        <Text className="text-3xl font-bold text-gray-800">
+          🍱 Food Dashboard
+        </Text>
+        <Text className="text-sm text-gray-500 mt-1">
+          Monitor today’s office food preferences
+        </Text>
       </View>
-         <View className="flex-1 p-4">
-      {/* First Row */}
-      <View className="flex-row justify-between mb-4">
-        <GradientCard
-          icon="account-group"
-          label="Total Employe"
-          count={data.totalPeople}
-          gradient={["#3b82f6", "#60a5fa"]}
-        />
-        <GradientCard
-          icon="leaf"
-          label="Veg"
-          count={`${data.veg}`}
-           outOf={30}
-          gradient={["#22c55e", "#86efac"]}
-        />
-      </View>
+      <View className="flex-1 p-4">
+        <View className="flex-row justify-between mb-4">
+          <GradientCard
+            icon="account-group"
+            label="Total Employe"
+            count={Emp?.teamMembers??0}
+            gradient={["#3b82f6", "#60a5fa"]}
+          />
+          <GradientCard
+            icon="food"
+            label="Opt For Food"
+            count={`${OptforFood.length}`}
+            outOf={Emp?.teamMembers ??0}
+            gradient={["#22c55e", "#86efac"]}
+          />
+        </View>
 
-      {/* Second Row */}
-      <View className="flex-row justify-between mb-4">
-        <GradientCard
-          icon="food-drumstick"
-          label="Non-Veg"
-          count={data.nonVeg}
-          outOf={30}
-          gradient={["#ef4444", "#f87171"]}
-        />
-        <GradientCard
-          icon="help-circle-outline"
-          label="No Choice"
-          count={data.noChoice}
-          outOf={30}
-          gradient={["#64748b", "#cbd5e1"]}
-        />
-      </View>
+        <View className="flex-row justify-between mb-4">
+          <GradientCard
+            icon="food-off"
+            label="No Office Food"
+            count={NotOptForFood.length}
+            outOf={Emp?.teamMembers??0}
+            gradient={["#ef4444", "#f87171"]}
+          />
+          <GradientCard
+            icon="help-circle-outline"
+            label="No Choice"
+            count={NotDecided}
+            outOf={Emp?.teamMembers ?? 0}
+            gradient={["#64748b", "#cbd5e1"]}
+          />
+        </View>
 
-      {/* Summary Card */}
-      <View className="bg-white rounded-2xl p-4 shadow-md">
-        <Text className="text-lg font-semibold text-gray-800 mb-2">Summary</Text>
-        <Text className="text-base text-gray-600">{summaryText}</Text>
+        <View className="bg-white rounded-2xl p-2 shadow-md">
+          <Text className="text-lg font-semibold text-gray-800 mb-4">
+            Summary
+          </Text>
+
+          <View className="flex-row mb-2">
+            <Text className="text-gray-700">Total Employees: </Text>
+            <Text className="font-semibold text-gray-900">
+              {Emp?.teamMembers ?? 0}
+            </Text>
+          </View>
+
+          <View className="flex-row mb-2">
+            <Text className="text-gray-700">Opted for Office Food: </Text>
+            <Text className="font-semibold text-green-700">
+              {OptforFood.length}
+            </Text>
+          </View>
+
+          <View className="flex-row mb-2">
+            <Text className="text-gray-700">Declined Office Food: </Text>
+            <Text className="font-semibold text-red-700">
+              {NotOptForFood.length}
+            </Text>
+          </View>
+
+          <View className="flex-row">
+            <Text className="text-gray-700">No Response: </Text>
+            <Text className="font-semibold text-gray-600">
+              {(Emp?.teamMembers ?? 0) -
+                (OptforFood.length + NotOptForFood.length)}
+            </Text>
+          </View>
+        </View>
       </View>
-    </View>
-       
-    
     </View>
   );
 }
