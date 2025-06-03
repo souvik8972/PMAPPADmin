@@ -15,9 +15,18 @@ const Index = () => {
  
 const {user}=useContext(AuthContext)
  const [expoToken, setExpoToken] = useState(null);
+
+ const {setExpoTokenToSend} = useContext(AuthContext)
  
   useEffect(() => {
-    registerForPushNotificationsAsync().then(setExpoToken);
+    async function getToken() {
+      const token = await registerForPushNotificationsAsync();
+      if (token) {
+        setExpoTokenToSend(token);
+      }
+    }
+
+    getToken()
  
     initNotificationListeners(
       notification => {

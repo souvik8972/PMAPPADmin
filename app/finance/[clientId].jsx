@@ -8,7 +8,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import ClientList from "../../components/StaticClientData";
 import AnimatedNumber from "../../components/AnimatedNumber";
 import AnimationPercentage from "../../components/AnimationPercentage";
-import { EvilIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { EvilIcons, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Collapsible from "react-native-collapsible";
 import Animated, { SlideInDown, SlideOutUp } from "react-native-reanimated";
 import { Link } from 'expo-router'
@@ -41,17 +41,15 @@ const Client = () => {
 
   useEffect(() => {
     if (data) {
-      // Assuming the API response contains separate client and project data
+      
       setClientsInfo(data.clientGpValues || []);
       setProjects(data.projectNames || []);
       console.log("API response data:", data); // Better to log the raw data
     }
   }, [data]);
 
-  // Get the first client info if available, otherwise use the fallback from params
+ 
   const currentClientInfo = clientsInfo.length > 0 ? clientsInfo[0] : clientInfo;
-
-  // Helper function to convert currency string to number
   const currencyToNumber = (currency) => {
     if (!currency) return 0;
     return Number(currency.replace(/[^0-9.-]+/g, ""));
@@ -71,8 +69,8 @@ const Client = () => {
 
       {/* Header */}
       <View className="flex-row items-center py-3 bg-white relative">
-        <TouchableOpacity onPress={() => router.back()} className="z-10 p-2 pl-9">
-          <ArrowLeft size={24} color="black" />
+        <TouchableOpacity onPress={() => router.back()} className="z-10 p-2 pl-3">
+          <ArrowLeft size={30} color="black" />
         </TouchableOpacity>
         <View className="absolute left-0 right-0 items-center justify-center">
           <Text className="text-xl font-bold">{clientInfo.Client_Title}</Text>
@@ -81,11 +79,11 @@ const Client = () => {
       </View>
 
       {/* Financial Data */}
-      <View className="flex-row justify-between mt-4 pt-6 mb-6">
+      <View className="flex-row justify-between mt-1 pt-3 mb-6">
         {/* PoValue */}
-        <View className="items-center w-1/3 border-r border-gray-200 px-1">
-          <View className="flex-row items-center justify-center space-x-1 mb-1">
-            <FontAwesome6 name="arrow-trend-up" size={12} color="black" className='border-gray-100 border-2 m-1 p-1'/>
+        <View className="items-center w-1/3 border-r border-gray-200 px-1 ">
+          <View className="flex-row items-center justify-center gap-1 mb-1">
+            <Ionicons name="trending-up" size={20} color="#10B981" />
             <Text className="text-sm text-gray-500">PoValue</Text>
           </View>
           <AnimatedNumber 
@@ -97,20 +95,21 @@ const Client = () => {
       
         {/* Predicated Gp */}
         <View className="items-center w-1/3 border-r border-gray-200 px-1 m-1">
-          <View className="flex-row items-center justify-center space-x-1 mb-1">
-            <FontAwesome6 name="arrow-trend-up" size={12} color="black" className='border-gray-100 border-2 p-1 m-1'/>
+          <View className="flex-row items-center justify-center gap-1 mb-1">
+           <Ionicons name="trending-up" size={20} color="#10B981" />
             <Text className="text-sm text-gray-500">Predicated Gp</Text>
           </View>
           <AnimatedNumber 
             value={currencyToNumber(currentClientInfo.Predicted_Gp)} 
             color="text-black" 
+            
           />
         </View>
       
         {/* Current GP */}
         <View className="items-center w-1/3 px-1">
-          <View className="flex-row items-center justify-center space-x-1 mb-1">
-            <FontAwesome6 name="arrow-trend-down" size={12} color="black" className='border-gray-100 border-2 p-1 m-1'/>
+          <View className="flex-row items-center justify-center gap-1 mb-1">
+           <Ionicons name="trending-down" size={20} color="#EF4444" />
             <Text className="text-sm text-gray-500">Actual GP</Text>
           </View>
           <AnimatedNumber  
@@ -121,28 +120,28 @@ const Client = () => {
       </View>
 
       {/* Progress Bar */}
-      <View className="items-center justify-center w-full mt-6">
+      <View className="items-center justify-center w-full ">
         <View className="w-[90%] h-11 bg-[#00D09E] rounded-full flex-row overflow-hidden">
           <View 
             style={{ width: `${50}%` }} 
             className="h-full items-start justify-center px-1 pl-5"
           >
             <Text className="text-black font-bold text-sm">
-              $ {currencyToNumber(currentClientInfo.Predicted_Gp)}
+              $ {currencyToNumber(currentClientInfo.Predicted_Gp).toLocaleString()}
             </Text>
           </View>
           <View 
             style={{ width: `50%`}} 
-            className={`${currentClientInfo.Actual_percentage < 100 ? "bg-red-500" : "bg-black"} h-full rounded-full items-end justify-center px-1`}
+            className={`${currentClientInfo.Actual_percentage < 100 ? "bg-[#052224]" : "bg-black"} h-full rounded-full items-end justify-center px-1`}
           >
             <Text className="text-white font-bold text-sm pr-2">
-              $ {currencyToNumber(currentClientInfo.Actual_Gp)}
+              $ {currencyToNumber(currentClientInfo.Actual_Gp).toLocaleString()}
             </Text>
           </View>
         </View>
-        <View className='flex-row mt-6 items-center space-x-2 mb-6'>
+        <View className='flex-row mt-6 items-center space-x-2  gap-2'>
           <Text className='w-3 h-3 bg-[#00D09E] rounded-full text-center mr-1'></Text>
-          <Text className='font-semibold text-sm italic'>Predicted</Text>
+          <Text className='font-semibold text-sm '>Predicted</Text>
           <Text className='w-3 h-3 bg-[#052224] rounded-full text-center ml-2 mr-1'></Text>
           <Text className='font-semibold text-sm'>Actual</Text>
         </View>
@@ -170,7 +169,7 @@ const Client = () => {
         }}
       >
         <LinearGradient
-          colors={["white", "#FFADB0"]}
+          colors={["#FFF", "#FFF"]}
           style={{
             padding: 16,
             width: "100%",
@@ -194,39 +193,17 @@ const TaskList = ({ projects, clientId, loading }) => {
   return (
     <View className="flex-1 pt-0 ">
       {/* Header with Add Button */}
-      <View className="flex-row items-center justify-between mb-6 px-4">
+      <View className="flex-row items-center justify-between mb-10 px-3">
         <Text className="text-2xl font-bold text-gray-800">Projects List</Text>
-        {/* {user?.userType == 1 && (
-          <TouchableOpacity
-            onPress={() => router.push("/(addProject)/addProject")}
-            activeOpacity={0.7}
-          >
-            <LinearGradient
-              colors={["black", "#C6373C"]}
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: 50,
-                padding: 12,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.2,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
-            >
-              <MaterialCommunityIcons name="plus" size={20} color="white" />
-            </LinearGradient>
-          </TouchableOpacity>
-        )} */}
+       
       </View>
 
       {/* Projects List */}
       <ScrollView 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
-      >
+        contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 30 }}
+        
+      ><View className="mb-14">
         {loading ? (
           // Show shimmer loaders while loading
           <>
@@ -241,6 +218,7 @@ const TaskList = ({ projects, clientId, loading }) => {
               href={`/projectInfo/${project.project_ID}-${clientId}`}
               key={project.project_ID}
               asChild
+              className=""
             >
               <TouchableOpacity 
                 activeOpacity={0.8}
@@ -274,7 +252,7 @@ const TaskList = ({ projects, clientId, loading }) => {
             </Link>
           ))
         )}
-      </ScrollView>
+      </View></ScrollView>
 
       {/* Floating Add Button */}
       {user?.userType == 1 && !loading && (

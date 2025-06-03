@@ -10,13 +10,14 @@ import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+
 // Create lazy-loaded components for each screen
 const Task = lazy(() => import("./index"));
 const Resource = lazy(() => import("../screens/resource"));
 const Ticket = lazy(() => import("../screens/ticket"));
 const Assets = lazy(() => import("../screens/assets"));
 const Food = lazy(() => import("../screens/food"));
-
+const FoodDashboard= lazy(()=> import("./FoodDashboard"));
 const Project = lazy(() => import("./project"));
 const TimeSheet = lazy(() => import("./timeSheet"));
 const Finance = lazy(() => import("./finance"));
@@ -107,6 +108,7 @@ export default function DrawerLayout() {
   const { user } = useContext(AuthContext);
 
   const isSystemAdmin = user?.userType==5;
+  const isFoodAdmin=user?.userType==6
 
 
   return (
@@ -120,127 +122,180 @@ export default function DrawerLayout() {
         drawerLabelStyle: { fontSize: 14,  },
       })}
     >
-      <Drawer.Screen 
-        name="Resource Allocation" 
-        children={() => (
-          <Suspense fallback={<LoadingScreen />}>
-            <Resource />
-          </Suspense>
-        )}
-        options={{
-          drawerIcon: ({ color }) => (
-            <View className="w-9">
-              <Feather name="users" size={26} color={color} />
-            </View>
-          ),
-        }}q
-      />
-     {!isSystemAdmin&& <Drawer.Screen 
-        name="Tasks" 
-        children={() => (
-          <Suspense fallback={<LoadingScreen />}>
-            <Task />
-          </Suspense>
-        )}
-        options={{
-          drawerIcon: ({ color }) => (
-            <View className="w-9">
-              <FontAwesome5 name="calendar-alt" size={26} color={color} />
-            </View>
-          ),
-        }}
-      />}
-      <Drawer.Screen 
-        name="Time Sheet" 
-        children={() => (
-          <Suspense fallback={<LoadingScreen />}>
-            <TimeSheet />
-          </Suspense>
-        )}
-        options={{
-          drawerIcon: ({ color }) => (
-            <View className="w-9">
-              <MaterialCommunityIcons name="timetable" size={26} color={color} />
-            </View>
-          ),
-        }}
-      />
-      {!isSystemAdmin&& <Drawer.Screen 
-        name="Projects" 
-        children={() => (
-          <Suspense fallback={<LoadingScreen />}>
-            <Project />
-          </Suspense>
-        )}
-        options={{
-          drawerIcon: ({ color }) => (
-            <View className="w-9">
-              <FontAwesome name="tasks" size={26} color={color}/>
-            </View>
-          ),
-        }}
-      />}
-      <Drawer.Screen 
-        name="Ticket" 
-        children={() => (
-          <Suspense fallback={<LoadingScreen />}>
-            <Ticket />
-          </Suspense>
-        )}
-        options={{
-          drawerIcon: ({ color }) => (
-            <View className="w-9">
-              <Ionicons name="ticket" size={26} color={color} />
-            </View>
-          ),
-        }}
-      />
-      <Drawer.Screen 
-        name="Assets" 
-        children={() => (
-          <Suspense fallback={<LoadingScreen />}>
-            <Assets />
-          </Suspense>
-        )}
-        options={{
-          drawerIcon: ({ color }) => (
-            <View className="w-9">
-              <FontAwesome5 name="mobile" size={26} color={color} />
-            </View>
-          ),
-        }}
-      />
-       <Drawer.Screen 
-        name="Food" 
-        children={() => (
-          <Suspense fallback={<LoadingScreen />}>
-            <Food />
-          </Suspense>
-        )}
-        options={{
-          drawerIcon: ({ color }) => (
-            <View className="w-9">
-               <Ionicons name="fast-food" size={26} color={color} />
-             
-            </View>
-          ),
-        }}
-      />
-      {!isSystemAdmin&& <Drawer.Screen 
-        name="Finance Module" 
-        children={() => (
-          <Suspense fallback={<LoadingScreen />}>
-            <Finance />
-          </Suspense>
-        )}
-        options={{
-          drawerIcon: ({ color }) => (
-            <View className="w-9">
-              <FontAwesome name="money" size={26} color={color} />
-            </View>
-          ),
-        }}
-      />}
+      {isFoodAdmin ? (
+        // Only show Food Dashboard for Food Admin
+        <Drawer.Screen 
+          name="Food Dashboard" 
+          children={() => (
+            <Suspense fallback={<LoadingScreen />}>
+              <FoodDashboard />
+            </Suspense>
+          )}
+          options={{
+            drawerIcon: ({ color }) => (
+              <View className="w-9">
+                <Ionicons name="fast-food" size={26} color={color} />
+              </View>
+            ),
+          }}
+        />
+      ) : (
+        // Show all other screens for non-Food Admin users
+        <>
+          <Drawer.Screen 
+            name="Resource Allocation" 
+            children={() => (
+              <Suspense fallback={<LoadingScreen />}>
+                <Resource />
+              </Suspense>
+            )}
+            options={{
+              drawerIcon: ({ color }) => (
+                <View className="w-9">
+                  <Feather name="users" size={26} color={color} />
+                </View>
+              ),
+            }}
+          />
+          
+          {!isSystemAdmin && (
+            <>
+              <Drawer.Screen 
+                name="Tasks" 
+                children={() => (
+                  <Suspense fallback={<LoadingScreen />}>
+                    <Task />
+                  </Suspense>
+                )}
+                options={{
+                  drawerIcon: ({ color }) => (
+                    <View className="w-9">
+                      <FontAwesome5 name="calendar-alt" size={26} color={color} />
+                    </View>
+                  ),
+                }}
+              />
+              
+              <Drawer.Screen 
+                name="Projects" 
+                children={() => (
+                  <Suspense fallback={<LoadingScreen />}>
+                    <Project />
+                  </Suspense>
+                )}
+                options={{
+                  drawerIcon: ({ color }) => (
+                    <View className="w-9">
+                      <FontAwesome name="tasks" size={26} color={color}/>
+                    </View>
+                  ),
+                }}
+              />
+            </>
+          )}
+          
+          <Drawer.Screen 
+            name="Time Sheet" 
+            children={() => (
+              <Suspense fallback={<LoadingScreen />}>
+                <TimeSheet />
+              </Suspense>
+            )}
+            options={{
+              drawerIcon: ({ color }) => (
+                <View className="w-9">
+                  <MaterialCommunityIcons name="timetable" size={26} color={color} />
+                </View>
+              ),
+            }}
+          />
+          
+          <Drawer.Screen 
+            name="Ticket" 
+            children={() => (
+              <Suspense fallback={<LoadingScreen />}>
+                <Ticket />
+              </Suspense>
+            )}
+            options={{
+              drawerIcon: ({ color }) => (
+                <View className="w-9">
+                  <Ionicons name="ticket" size={26} color={color} />
+                </View>
+              ),
+            }}
+          />
+          
+          <Drawer.Screen 
+            name="Assets" 
+            children={() => (
+              <Suspense fallback={<LoadingScreen />}>
+                <Assets />
+              </Suspense>
+            )}
+            options={{
+              drawerIcon: ({ color }) => (
+                <View className="w-9">
+                  <FontAwesome5 name="mobile" size={26} color={color} />
+                </View>
+              ),
+            }}
+          />
+          
+          <Drawer.Screen 
+            name="Food" 
+            children={() => (
+              <Suspense fallback={<LoadingScreen />}>
+                <Food />
+              </Suspense>
+            )}
+            options={{
+              drawerIcon: ({ color }) => (
+                <View className="w-9">
+                  <Ionicons name="fast-food" size={26} color={color} />
+                </View>
+              ),
+            }}
+          />
+          
+          {/* {isSystemAdmin && (
+            <Drawer.Screen 
+              name="Food Dashboard" 
+              children={() => (
+                <Suspense fallback={<LoadingScreen />}>
+                  <FoodDashboard />
+                </Suspense>
+              )}
+              options={{
+                drawerIcon: ({ color }) => (
+                  <View className="w-9">
+                    <FontAwesome name="tasks" size={26} color={color}/>
+                  </View>
+                ),
+              }}
+            />
+          )} */}
+          
+          {!isSystemAdmin && (
+            <Drawer.Screen 
+              name="Finance Module" 
+              children={() => (
+                <Suspense fallback={<LoadingScreen />}>
+                  <Finance />
+                </Suspense>
+              )}
+              options={{
+                drawerIcon: ({ color }) => (
+                  <View className="w-9">
+                    <FontAwesome name="money" size={26} color={color} />
+                  </View>
+                ),
+              }}
+            />
+          )}
+        </>
+      )}
+
     </Drawer.Navigator>
   );
 }

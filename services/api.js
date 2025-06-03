@@ -39,3 +39,40 @@ export const loginUser = async ({ email, password }) => {
   
     return data; 
   };
+
+export async function savePushTokenToBackend(empId, Expotoken, jwtToken) {
+  console.log("Start-1111");
+
+  try {
+    const response = await fetch(
+      `https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/Notifications/register`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify({  
+          token: Expotoken,
+          empid: empId
+        }),
+      }
+    );
+
+    console.log("sendToken", response);
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Error response:', errorData);
+      throw new Error(`Failed to save push token: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    console.log("Response data:", responseData);
+    return responseData;
+    
+  } catch (error) {
+    console.error('Error in savePushTokenToBackend:', error);
+    throw error;
+  }
+}

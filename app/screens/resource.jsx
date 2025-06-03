@@ -14,10 +14,9 @@ import ShimmerPlaceholder, { createShimmerPlaceholder } from 'react-native-shimm
  
  
  
-//
+
 const TABS = [{"Tech":1}, {"Creative":2}, {"Content":3}, {"PM":4}, ];
- 
-export default function ResourcesScreen() {
+ export default function ResourcesScreen() {
   
   const [activeTab, setActiveTab] = useState("Tech");
   const [activeData,setActiveData]=useState([]);
@@ -30,11 +29,17 @@ export default function ResourcesScreen() {
   const TOKEN=user.token||null;
   const teamId = TABS.find((tab) => activeTab in tab)?.[activeTab]||1;
   const {data,isLoading,isError} = useFetchData(`Resource/GetTeamMembers?teamId=${teamId}`, TOKEN)
-  const today = new Date();
+ const today = new Date();
 const formattedDate = `${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}/${today.getFullYear()}`;
 console.log(formattedDate);
- const {data:utilData,isLoading:utillLoading,isError:utillError} = useFetchData(`Task/GetTeamUtilData?teamId=${teamId}&date_val=${formattedDate}`, TOKEN)
-     
+
+  const {data:utilData,isLoading:utillLoading,isError:utillError} = useFetchData(`Task/GetTeamUtilData?teamId=${teamId}&date_val=${formattedDate}`, TOKEN)
+  
+const parseTheData = Math.min(utilData?.utilizationPercent ?? 0, 100);
+
+
+  
+   
  
   const HandleTab = async (tab) => {
     setSearchText("");
@@ -116,7 +121,7 @@ const TabButton = ({ tab, activeTab, setActiveTab }) => (
 );
  
 const GradientProgressBar = ({ progress }) => (
-  <View className={`w-full h-2 bg-gray-300 rounded-lg`}>
+  <View className={`w-full h-3 bg-gray-300 rounded-lg`}>
     <LinearGradient
       colors={["#D01313", "#6A0A0A"]}
       start={{ x: 0, y: 0 }}
@@ -161,20 +166,7 @@ const TeamMember = ({ item, selectedDropdown, setSelectedDropdown  ,isLoading}) 
         <TaskDropdown emp={emp} />
       )}
      
-        {/* <TouchableOpacity className="flex-row items-center  p" onPress={handleToggle} > */}
-  {/* Logged Hours */}
-  {/* <View className="flex-row items-center space-x-1 mr-4" onPress={handleToggle}>
-    <Text className="text-green-800 text-end pr-2">🟢</Text>
-    <Text className="text-gray-500 text-lg">Logged: {item.Loggedhours} hr</Text>
-  </View>
-  */}
- 
-  {/* Available Hours */}
-  {/* <View className="flex-row items-center space-x-1 " onPress={handleToggle}>
-    <Text className="text-red-800 pr-2 text-xs">🔴</Text>
-    <Text className="text-gray-500 text-lg ">Available: {item.Available} hr</Text>
-  </View> */}
-{/* </TouchableOpacity> */}
+       
     </View>
  
       )
@@ -378,4 +370,3 @@ const TaskDropdown = ({ emp }) => {
     </Animated.View>
   );
 };
-
