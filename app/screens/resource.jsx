@@ -335,7 +335,6 @@ const TaskDropdown = ({ emp }) => {
         elevation: 3,
       }}
     >
-      {/* Title & ID */}
       <View className="flex-row justify-between items-center mb-4">
         <Text
           className="text-base font-semibold text-gray-900 flex-1 mr-2"
@@ -348,7 +347,6 @@ const TaskDropdown = ({ emp }) => {
         </Text>
       </View>
 
-      {/* Info Chips */}
       <View className="flex-row flex-wrap gap-2">
         <View className="bg-green-100 px-2 py-1 rounded-lg">
           <Text className="text-sm text-green-800 font-semibold">
