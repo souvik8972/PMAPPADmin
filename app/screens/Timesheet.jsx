@@ -173,7 +173,7 @@ export default function TaskScreen() {
   const renderTaskItem = (task, index) => (
     <View key={`${task.taskId}-${index}`} className="mb-4 ">
       <TouchableOpacity
-        className={`p-4 rounded-lg ${activeIndex === index ? "bg-white" : "bg-gray-50"}`}
+        className={`p-5 rounded-lg ${activeIndex === index ? "bg-white" : "bg-gray-50"}`}
         onPress={() => setActiveIndex(activeIndex === index ? null : index)}
         activeOpacity={0.8}
         style={{
@@ -186,7 +186,7 @@ export default function TaskScreen() {
         }}
       >
         <View className="flex-row justify-between items-center">
-          <Text className="text-gray-800 font-semibold text-[15px] flex-1 pr-2" numberOfLines={1}>
+          <Text style={{lineHeight: 22}} className="text-gray-800 font-semibold text-[16px] flex-1 pr-2" numberOfLines={activeIndex === index ? undefined : 1}>
             {task.title}
           </Text>
           <FontAwesome
@@ -199,62 +199,89 @@ export default function TaskScreen() {
         <Collapsible collapsed={activeIndex !== index}>
           <View className="mt-4">
             {/* Task ID */}
-            <View className="mb-4 ">
-              <View className="flex-row items-center mb-1">
-                <Text className="text-gray-500 text-sm font-medium">#</Text>
-                <Text className="text-gray-500 text-sm font-medium ml-2">Task ID</Text>
+            <View className="mb-3">
+              <View className="flex-row items-center">
+                {/* <Text className="text-gray-500 text-sm font-medium">#</Text> */}
+                <Text className="text-gray-500 text-sm font-medium ">Task ID</Text>
               </View>
-              <Text className="text-gray-900 text-base font-semibold ml-4">{task.taskId}</Text>
+              <Text className="text-gray-900 text-base font-semibold"># {task.taskId}</Text>
             </View>
 
             {/* Task Owner */}
             <View className="mb-4">
-              <View className="flex-row items-center mb-1">
-                <MaterialCommunityIcons name="account" size={16} color="#6b7280" />
-                <Text className="text-gray-500 text-sm font-medium ml-2">Task Owner</Text>
+              <View className="flex-row items-center">
+                {/* <MaterialCommunityIcons name="account" size={16} color="#6b7280" /> */}
+                <Text className="text-gray-500 text-sm font-medium ">Task Owner</Text>
               </View>
-              <Text className="text-gray-900 text-base font-semibold ml-4">{task.owner}</Text>
+              <Text className="text-gray-900 text-base font-semibold ">👤 {task.owner}</Text>
             </View>
 
             {/* Hours Section */}
-            <View className="flex-row justify-between  m-0 mb-6">
+            <View className="flex-row gap-6 justify-start flex-none mb-6">
               {/* Planned Hours */}
-              <View className="  flex-1 pl-2">
-                <View className="flex-row items-center mb-2">
-                  <MaterialCommunityIcons name="clock-outline" size={16} color="#6b7280" />
-                  <Text className="text-gray-600 text-sm font-medium ml-1">Planned</Text>
+              <View className="flex-none justify-center flex mr-4">
+                <View className="flex-row items-center mb-1">
+                  {/* <MaterialCommunityIcons name="clock-outline" size={16} color="#6b7280" /> */}
+                  <Text className="text-gray-600 text-sm font-medium ">Planned Hours</Text>
                 </View>
-                <TextInput
-                  className="bg-gray-100 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800"
+                <View style={{
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                        elevation: 3,
+                        backgroundColor: "#f3f4f6", 
+                        borderRadius: 8,
+                      }}
+                      className="w-20 mx-2"
+                  ><TextInput
+                  className="bg-gray-100 px-4 py-2 w-20 rounded-lg text-center text-md font-semibold text-gray-800"
                   value={task.planned}
-                  style={{textAlign: "center"}}
                   editable={false}
-                />
+                  style={{
+                   textAlign: "center",
+                  }}
+                /></View>
+                
               </View>
 
               {/* Actual Hours */}
-              <View className="items-end flex-1 pr-2">
-                <View className="flex-row items-center mb-2">
-                  <MaterialCommunityIcons name="clock-check-outline" size={16} color="#6b7280" />
-                  <Text className="text-gray-600 text-sm font-medium ml-1">Actual</Text>
+              <View className="">
+                <View className="flex-row items-center mb-1">
+                  {/* <MaterialCommunityIcons name="clock-check-outline" size={16} color="#6b7280" /> */}
+                  <Text className="text-gray-600 text-sm font-medium">Actual Hours</Text>
                 </View>
-                <TextInput
-                  className="bg-white border border-gray-200 px-4 py-2 w-20 rounded-lg text-center text-sm font-medium text-gray-800"
-                  keyboardType="decimal-pad"
-                  placeholder=""
-                  maxLength={5}
-                  value={task.actual}
-                  onChangeText={(text) => handleActualHoursChange(text, task.taskId)}
-                  onFocus={() => {
-                    setTimeout(() => {
-                      flatListRef.current?.scrollToIndex({
-                        index: index,
-                        viewOffset: 50,
-                        animated: true
-                      });
-                    }, 100);
-                  }}
-                />
+                <View
+  style={{
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    backgroundColor: "#fff", 
+    borderRadius: 8,
+  }}
+  className="w-20"
+>
+  <TextInput
+    className="px-4 py-2 text-center text-md font-md text-gray-800 font-semibold"
+    keyboardType="decimal-pad"
+    placeholder=""
+    maxLength={5}
+    value={task.actual}
+    onChangeText={(text) => handleActualHoursChange(text, task.taskId)}
+    onFocus={() => {
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({
+          index: index,
+          viewOffset: 50,
+          animated: true,
+        });
+      }, 100);
+    }}
+  />
+</View>
+
               </View>
             </View>
 
@@ -365,7 +392,7 @@ export default function TaskScreen() {
   keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}  // Increased offset
 >
       <View className="flex-1 bg-gray-50">
-        <View className="p-4 pt-0">
+        <View className="p-4 pt-0 pb-1">
           <DropDown
             open={open}
             setActiveIndex={setActiveIndex}
@@ -375,7 +402,7 @@ export default function TaskScreen() {
             setSelectedOption={setSelectedOption}
           />
 
-          <View className="flex-row items-center border border-gray-200 rounded-lg h-[50px] px-4 my-4 bg-white">
+          <View className="flex-row items-center border border-gray-200 rounded-lg h-[40px] px-4 my-4 bg-white">
             <TextInput
               placeholder="Search your task"
               className="flex-1 text-gray-800"
@@ -406,20 +433,20 @@ export default function TaskScreen() {
                   className="mr-3"
                 >
                   <View
-                    className={`h-[70px] w-[50px] rounded-xl justify-center items-center ${
-                      selectedDate === item.date ? "bg-[#D01313]" : "bg-gray-200"
+                    className={`h-[70px] w-[50px] rounded-xl justify-center items-center border border-gray-200 ${
+                      selectedDate === item.date ? "bg-gray-200" : "bg-white"
                     }`}
                   >
                     <Text
                       className={`${
-                        selectedDate === item.date ? "text-white" : "text-gray-800"
+                        selectedDate === item.date ? "text-gray" : "text-gray-800"
                       } font-bold text-xs`}
                     >
                       {item.label.split(" ")[0]}
                     </Text>
                     <Text
                       className={`${
-                        selectedDate === item.date ? "text-white" : "text-gray-800"
+                        selectedDate === item.date ? "text-gray" : "text-gray-800"
                       } font-bold text-base mt-1`}
                     >
                       {item.label.split(" ")[1]}
@@ -430,7 +457,7 @@ export default function TaskScreen() {
             </ScrollView>
           )}
 
-          <Text className="text-lg font-semibold text-gray-800 ">My Task List</Text>
+          <Text className="text-lg font-semibold text-gray-800">My Task List</Text>
         </View>
 
         <View className="flex-1 px-2">

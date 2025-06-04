@@ -30,79 +30,83 @@ const TaskItem = React.memo(({
   return (
     <TouchableOpacity 
       onPress={() => onPress(item.Task_Id)} 
-      className="bg-white rounded-xl min-h-[80px] flex justify-center items-center p-5 mb-4 relative shadow-sm border border-gray-100"
+      className="bg-white rounded-xl min-h-[60px] flex justify-center items-center p-3 mb-4 relative border shadow-sm border-gray-300"
     >
       {/* Basic Task Info (always visible) */}
       <View className="w-full">
-        <View className="mb-3 flex-row justify-between items-start">
-          <Text className="text-base w-[75%] font-medium text-gray-800">
+        <View className=" flex-col justify-between items-start gap-2">
+          <Text className="text-md max-w-[40%] font-semibold text-gray-800" numberOfLines={1}>
             {item.Task_Title}
           </Text>
-          <View className="w-[20%] h-[28px] bg-gray-50 rounded-md px-2 py-1 flex-row items-center justify-center border border-gray-200">
-            <Text className="text-xs font-semibold text-gray-600">#{item.Task_Id}</Text>
+          <View className="h-[28px] rounded-md px-2 flex-row items-center justify-center " style={{ backgroundColor: isSelected ? '#007AFF' : '#DFF7E2' }}>
+            <Text className="text-sm font-semibold" style={{color: isSelected ? '#fff' : '#000'}}>#Task ID: {item.Task_Id}</Text>
           </View>
         </View>
       </View>
 
       {/* Task Details (shown when expanded) */}
       {isSelected && (
-        <View className="border-t border-gray-100 pt-4 w-full">
+        <View className="border-t border-gray-100 pt-4 mt-3 w-full">
           {loadingDetails ? (
             <View className="py-4">
               <ActivityIndicator size="small" color="#940101" />
             </View>
           ) : details ? (
             <>
-              <View className="mb-4 space-y-3">
-                {/* Improved User Display Section */}
-                <View className="mb-3">
+              <View className="mb-1 space-y-3">
+              
+                <View className="mb-4">
                   <View className="flex-row items-center mb-2">
-                    <Feather name="users" size={16} color="#64748B" />
-                    <Text className="text-sm text-gray-500 ml-2">Assigned to:</Text>
+                    <Feather name="users" size={16} color="#00C7BE" />
+                    <Text className="text-sm font-medium text-gray-500 ml-2">Assigned to:</Text>
                   </View>
                   <View className="flex-row flex-wrap gap-2">
                     {details.Employee_Name.split(',').map((employee, index) => (
                       <View 
                         key={`employee-${index}`} 
-                        className="flex-row items-center bg-gray-50 rounded-full px-3 py-1 border border-gray-200"
+                        className="flex-row items-center rounded-full px-3 py-1 border border-gray-200"
+                        style={{ backgroundColor: '#F3F4F6' }}
                       >
                         <View className="w-5 h-5 rounded-full bg-red-100 mr-2 flex items-center justify-center">
                           <Feather name="user" size={12} color="#940101" />
                         </View>
-                        <Text className="text-sm text-gray-700">{employee.trim()}</Text>
+                        <Text className="text-sm font-semibold text-gray-700">{employee.trim()}</Text>
                       </View>
                     ))}
                   </View>
                 </View>
-
-                <View className="flex-row justify-between">
-                  <View className="flex-row items-center space-x-2">
+                <View className="flex-row justify-start mb-1  items-center">
+                  {/* <View className="flex-row items-center space-x-2">
                     <Feather name="hash" size={16} color="#64748B" />
                     <Text className="text-sm text-gray-700">{details.Project_Id}</Text>
+                  </View> */}
+                   <View className="flex-row items-center mr-2">
+                   <Feather name="calendar" size={16} color="#00C7BE" />
                   </View>
-                  <View className="flex-row items-center space-x-2">
-                    <Feather name="calendar" size={16} color="#64748B" />
-                    <Text className="text-sm text-gray-500">Start:</Text>
-                    <Text className="text-sm font-medium text-gray-700">{details.Start_Date}</Text>
+                  <View className="flex-col items-start gap-1">
+                    {/* <Feather name="calendar" size={16} color="#64748B" /> */}
+                    <Text className="text-sm font-medium text-gray-500">Start</Text>
+                    <Text className="text-sm font-semibold text-gray-700">{details.Start_Date} - </Text>
                   </View>
-                  <View className="flex-row items-center space-x-2">
-                    <Feather name="calendar" size={16} color="#64748B" />
-                    <Text className="text-sm text-gray-500">End:</Text>
-                    <Text className="text-sm font-medium text-gray-700">{details.End_Date}</Text>
+                  <View className="flex-col items-start gap-1">
+                    {/* <Feather name="calendar" size={16} color="#64748B" /> */}
+                    <Text className="text-sm font-medium text-gray-500">End</Text>
+                    <Text className="text-sm font-semibold text-gray-700">{details.End_Date}</Text>
                   </View>
                 </View>
+               
               </View>
 
               {/* Actions */}
-              <View className="flex-row justify-end space-x-4 gap-2 mt-4">
+              <View className="flex-row justify-end space-x-4 gap-2 mt-2">
                 <Link href={`/(addTask)/${details.Project_Id}-${details.Task_Id}-${ActionType}-${details.BuyingCenterId}`} asChild>
-                  <TouchableOpacity className="flex-row items-center bg-white border border-red-100 px-4 py-2 rounded-lg shadow-sm">
-                    <Feather name="edit-3" size={16} color="red" />
-                    <Text className="ml-2 text-red-500 text-sm font-medium">Edit</Text>
+                  <TouchableOpacity className="flex-row items-center bg-white border border-blue-100 px-4 py-2 rounded-lg shadow-sm">
+                    <Feather name="edit-3" size={16} color="#007AFF" />
+                    <Text className="ml-2  text-sm font-medium" style={{color:'#007AFF'}}>Edit</Text>
                   </TouchableOpacity>
                 </Link>
                 <TouchableOpacity 
-                  className="flex-row items-center bg-red-500 px-4 py-2 rounded-lg shadow-sm"
+                  className="flex-row items-center px-4 py-2 rounded-lg shadow-sm" style={{ backgroundColor: '#007AFF' }}
                   onPress={() => onDelete(details.Task_Id)}
                 >
                   <Feather name="trash-2" size={16} color="white" />

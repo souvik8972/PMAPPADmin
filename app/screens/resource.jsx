@@ -72,43 +72,33 @@ const parseTheData = Math.min(utilData?.utilizationPercent ?? 0, 100);
      <View style={{flex:1}}>
      
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={tw`flex-1 bg-white`}>
-      <Text className='mx-4 mb-6  text-lg font-medium'>Task Availability</Text>
-       
-    <ScrollView style={{flexGrow:1}}>
-        <View className="flex-row  justify-evenly m-0 p-0 ">
+      <Text className='mx-3 mb-4  text-xl font-semibold'>Task Availability</Text>
+      <View className="flex-row  justify-evenly m-0 p-0 ">
           {TABS.map((tab) => (
             <TabButton key={tab[Object.keys(tab)]} tab={Object.keys(tab)[0]} activeTab={activeTab} setActiveTab={()=>{HandleTab(Object.keys(tab)[0])}} />
           ))}
         </View>
- 
-       <View className='mx-4 mt-5 mb-2'>
-          <Text className={`text-lg `}>Team Utilization:</Text>
-          <View className={`flex-row items-center justify-between mt-2 mr-12 gap-2 `}>
-            <GradientProgressBar 
-            progress={parseTheData/100 }  
-            />
-            <Text className={'pl- pb-2 pt-2 '}>{utilData?.utilizationPercent||0/10}%</Text>
-            
+        <View className='mx-4 mt-3 mb-2'>
+          <Text className={`text-lg font-semibold`}>Team Utilization:</Text>
+          <View className={`flex-row items-center justify-between mt-0 mr-16 gap-4  `}>
+            <GradientProgressBar progress={utilData?.utilizationPercent/100||0/100}  />
+            <Text className={'pl- pb-2 pt-1 font-semibold'}>{utilData?.utilizationPercent||0}%</Text>
+           
           </View>
         </View>
-         
-         
-        {/* Search Input */}
-        <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-100 mx-4  shadow-lg mb-4 mt-2 p-2">
+         {/* Search Input */}
+         {/* <View className="flex-row items-center border border-gray-300 rounded-xl bg-gray-100 mx-3  shadow-lg mb-4 mt-2 pr-4 pl-3  pt-1  pb-1">
           <TextInput
             placeholder="Search"
             value={searchText}
             onChangeText={setSearchText}
-            className="flex-1 pl-3"
+            className="flex-1 pl-3 h-[40px]"
            
           />
           <Icon name="search1" size={20} color="gray" />
-        </View>
-       
- 
-        {/* Team Members List */}
-     
-       
+        </View> */}
+    <ScrollView style={{flexGrow:1}}>
+      {/* Team Members List */}
        <TeamMember item={FilterTaskData} selectedDropdown={selectedDropdown} setSelectedDropdown={setSelectedDropdown} isLoading={isLoading}/>
       </ScrollView>
       </KeyboardAvoidingView>
@@ -120,12 +110,12 @@ const parseTheData = Math.min(utilData?.utilizationPercent ?? 0, 100);
  
 // 💡 Reusable Components
 const TabButton = ({ tab, activeTab, setActiveTab }) => (
-  <TouchableOpacity onPress={() => setActiveTab(tab)} className="   " style={{minWidth:80, alignSelf:'flext-start', }} >
+  <TouchableOpacity onPress={() => setActiveTab(tab)} className="" style={{minWidth:80, alignSelf:'flext-start', }} >
     <LinearGradient
       colors={activeTab === tab ? ["#D01313", "#6A0A0A"] : ["#333", "#333"]}
       style={tw` rounded-lg`}
     >
-      <Text className={` text-white text-center  p-4 `}>{tab}</Text>
+      <Text className={` text-white text-center  p-2 font-semibold `}>{tab}</Text>
     </LinearGradient>
   </TouchableOpacity>
 );
@@ -166,11 +156,11 @@ const TeamMember = ({ item, selectedDropdown, setSelectedDropdown  ,isLoading}) 
   return (
  
     <View>
-   {item && item.map((emp)=>{ return(<View style={[tw`p-3 rounded-lg shadow-md my-2 mx-4 `, {backgroundColor:'#EBEBEB'}]} key={emp.EmpId}  >
+   {item && item.map((emp)=>{ return(<View style={[tw`p-3 rounded-lg shadow-md my-3 mx-3 `, {backgroundColor:'#f9fafb'}]} key={emp.EmpId}  >
      
       <TouchableOpacity onPress={()=>{handleToggle(emp.EmpId)}} className='flex-row justify-between  items-center'>
-        <Text className=' text-center'>{emp.Employee_Name}</Text>
-          <MaterialIcons name={selectedDropdown === emp.EmpId ? "keyboard-arrow-down" : "chevron-right"} size={32} color="black" />
+        <Text className=' text-center font-semibold'>{emp.Employee_Name}</Text>
+          <MaterialIcons name={selectedDropdown === emp.EmpId ? "keyboard-arrow-down" : "chevron-right"} size={35} color="black" />
           </TouchableOpacity>
           {selectedDropdown === emp.EmpId && (
         <TaskDropdown emp={emp} />
@@ -276,13 +266,13 @@ const TaskDropdown = ({ emp }) => {
     ]}
   >
  
-    <View style={[tw`  `,{backgroundColor:'#EBEBEB'}]} >
+    <View style={[tw`  `,{backgroundColor:'#f9fafb'}]} >
     <View className={`  rounded-lg `}>
  
           {/* Google search bar */}
          
-          <View className="flex-row space-x-3 items-center border border-gray-200 rounded-full   w-2/3 text-white mb-2 mt-2" style={{backgroundColor:'#B4B4B4'}}>
-          <Icon name="search1" size={20} color="gray" className="p-3" />
+          {/* <View className="flex-row space-x-3 items-center border border-gray-300 rounded-full   w-2/3 text-white mb-2 mt-2" style={{backgroundColor:'#B4B4B4'}}>
+          <Icon name="search1" size={20} color="white" className="p-2" />
      
             <TextInput
              placeholder="Search here "
@@ -291,17 +281,23 @@ const TaskDropdown = ({ emp }) => {
              
              
             </TextInput>
-          </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="h-[100px] flex-grow-0 mt-2">
+          </View> */}
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} className="h-[60px] flex-grow-0 mt-2 mb-2">
   {thisWeek && thisWeek.map((date) => (
     <TouchableOpacity key={date.value} onPress={() => setSelectedDate(date.value)}>
       <LinearGradient
-        colors={selectedDate === date.value ? ["#D01313", "#6A0A0A"] : ["#E0E0E0", "#C0C0C0"]}
+        colors={selectedDate === date.value ? ["#D01313", "#6A0A0A"] : ["#ffffff", "#ffffff"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={{ borderRadius: 20, marginRight: 12, height: 80 }}
+        style={{
+          borderRadius: 18,
+          marginRight: 10,
+          height: 60,
+          borderWidth: selectedDate === date.value ? 0 : 1,
+          borderColor: selectedDate === date.value ? 'transparent' : '#D1D5DB', 
+        }}
       >
-        <View className="px-3 py-1 h-[80px] flex justify-center items-center w-[50px] rounded-[20px]">
+        <View className="px-1 py-1 h-[60px] flex justify-center items-center w-[50px] rounded-full">
         <Text className={selectedDate === date.value ? "text-white font-semibold text-sm" : "text-black text-sm"}>{date.day}</Text>
         <Text className={selectedDate === date.value ? "text-white font-bold text-sm" : "text-black text-sm"}>{date.lebel}</Text>
         </View>
@@ -312,63 +308,60 @@ const TaskDropdown = ({ emp }) => {
  
  
      
-     <View className="border-t border-gray-200  pt-2">
+     <View className="border-gray-200  pt-2">
      
-  {FilterTaskData.length === 0 && !isLoading? (
-    <Text className="text-gray-500 text-center mt-4 text-base">
-      No tasks available
-    </Text>
-  ) : (
-    FilterTaskData.map((task) => (
-      <View
-        key={task.Task_Id}
-        className="bg-white rounded-lg shadow-sm border border-gray-100 mb-3 p-2 "
-        style={{
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.05,
-          shadowRadius: 2,
-          elevation: 2,
-        }}
-      >
-        {/* Header Section */}
-        <View className="flex-row justify-between items-start mb-3">
-          <View className="flex-1">
-            <Text className="text-lg font-semibold text-gray-900 mb-1">
-              {task.Task_Title}
-            </Text>
-            <View className="flex-row items-center">
-              <View className="bg-blue-50 px-2 py-1 rounded-md">
-                <Text className="text-xs font-medium text-blue-600">
-                  ID: {task.Task_Id}
-                </Text>
-              </View>
-            </View>
-          </View>
+     {FilterTaskData.length === 0 && !isLoading ? (
+  <Text className="text-gray-500 text-center mt-4 text-base">
+    No tasks available
+  </Text>
+) : (
+  FilterTaskData.map((task) => (
+    <View
+      key={task.Task_Id}
+      className="bg-white rounded-xl mb-3 px-4 py-3"
+      style={{
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 4,
+        elevation: 3,
+      }}
+    >
+      <View className="flex-row justify-between items-center mb-4">
+        <Text
+          className="text-base font-semibold text-gray-900 flex-1 mr-2"
+          numberOfLines={1}
+        >
+          {task.Task_Title}
+        </Text>
+        <Text className="text-[11px] font-medium text-white bg-blue-500 px-2 py-0.5 rounded-md">
+          #{task.Task_Id}
+        </Text>
+      </View>
+
+      <View className="flex-row flex-wrap gap-2">
+        <View className="bg-green-100 px-2 py-1 rounded-lg">
+          <Text className="text-sm text-green-800 font-semibold">
+          Planned: {task.Logged_hours}h
+          </Text>
         </View>
-    
-        {/* Details Section */}
-        <View className="space-y-2">
-          <View className="flex-row justify-between">
-            <Text className="text-sm font-medium text-gray-500">Logged Hours</Text>
-            <Text className="text-sm font-semibold text-gray-800">{task.Working_hours} hr</Text>
-          </View>
-          
-          <View className="flex-row justify-between">
-            <Text className="text-sm font-medium text-gray-500">Production Hours</Text>
-            <Text className="text-sm font-semibold text-gray-800">{task.Working_hours} hr</Text>
-          </View>
-          
-          <View className="flex-row justify-between items-center pt-1">
-            <Text className="text-sm font-medium text-gray-500">Product Manager</Text>
-            <View className="bg-gray-50 px-2 py-1 rounded-md">
-              <Text className="text-sm font-medium text-gray-700">{task.Taskowner}</Text>
-            </View>
-          </View>
+
+        <View className="px-2 bg-green-100 py-1 rounded-lg">
+          <Text className="text-sm font-semibold" style={{ color: '#213448' }}>
+            Logged: {task.Working_hours}h
+          </Text>
+        </View>
+
+        <View className="px-2 py-1 rounded-full">
+          <Text className="text-sm font-semibold">
+             👤 {`${task.Taskowner?.split(' ')[0]} ${task.Taskowner?.split(' ')[1]?.[0] || ''}`}
+          </Text>
         </View>
       </View>
-    ))
-  )}
+    </View>
+  ))
+)}
+
 </View>
  
  
