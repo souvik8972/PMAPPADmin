@@ -34,6 +34,7 @@ const IssueTracker = () => {
   const [openStatus, setOpenStatus] = useState(false);
 
   const { data, isLoading, error, refetch, isFetching } = useFetchData("Ticket/GetAllTickets", token);
+
   const { mutate: submitMutate, isPending: isSubmitPending } = usePostData('Ticket/RaiseTicket', ["Ticket/GetAllTickets"]);
  
   useEffect(() => {

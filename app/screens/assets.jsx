@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     top: 56, // Adjust based on your tab height
     height: 3,
     width: '50%', // Adjust based on number of tabs
-    backgroundColor: 'red',
+   
     borderRadius: 1.5,
   },
   content: {

@@ -199,7 +199,7 @@ export default function ProjectList() {
           const isExpanded = expandedProjects[project.PROJECT_ID];
           
           return (
-            <View className="bg-white rounded-xl shadow-md mb-4 overflow-hidden">
+            <View className="bg-white rounded-xl border-2 border-gray-300 shadow-xs mb-4 overflow-hidden">
             {/* Project Header - Clickable Area */}
             <TouchableOpacity 
               onPress={() => toggleProjectDetails(project.PROJECT_ID)}

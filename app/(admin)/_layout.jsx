@@ -33,11 +33,13 @@ const LoadingScreen = () => (
 
 const CustomDrawerContent = (props) => {
   const { user } = useContext(AuthContext);
+  const {logout}=useContext(AuthContext)
   const router = useRouter();
   const { state, navigation } = props;
   const isAdmin = user?.userType==5;
 
   const handleLogout = () => {
+    logout()
     router.replace('/login');
   };
 

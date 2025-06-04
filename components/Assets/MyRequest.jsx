@@ -209,11 +209,10 @@ const SkeletonCard = ({ shimmerAnim }) => {
 const RequestCard = ({ item, formatDate }) => {
   return (
     <TouchableOpacity activeOpacity={1}>
-      <ImageBackground 
-        source={require('@/assets/images/border.png')}
-        resizeMode="stretch"
+      <View
+        
         style={styles.cardContainer}
-        imageStyle={styles.cardBorder}
+       
       >
         <View style={styles.cardContent}>
           <View style={styles.cardHeader}>
@@ -257,7 +256,7 @@ const RequestCard = ({ item, formatDate }) => {
             </View>
           )}
         </View>
-      </ImageBackground>
+      </View>
     </TouchableOpacity>
   );
 };

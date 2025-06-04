@@ -33,6 +33,8 @@ const RenderItem = ({ item, selectedAssets, handlePress, itemWidth }) => {
         { 
           backgroundColor: getBackgroundColor(),
           width: itemWidth,
+          marginBottom:15,
+          paddingTop:10,
           opacity: isTaken ? 0.7 : 1,
         },
       ]}
@@ -53,7 +55,7 @@ const RenderItem = ({ item, selectedAssets, handlePress, itemWidth }) => {
         {item.name}
       </Text>
       {isTaken && (
-        <Text style={styles.takenText}>Unavailable</Text>
+        <Text style={styles.takenText}>Taken</Text>
       )}
     </TouchableOpacity>
   );
