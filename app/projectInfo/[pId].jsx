@@ -44,7 +44,7 @@ const ProjectDetails = () => {
   const router = useRouter();
 
   const [projectId, clientId] = param.pId ? param.pId.split("-") : [null, null];
-  console.log(projectId,clientId,"hehehhehehheh")
+
   const { data, isLoading: loading, refetch } = useFetchData(`FinanceModule/GetProjectDetails?projectId=${projectId}&clientId=${clientId}`, user?.token);
 
   const project = data?.[0] || {};

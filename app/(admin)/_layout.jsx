@@ -306,17 +306,19 @@ const styles = StyleSheet.create({
   screen: { flex: 1, justifyContent: "center", alignItems: "center" },
 
   profileSection: {
+   
     padding: 20,
     borderTopWidth: 1,
     borderTopColor: "#ddd",
     alignItems: "center",
   },
   profileContainer: {
+    backgroundColor:"red",
     flexDirection: "row",
     alignItems: "center",
     justifyContent:'space-between',
     backgroundColor:'white',
-    width:250,
+  width:"90%",
     marginBottom: 15,
   },
   profileImage: {

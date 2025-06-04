@@ -59,7 +59,7 @@ const handleClick = () => {
 };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView   style={styles.container}>
       <View style={styles.content}>
         <Image 
           source={require('../assets/images/manage.png')} 
