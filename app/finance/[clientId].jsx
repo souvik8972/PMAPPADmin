@@ -16,6 +16,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import ShimmerLoader from "../../components/ShimmerLoader";
 
+
 const Client = () => {
   const param = useLocalSearchParams();
   const router = useRouter();
@@ -57,14 +58,14 @@ const Client = () => {
 
   if (!clientInfo) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+      <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  className="flex-1 items-center justify-center bg-white">
         <Text className="text-lg text-gray-500">Client not found.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView  edges={Platform.OS === 'ios' ? [] : ['top']} className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
       {/* Header */}

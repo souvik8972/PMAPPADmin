@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StatusBar, Modal, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StatusBar, Modal, ActivityIndicator, Alert ,Platform} from "react-native";
 import React, { useContext, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
@@ -125,7 +125,7 @@ const ProjectDetails = () => {
 
   // Full page shimmer loader
   const FullPageShimmer = () => (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  className="flex-1 bg-white">
       {/* Header Shimmer */}
       <View className="flex-row items-center py-3 bg-white relative px-4">
         <ShimmerEffect width={24} height={24} />
@@ -187,7 +187,7 @@ const ProjectDetails = () => {
 
   if (projectError || !projectData || !projectData[0]) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+      <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  className="flex-1 bg-white justify-center items-center">
         <Text>Error loading project details</Text>
       </SafeAreaView>
     );
@@ -196,7 +196,7 @@ const ProjectDetails = () => {
   const currentProject = projectData[0];
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  className="flex-1 bg-white">
       {/* Status Bar */}
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
@@ -231,9 +231,9 @@ const ProjectDetails = () => {
       justifyContent: "center",
       alignItems: "center",
     }}
-    className="rounded-full px-4 py-2"
+    className="rounded-full "
   >
-    <Text className="text-white ">{currentProject.Region || "NA"}</Text>
+    <Text className="text-white px-4 py-2">{currentProject.Region || "NA"}</Text>
   </LinearGradient>
 </View>
 
@@ -294,10 +294,10 @@ const ProjectDetails = () => {
           <View className="mt-4 mb-4 flex-row justify-between items-center px-4">
             <Text className="text-xl text-black underline font-bold">Task List</Text>
             
-            <Link href={`/(addTask)/${projectId}`} className="w-12 h-12 justify-center items-center">
-              <LinearGradient colors={["black", "black"]} style={{ borderRadius: 50 }} className="p-2 rounded-lg">
+            <Link href={`/(addTask)/${projectId}`} className="w-12 h-12 flex  rounded-full justify-center items-center">
+              <View className="bg-black flex  rounded-full justify-center items-center w-12 h-12 ">
                 <Feather name="plus" size={24} color="white" />
-              </LinearGradient>
+                </View>
             </Link>
           </View>
 
@@ -324,7 +324,7 @@ const ProjectDetails = () => {
                   >
                     <TouchableOpacity
                       className={`p-3 h-[80px] flex-row justify-between bg-white items-center ${
-                        activeIndex === index ? "rounded-t-lg" : "rounded-lg shadow"
+                        activeIndex === index ? "rounded-t-lg" : "rounded-lg "
                       }`}
                       onPress={() => handleTaskClick(task.Task_Id, index)}
                     >
@@ -339,7 +339,7 @@ const ProjectDetails = () => {
                     </TouchableOpacity>
 
                     {activeIndex === index && (
-                      <View className="p-4 pt-0 bg-white rounded-b-lg shadow">
+                      <View className="p-4 pt-0 bg-white rounded-b-lg ">
                         {isTaskDetailsLoading ? (
                           <>
                             <ShimmerEffect width="30%" height={16} style={{ marginBottom: 8 }} />
@@ -424,7 +424,7 @@ const ProjectDetails = () => {
         onRequestClose={cancelDelete}
       >
         <View className="flex-1 justify-center items-center bg-gray-200 opacity-1/2">
-          <View className="bg-white p-6 rounded-xl w-11/12 max-w-md shadow-lg">
+          <View className="bg-white p-6 rounded-xl w-11/12 max-w-md ">
             <Text className="text-xl font-bold mb-3 text-gray-800">Confirm Delete</Text>
             <Text className="text-base text-gray-600 mb-6">
               Are you sure you want to delete this task?

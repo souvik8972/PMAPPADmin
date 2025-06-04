@@ -394,7 +394,7 @@ export default AddEditTask = () => {
 
   if (isLoading || (isEditMode && allocationLoader)) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+      <SafeAreaView   edges={Platform.OS === 'ios' ? [] : ['top']}  className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#D01313" />
         <Text className="mt-4 text-slate-600">Loading task details...</Text>
       </SafeAreaView>
@@ -403,7 +403,7 @@ export default AddEditTask = () => {
 
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView   edges={Platform.OS === 'ios' ? [] : ['top']} className="flex-1 bg-white">
       <View className="flex-row items-center justify-center p-4 pb-2 border-slate-200 bg-white shadow-sm">
         <TouchableOpacity onPress={() => navigation.goBack()} className="absolute left-4 p-2 z-10">
           <AntDesign name="arrowleft" size={24} color="#4b5563" />

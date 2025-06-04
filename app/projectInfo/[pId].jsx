@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFetchData } from '../../ReactQuery/hooks/useFetchData';
 import { AuthContext } from '../../context/AuthContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Platform } from 'react-native';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -94,7 +95,7 @@ const ProjectDetails = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  style={styles.container}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           {/* Header Shimmer */}
           <View style={styles.headerContainer}>
@@ -180,14 +181,14 @@ const ProjectDetails = () => {
 
   if (!project) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView  edges={Platform.OS === 'ios' ? [] : ['top']}  style={styles.container}>
         <Text>No project data found</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}

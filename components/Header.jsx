@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AuthContext } from '@/context/AuthContext';
+import { Platform } from 'react-native';
 
 const Header = ({ navigation }) => { // ✅ Receive navigation prop
   const router = useRouter();
@@ -27,7 +28,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
   };
 
   return (
-    <SafeAreaView edges={['top']} className="flex-row  justify-between items-center bg-white">
+    <SafeAreaView  edges={Platform.OS === 'ios' ? [] : ['top']} className="flex-row  justify-between items-center bg-white">
       {/* Hamburger Menu */}
       {user.userType == 3 ? (<View className="flex-row w-full p-4  pt-0 pb-0   justify-between items-center">
       {/* Left Logo */}

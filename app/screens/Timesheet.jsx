@@ -295,9 +295,9 @@ export default function TaskScreen() {
                 colors={["#D01313", "#6A0A0A"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                className="py-3 rounded-lg"
+                className=" rounded-lg"
               >
-                <View className="flex-row justify-center items-center">
+                <View className="flex-row justify-center p-4 items-center">
                   {isProcessing ? (
                     <ActivityIndicator color="white" size="small" className="mr-2" />
                   ) : (
