@@ -63,7 +63,7 @@ export default function FoodDashboard() {
 
   return (
     <View className="flex-1 bg-[#f1f5f9]">
-      {/* <FlatList
+      <FlatList
         data={[1]} // Dummy data for FlatList
         keyExtractor={() => "foodDashboard"}
         contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 24 }}
@@ -163,7 +163,7 @@ export default function FoodDashboard() {
             progressBackgroundColor="#ffffff"
           />
         }
-      /> */}
+      />
     </View>
   );
 }

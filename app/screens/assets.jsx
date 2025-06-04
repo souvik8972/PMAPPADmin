@@ -39,9 +39,12 @@ const AssetsScreen = () => {
           <TouchableOpacity
             key={index}
             style={styles.tab}
+            className={` ${activeTab === index?'bg-[#6a040f]':'bg-gray-50'}`}
             onPress={() => handleTabPress(index)}
           >
-            <Text style={[
+            <Text 
+            
+            style={[
               styles.tabText,
               activeTab === index ? styles.activeTabText : styles.inactiveTabText
             ]}>
@@ -90,8 +93,8 @@ const styles = StyleSheet.create({
     fontFamily: 'System',
   },
   activeTabText: {
-  color: 'red',
-  textDecorationLine: 'underline',
+  color: 'white',
+  // textDecorationLine: 'underline',
  
   textDecorationColor: 'red', // Ensures the underline is red
 },

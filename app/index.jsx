@@ -68,7 +68,7 @@ const handleClick = () => {
         />
         
         <View style={styles.textContainer}>
-          <Text style={[styles.title, { fontFamily: "Aladin"}]}>Welcome to Medtrix PM Tool</Text>
+          <Text style={[styles.title, {}]}>Welcome to Medtrix PM Tool</Text>
           <Text style={styles.subtitle}>
             Streamline your project management with ease and efficiency.
           </Text>
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: '#D01313',
     marginBottom: 16,

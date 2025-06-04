@@ -3,6 +3,7 @@ import { decode as atob } from "base-64";
 
 import { useNavigation } from '@react-navigation/native';
 import { useEffect } from 'react';
+import { useRouter } from "expo-router";
 
 const AUTH_KEY = "auth_info";
 
@@ -53,7 +54,7 @@ export const checkTokenExpiration = (exp) => {
 
 
 export const useRedirectIfTokenExpired = (token) => {
-  const navigation = useNavigation();
+  const router = useRouter();
 
   useEffect(() => {
     if (!token) return;
@@ -62,7 +63,7 @@ export const useRedirectIfTokenExpired = (token) => {
     const exp = decoded?.exp;
 
     if (!exp || checkTokenExpiration(exp)) {
-      navigation.replace('/login');
+      router.replace('/login');
     }
   }, [token]);
 };

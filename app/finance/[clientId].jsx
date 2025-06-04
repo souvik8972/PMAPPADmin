@@ -58,14 +58,14 @@ const Client = () => {
 
   if (!clientInfo) {
     return (
-      <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  className="flex-1 items-center justify-center bg-white">
+      <SafeAreaView edges={['top']}   className="flex-1 items-center justify-center bg-white">
         <Text className="text-lg text-gray-500">Client not found.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView  edges={Platform.OS === 'ios' ? [] : ['top']} className="flex-1 bg-white">
+    <SafeAreaView  edges={['top']}  className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
       {/* Header */}

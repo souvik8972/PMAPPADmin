@@ -125,7 +125,7 @@ const ProjectDetails = () => {
 
   // Full page shimmer loader
   const FullPageShimmer = () => (
-    <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  className="flex-1 bg-white">
+    <SafeAreaView edges={['top']}   className="flex-1 bg-white">
       {/* Header Shimmer */}
       <View className="flex-row items-center py-3 bg-white relative px-4">
         <ShimmerEffect width={24} height={24} />
@@ -187,7 +187,7 @@ const ProjectDetails = () => {
 
   if (projectError || !projectData || !projectData[0]) {
     return (
-      <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  className="flex-1 bg-white justify-center items-center">
+      <SafeAreaView edges={['top']}   className="flex-1 bg-white justify-center items-center">
         <Text>Error loading project details</Text>
       </SafeAreaView>
     );
@@ -196,14 +196,14 @@ const ProjectDetails = () => {
   const currentProject = projectData[0];
 
   return (
-    <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  className="flex-1 bg-white">
+    <SafeAreaView edges={['top']}   className="flex-1 bg-white">
       {/* Status Bar */}
       <StatusBar barStyle="dark-content" backgroundColor="white" />
-
+ 
       {/* Header with Back TouchableOpacity */}
       <View className="flex-row items-center py-3 bg-white relative">
-        <TouchableOpacity onPress={() => router.back()} className="z- p-2 pl-9">
-          <ArrowLeft size={24} color="black" />
+        <TouchableOpacity onPress={() => router.back()} className="z-50 rounded-full  bg-gray-50 p-2 ml-9">
+          <ArrowLeft size={25} color="black" />
         </TouchableOpacity>
         <View className="absolute left-0 right-0 items-center justify-center">
   <Text

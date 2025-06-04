@@ -28,7 +28,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
   };
 
   return (
-    <SafeAreaView  edges={Platform.OS === 'ios' ? [] : ['top']} className="flex-row  justify-between items-center bg-white">
+    <SafeAreaView  edges={['top']}  className="flex-row pt-0 justify-between items-center bg-white">
       {/* Hamburger Menu */}
       {user.userType == 3 ? (<View className="flex-row w-full p-4  pt-0 pb-0   justify-between items-center">
       {/* Left Logo */}

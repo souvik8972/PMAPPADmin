@@ -33,7 +33,7 @@ const fetchProjectDetails = async (projectId, token) => {
 };
 const ProjectSkeleton = () => {
   return (
-    <View className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
+    <View className="bg-white rounded-xl shadow-xl border border-gray-100 mb-4 overflow-hidden">
       {/* Header skeleton */}
       <View className="flex-row items-center px-5 py-4 min-h-[80px]">
         <View className="flex-1">
@@ -137,7 +137,7 @@ export default function ProjectList() {
     return (
       <View className="flex-1 p-4 pt-0 bg-gray-100">
         {/* Search Bar Skeleton */}
-        <View className="flex-row items-center border border-gray-300 shadow rounded-[12px] h-[60px] p-2 my-4 bg-white">
+        <View className="flex-row items-center border border-gray-300 shadow-lg rounded-[12px] h-[60px] p-2 my-4 bg-white">
           <View className="flex-1 h-8 bg-gray-200 rounded" />
           <View className="w-8 h-8 bg-gray-200 rounded-full mr-2" />
         </View>
@@ -165,11 +165,12 @@ export default function ProjectList() {
   }
 
   return (
-    <View className="flex-1 p-4 pt-0 bg-gray-100">
+    <View className="flex-1  pt-0 bg-gray-100 p-4">
       {/* Search Bar */}
       <View className="flex-row items-center border border-gray-300  rounded-[12px] h-[50px]  p-1 my-4 bg-white">
         <TextInput
           placeholder=" Search project"
+          placeholderTextColor={"gray"}
           className="flex-1 text-black"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -189,6 +190,7 @@ export default function ProjectList() {
       {/* Project List as Cards with FlatList */}
       <FlatList
         data={filteredProjects}
+        style={{backgroundColor:"transparent",padding:1,border:"none"}}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item) => item.PROJECT_ID.toString()}
         renderItem={({ item: project }) => {
@@ -197,7 +199,7 @@ export default function ProjectList() {
           const isExpanded = expandedProjects[project.PROJECT_ID];
           
           return (
-            <View className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
+            <View className="bg-white rounded-xl shadow-md mb-4 overflow-hidden">
             {/* Project Header - Clickable Area */}
             <TouchableOpacity 
               onPress={() => toggleProjectDetails(project.PROJECT_ID)}

@@ -107,7 +107,7 @@ const Finance = () => {
             style={[
               tw`p-3 rounded-lg flex-row items-center justify-between`,
               { 
-                backgroundColor: "#D01313",
+                backgroundColor: "#9d0208",
                 borderWidth: 1,
                 borderColor: "#E5E7EB",
                 width: 180,
@@ -172,7 +172,7 @@ const Finance = () => {
                       <Text style={[
                         tw`text-base`,
                         selectedYear?.id === item.id ? 
-                          { color: '#3B82F6', fontWeight: '600' } : 
+                          { color: '#6a040f', fontWeight: '600' } : 
                           { color: '#4B5563' }
                       ]}>
                         {item.year}
@@ -237,7 +237,7 @@ const Finance = () => {
                 <View style={tw`p-5`}>
                   {/* Client Header */}
                   <View style={tw`flex-row items-center mb-4`}>
-                    <View style={tw`w-12 h-12 rounded-full bg-red-600 justify-center items-center mr-3`}>
+                    <View style={tw`w-12 h-12 rounded-full bg-red-800 justify-center items-center mr-3`}>
                       <Text style={tw`text-lg font-bold text-white`}>
                         {item.Client_Title?.charAt(0) || '?'}
                       </Text>

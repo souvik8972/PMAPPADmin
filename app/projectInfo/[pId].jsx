@@ -95,7 +95,7 @@ const ProjectDetails = () => {
 
   if (loading) {
     return (
-      <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  style={styles.container}>
+      <SafeAreaView edges={['top']}   style={styles.container}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           {/* Header Shimmer */}
           <View style={styles.headerContainer}>
@@ -181,14 +181,14 @@ const ProjectDetails = () => {
 
   if (!project) {
     return (
-      <SafeAreaView  edges={Platform.OS === 'ios' ? [] : ['top']}  style={styles.container}>
+      <SafeAreaView  edges={['top']}   style={styles.container}>
         <Text>No project data found</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView edges={Platform.OS === 'ios' ? [] : ['top']}  style={styles.container}>
+    <SafeAreaView edges={['top']}   style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}

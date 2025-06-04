@@ -38,7 +38,7 @@ const TaskItem = React.memo(({
           <Text className="text-md max-w-[40%] font-semibold text-gray-800" numberOfLines={1}>
             {item.Task_Title}
           </Text>
-          <View className="h-[28px] rounded-md px-2 flex-row items-center justify-center " style={{ backgroundColor: isSelected ? '#007AFF' : '#DFF7E2' }}>
+          <View className="h-[28px] rounded-md px-2 flex-row items-center justify-center " style={{ backgroundColor: isSelected ? '#9d0208' : '#DFF7E2' }}>
             <Text className="text-sm font-semibold" style={{color: isSelected ? '#fff' : '#000'}}>#Task ID: {item.Task_Id}</Text>
           </View>
         </View>
@@ -100,13 +100,13 @@ const TaskItem = React.memo(({
               {/* Actions */}
               <View className="flex-row justify-end space-x-4 gap-2 mt-2">
                 <Link href={`/(addTask)/${details.Project_Id}-${details.Task_Id}-${ActionType}-${details.BuyingCenterId}`} asChild>
-                  <TouchableOpacity className="flex-row items-center bg-white border border-blue-100 px-4 py-2 rounded-lg shadow-sm">
-                    <Feather name="edit-3" size={16} color="#007AFF" />
-                    <Text className="ml-2  text-sm font-medium" style={{color:'#007AFF'}}>Edit</Text>
+                  <TouchableOpacity className="flex-row items-center bg-white border border-[#9d0208] px-4 py-2 rounded-lg shadow-sm">
+                    <Feather name="edit-3" size={16} color="#9d0208" />
+                    <Text className="ml-2  text-sm font-medium" style={{color:'#9d0208'}}>Edit</Text>
                   </TouchableOpacity>
                 </Link>
                 <TouchableOpacity 
-                  className="flex-row items-center px-4 py-2 rounded-lg shadow-sm" style={{ backgroundColor: '#007AFF' }}
+                  className="flex-row items-center px-4 py-2 rounded-lg shadow-sm" style={{ backgroundColor: '#9d0208' }}
                   onPress={() => onDelete(details.Task_Id)}
                 >
                   <Feather name="trash-2" size={16} color="white" />
@@ -448,6 +448,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    height:55,
+  
   },
   searchIcon: {
     marginRight: 12,

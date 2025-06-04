@@ -43,7 +43,7 @@ const CustomDrawerContent = (props) => {
 
   return (
     
-    <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
+    <DrawerContentScrollView style={{}} {...props} contentContainerStyle={{ flex: 1 }}>
       <View style={styles.profileContainer}>
         <Image source={require('../../assets/images/icon.png')} style={styles.profileImage} />
         <Text style={styles.profileName}>Hello, {user?.name || "User"}</Text>
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileContainer: {
-    backgroundColor:"red",
+   
     flexDirection: "row",
     alignItems: "center",
     justifyContent:'space-between',
