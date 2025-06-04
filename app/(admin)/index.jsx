@@ -375,7 +375,7 @@ export default function TaskScreen() {
         <FlatList
           data={filteredTasks}
           renderItem={renderItem}
-          keyExtractor={(item) => item.Task_Id.toString()}
+            keyExtractor={(item, index) => `${item.Task_Id}_${index}`}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
