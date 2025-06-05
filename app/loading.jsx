@@ -9,11 +9,11 @@ const Loading = ({setLoading}) => {
     return (
         <View style={styles.container}>
                   <LottieView
-        source={require('../assets/animation/loadani.json')}
+        source={require('../assets/animation/loadanimation.json')}
         autoPlay
         loop={false}
         onAnimationFinish={(()=>{setLoading(false)})}
-        style={{ width: 200, height: 200 }}
+        style={{ width:"150%",height:"150%" }}
       />
 
         </View>
