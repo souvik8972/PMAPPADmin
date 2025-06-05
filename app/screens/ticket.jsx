@@ -450,38 +450,49 @@ const IssueItemContent = ({ item,isAdmin }) => {
       </View>
 
       <View className="flex-1 pr-2">
-        {isAdmin&& <Text className="text-base font-bold text-gray-900 mb-1">{item.employeeName}</Text>}
-        <Text className="text-base font-bold text-gray-900 mb-1">{item.type}</Text>
-        
-        <Text className="text-xs text-gray-500 mb-1">ID: {item.id}</Text>
-        <Text className="text-sm text-gray-700 mb-1">{item.description}</Text>
-
+        {isAdmin && <Text className="text-base font-bold text-gray-900 mb-1">{item.employeeName}</Text>}
+        <View className="flex-row items-center justify-between mb-1">
+        <Text className="text-base font-bold text-gray-900">{item.type}</Text>
+        <View className="flex-row items-center gap-2">
         <Text
-          className={`self-start px-2 py-1 rounded-full text-xs font-semibold w-fit ${severityColors[item.severity] || 'bg-gray-200 text-gray-800'} mb-1`}
+          className={`self-start px-2 py-1 rounded-lg text-sm font-semibold w-fit ${severityColors[item.severity] || 'bg-gray-200 text-gray-800'}`}
         >
           {item.severity}
         </Text>
+        <Text
+          className={`px-3 py-1 rounded-lg text-sm font-semibold ${statusColors[item.status] || 'bg-gray-200 text-gray-800'}`}
+        >
+          {item.status}
+        </Text>
+        </View>
+        </View>
+        
+        
+        <Text className="text-sm font-semibold text-gray-500 mb-1">ID: #{item.id}</Text>
+        <Text className="text-sm font-semibold text-gray-700 mb-1">{item.description}</Text>
 
-        <Text className="text-xs text-gray-500">Reported: {item.date}</Text>
+       
+
+        <Text className="text-sm font-semibold text-gray-500 mb-1">Reported: {item.date}</Text>
         {item.resolvedDate && Object.keys(item.resolvedDate).length > 0 && (
-          <Text className="text-xs text-gray-500">Resolved: {item.resolvedDate}</Text>
+          <Text className="text-sm font-semibold text-gray-500">Resolved: {item.resolvedDate}</Text>
         )}
 
         {item.comments && Object.keys(item.comments).length > 0 && (
           <View className="mt-2 bg-gray-50 p-2 rounded-md border border-gray-100">
-            <Text className="text-xs font-semibold text-gray-800 mb-1">Admin Comments:</Text>
-            <Text className="text-xs text-gray-600">{item.comments}</Text>
+            <Text className="text-sm  font-semibold text-gray-800 mb-1">Admin Comments:</Text>
+            <Text className="text-sm  text-gray-600">{item.comments}</Text>
           </View>
         )}
       </View>
 
-      <View className="pl-2 items-center justify-center">
+      {/* <View className="pl-2 items-center justify-center">
         <Text
           className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[item.status] || 'bg-gray-200 text-gray-800'}`}
         >
           {item.status}
         </Text>
-      </View>
+      </View> */}
     </View>
   );
 };
