@@ -32,7 +32,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
       {/* Hamburger Menu */}
       {user.userType == 3 ? (<View className="flex-row w-full p-4  pt-0 pb-0   justify-between items-center">
       {/* Left Logo */}
-      <Image source={require('../assets/images/icon.png')} className="w-12 h-12" resizeMode="contain" />
+      <Image source={require('../assets/images/icon.png')} className="w-14 h-14" resizeMode="contain" />
       
       {/* Right Profile Image */}
       <TouchableOpacity className=" py-3 flex flex-row items-center" onPress={() => setModalVisible(true)}>
