@@ -27,6 +27,7 @@ const TaskItem = React.memo(({
   onDelete,
   ActionType 
 }) => {
+  
   return (
     <TouchableOpacity 
       onPress={() => onPress(item.Task_Id)} 
@@ -38,8 +39,10 @@ const TaskItem = React.memo(({
           <Text className="text-md max-w-[40%] font-semibold text-gray-800" numberOfLines={1}>
             {item.Task_Title}
           </Text>
-          <View className="h-[28px] rounded-md px-2 flex-row items-center justify-center " style={{ backgroundColor: isSelected ? '#9d0208' : '#DFF7E2' }}>
-            <Text className="text-sm font-semibold" style={{color: isSelected ? '#fff' : '#000'}}>#Task ID: {item.Task_Id}</Text>
+          <View className="h-[28px] rounded-md  flex-row items-center justify-center " style={{ backgroundColor: isSelected ? '#fff' : '#fff', borderWidth: isSelected ? 1 : 1,
+    borderColor: isSelected ? '#ec1c24' : '#0000001a',
+    borderStyle: 'solid', }}>
+            <Text className="text-sm font-semibold px-2" style={{color: isSelected ? '#ec1c24' : '#000'  }}>#Task ID: {item.Task_Id}</Text>
           </View>
         </View>
       </View>
@@ -57,8 +60,8 @@ const TaskItem = React.memo(({
               
                 <View className="mb-4">
                   <View className="flex-row items-center mb-2">
-                    <Feather name="users" size={16} color="#00C7BE" />
-                    <Text className="text-sm font-medium text-gray-500 ml-2">Assigned to:</Text>
+                    {/* <Feather name="users" size={16} color="#EC1C24" /> */}
+                    <Text className="text-sm font-medium text-gray-500">Assigned to:</Text>
                   </View>
                   <View className="flex-row flex-wrap gap-2">
                     {details.Employee_Name.split(',').map((employee, index) => (
@@ -75,38 +78,61 @@ const TaskItem = React.memo(({
                     ))}
                   </View>
                 </View>
-                <View className="flex-row justify-start mb-1  items-center">
-                  {/* <View className="flex-row items-center space-x-2">
-                    <Feather name="hash" size={16} color="#64748B" />
-                    <Text className="text-sm text-gray-700">{details.Project_Id}</Text>
-                  </View> */}
-                   <View className="flex-row items-center mr-2">
-                   <Feather name="calendar" size={16} color="#00C7BE" />
-                  </View>
+                <View className="flex-row justify-start mb-4 gap-4 items-center">
+                <View className="">
+                <View className="flex-row items-center">
+                  <Text className="text-sm font-medium text-gray-500">Project ID</Text>
+                </View>
+                <View className="flex-row flex-wrap gap-2 mt-2">
+                <View className="flex-row items-center rounded-full px-3 py-1 border border-gray-200" style={{ backgroundColor: '#F3F4F6'}}> 
+                        <View className="w-5 h-5 rounded-full bg-red-100 mr-2 flex items-center justify-center">
+                          <Feather name="hash" size={12} color="#940101" />
+                        </View>
+                        <Text className="text-sm font-semibold text-gray-700">{details.Project_Id}</Text>
+                      </View>
+                      </View>
+                </View>
+                <View className="">
+                <View className="flex-row items-center">
+                  {/* <Feather name="user" size={16} color="#EC1C24" /> */}
+                  <Text className="text-sm font-medium text-gray-500">Task Owner:</Text>
+                </View>
+                <View className="flex-row flex-wrap gap-2 mt-2">
+                <View className="flex-row items-center rounded-full px-3 py-1 border border-gray-200" style={{ backgroundColor: '#F3F4F6'}}> 
+                        <View className="w-5 h-5 rounded-full bg-red-100 mr-2 flex items-center justify-center">
+                          <Feather name="user" size={12} color="#940101" />
+                        </View>
+                        <Text className="text-sm font-semibold text-gray-700">{details.Task_owner}</Text>
+                      </View>
+                      </View>
+                </View>
+                </View>
+                
+                <View className="flex-row items-center gap-1">
                   <View className="flex-col items-start gap-1">
                     {/* <Feather name="calendar" size={16} color="#64748B" /> */}
                     <Text className="text-sm font-medium text-gray-500">Start</Text>
-                    <Text className="text-sm font-semibold text-gray-700">{details.Start_Date} - </Text>
+                    <Text className="text-sm font-semibold" >{details.Start_Date} -</Text>
                   </View>
                   <View className="flex-col items-start gap-1">
                     {/* <Feather name="calendar" size={16} color="#64748B" /> */}
                     <Text className="text-sm font-medium text-gray-500">End</Text>
-                    <Text className="text-sm font-semibold text-gray-700">{details.End_Date}</Text>
+                    <Text className="text-sm font-semibold" >{details.End_Date}</Text>
                   </View>
-                </View>
+                  </View>
                
               </View>
 
               {/* Actions */}
               <View className="flex-row justify-end space-x-4 gap-2 mt-2">
                 <Link href={`/(addTask)/${details.Project_Id}-${details.Task_Id}-${ActionType}-${details.BuyingCenterId}`} asChild>
-                  <TouchableOpacity className="flex-row items-center bg-white border border-[#9d0208] px-4 py-2 rounded-lg shadow-sm">
-                    <Feather name="edit-3" size={16} color="#9d0208" />
-                    <Text className="ml-2  text-sm font-medium" style={{color:'#9d0208'}}>Edit</Text>
+                  <TouchableOpacity className="flex-row items-center bg-white border border-[#EC1C24] px-4 py-2 rounded-lg shadow-sm">
+                    <Feather name="edit-3" size={16} color="#EC1C24" />
+                    <Text className="ml-2  text-sm font-medium" style={{color:'#EC1C24'}}>Edit</Text>
                   </TouchableOpacity>
                 </Link>
                 <TouchableOpacity 
-                  className="flex-row items-center px-4 py-2 rounded-lg shadow-sm" style={{ backgroundColor: '#9d0208' }}
+                  className="flex-row items-center px-4 py-2 rounded-lg shadow-sm" style={{ backgroundColor: '#EC1C24' }}
                   onPress={() => onDelete(details.Task_Id)}
                 >
                   <Feather name="trash-2" size={16} color="white" />
@@ -440,15 +466,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'white',
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    height:55,
+    height:45,
   
   },
   searchIcon: {
@@ -457,7 +483,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     color: '#111827',
-    fontSize: 16,
+    fontSize: 14,
   },
   datePickerButton: {
     flexDirection: 'row',

@@ -229,14 +229,14 @@ const ProjectDetails = () => {
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
       {/* Header with Back TouchableOpacity */}
-      <View className="flex-row items-center py-3 bg-white relative">
+      <View className="flex-row items-center py-3 bg-white relative ">
         <TouchableOpacity onPress={() => router.back()} className="z-50 p-2 pl-9">
           <ArrowLeft size={24} color="black" />
         </TouchableOpacity>
         <View className="absolute left-0 right-0 items-center justify-center">
           <Text
             className="text-lg w-[60%] text-center font-bold"
-            numberOfLines={1}
+            numberOfLines={2}
             ellipsizeMode="tail"
           >
             {currentProject.project_Title}
@@ -248,39 +248,41 @@ const ProjectDetails = () => {
 
       {/* Project Header */}
 
-      <View className="items-center mt-2 rounded-full"
+      <View className="items-center rounded-full mt-2"
       >
-        <View className=" font-bold px-6 py-2 bg-[#981010]  " style={{ borderRadius: 20 }}>
+        <View className=" font-bold px-6 py-2  " style={{ borderRadius: 20 , backgroundColor: "#212529"}}>
         <Text  className="text-white text-lg font-bold ">
           {currentProject.Region || "NA"}
         </Text></View>
       </View>
 
       {/* Financial Data */}
-      <View className="flex-row justify-between mx-6 mt-4 p-2 pt-6">
-        <View className="items-center w-1/2 border-r-[1px] border-gray-100">
-          <Text className="text-gray-500 mb-2">
-            <FontAwesome6 name="arrow-trend-up" size={15} color="black" />{" "}
-            Vendor Value
+      <View className="flex-row justify-between mx-6 mt-2 p-2 pt-4 gap-2">
+        <View className="items-center w-1/2 p-2 rounded-lg" style={{ backgroundColor: "#F4F4F4" }}>
+          <Text className="text-black mb-2 font-semibold">
+            <FontAwesome6 name="arrow-trend-up" size={15} color="black" />{"  "}
+             Vendor Value
           </Text>
-          <Text className="text-black">
+          <Text className="text-black font-bold">
             ${currentProject.Vendor_Value || 0}
           </Text>
         </View>
-        <View className="items-center w-1/2">
-          <Text className="text-gray-500 mb-2">
-            <FontAwesome6 name="arrow-trend-down" size={15} color="black" />{" "}
+        <View className="items-center w-1/2 p-2 rounded-lg" style={{ backgroundColor: "#940101" , borderWidth: 1,
+    borderColor: '#0000001a',
+    borderStyle: 'solid', }}>
+          <Text className="text-white mb-2 font-semibold">
+            <FontAwesome6 name="arrow-trend-up" size={15} color="white" />{"  "}
             Total Value
           </Text>
-          <Text className="text-[#00D09E]">
+          <Text className="text-white font-bold">
             ${currentProject.Total_Value || 0}
           </Text>
         </View>
       </View>
 
       {/* Progress Bar */}
-      <View className="items-center justify-center w-full mt-6">
-        <View className="w-96 h-11 bg-[#981010] rounded-full flex-row overflow-hidden">
+      {/* <View className="items-center justify-center w-full mt-6">
+        <View className="w-96 h-11 rounded-full flex-row overflow-hidden" style={{ backgroundColor: "#ec1c24" }}>
           <View
             style={{ width: `50%` }}
             className="h-full items-start justify-center px-3 pl-5"
@@ -290,15 +292,15 @@ const ProjectDetails = () => {
             </Text>
           </View>
           <View
-            style={{ width: `50%` }}
-            className="bg-black h-full rounded-full items-end justify-center px-3"
+            style={{ width: `50%` , backgroundColor: "#212529" }}
+            className=" h-full rounded-full items-end justify-center px-3"
           >
             <Text className="text-white font-bold">
               ${currentProject.Total_Value || 0}
             </Text>
           </View>
         </View>
-      </View>
+      </View> */}
 
       {/* Scrollable Content */}
       <LinearGradient
@@ -395,17 +397,20 @@ const ProjectDetails = () => {
                         {/* Expanded Task Details */}
                         {activeIndex === index && taskDetails?.task_data?.[0] && (
                           <View className="flex-row flex-wrap gap-2 items-center ">
-                            <Text className="text-sm font-medium text-gray-400">
+                            <Text className="text-sm font-semibold text-gray-500">
                               {taskDetails.task_data[0].Start_Date} -{" "}
                               {taskDetails.task_data[0].End_Date}
                             </Text>
-                            <Text className="text-xs font-medium text-white bg-[#940101] px-2 py-1 rounded">
+                            <Text className="text-xs font-semibold px-2 py-1 rounded" style={{ backgroundColor: '#fff' , borderColor: '#EC1C24', borderWidth: 1 , color: '#EC1C24' }}>
                               {taskDetails.task_data[0].Project_Id}
                             </Text>
-                            <Text className="text-xs font-medium text-white bg-[#940101]  px-2 py-1 rounded">
+                            <Text className="text-xs font-semibold px-2 py-1 rounded" style={{ backgroundColor: '#fff' , borderColor: '#EC1C24', borderWidth: 1 , color: '#EC1C24' }}>#Task:{" "}
+                            {taskDetails.task_data[0].Task_Id || task.Task_Id}
+                            </Text>
+                            {/* <Text className="text-xs font-medium  px-2 py-1 rounded" tyle={{ backgroundColor: '#fff' , borderColor: '#EC1C24', borderWidth: 1 , color: '#EC1C24' }}>
                               #Task:{" "}
                               {taskDetails.task_data[0].Task_Id || task.Task_Id}
-                            </Text>
+                            </Text> */}
                           </View>
                         )}
                         <FontAwesome
@@ -457,20 +462,39 @@ const ProjectDetails = () => {
                         ) : taskDetails?.task_data?.[0] ? (
                           <View className="mb-4">
   {/* Project Title */}
-  <Text className="text-base text-gray-900 mb-2">
+  <View className="flex-row items-center mb-1">
+    {/* <Feather name="users" size={16} color="#00C7BE" /> */}
+    <Text className="text-sm font-medium text-gray-500">Task Title:</Text>
+  </View>
+  <View className="flex-row flex-wrap gap-2 text-gray-900 mb-2">
+    
+    <View className="flex-row items-center rounded-full px-3 py-1 border border-gray-200"
+      style={{ backgroundColor: '#fff' }}
+    >
+      <View className="w-5 h-5 rounded-full bg-red-100 mr-2 flex items-center justify-center">
+        <Feather name="clipboard" size={12} color="#940101" />
+      </View>
+      <Text className="text-sm max-w-[90%] font-semibold text-gray-700">
+      {task.Task_Title.trim() || "N/A"}
+      </Text>
+    </View>
+  
+</View>
+  
+  {/* <Text className="text-base text-gray-900 mb-2">
     Task Title:{" "}
     <Text className="font-normal font-semibold">
-      {taskDetails.task_data[0].Project_Title || "N/A"}
+      {task.Task_Title.trim() || "N/A"}
     </Text>
-  </Text>
+  </Text> */}
 
   {/* Employee Name */}
-  <View className="flex-row items-center mb-2">
-    <Feather name="users" size={16} color="#00C7BE" />
-    <Text className="text-sm font-medium text-gray-500 ml-2">Assigned to:</Text>
+  <View className="flex-row items-center mb-1">
+    {/* <Feather name="users" size={16} color="#00C7BE" /> */}
+    <Text className="text-sm font-medium text-gray-500">Assigned to:</Text>
   </View>
 
-  <View className="flex-row flex-wrap gap-2 text-gray-900 mb-2">
+  <View className="flex-row flex-wrap gap-2 text-gray-900 mb-3">
     {taskDetails.task_data[0].Employee_Name.split(',').map((employee, index) => (
       <View
         key={`employee-${index}`}
@@ -486,24 +510,42 @@ const ProjectDetails = () => {
       </View>
     ))}
   </View>
-
-  {/* Owner and Actions */}
-  <View className="flex-row justify-between items-center mt-1">
-    <View>
+  <View className="flex-row items-center mb-1">
+    {/* <Feather name="users" size={16} color="#00C7BE" /> */}
+    <Text className="text-sm font-medium text-gray-500">Task Owner</Text>
+  </View>
+  <View className="flex-row flex-wrap gap-2 text-gray-900 mb-2">
+    
+      <View className="flex-row items-center rounded-full px-3 py-1 border border-gray-200"
+        style={{ backgroundColor: '#F3F4F6' }}
+      >
+        <View className="w-5 h-5 rounded-full bg-red-100 mr-2 flex items-center justify-center">
+          <Feather name="user" size={12} color="#940101" />
+        </View>
+        <Text className="text-sm font-semibold text-gray-700">
+        {taskDetails.task_data[0].Task_owner || "N/A"}
+        </Text>
+      </View>
+    
+  </View>
+  {/* <View>
       <Text className="text-base text-gray-600 mb-1">Task Owner</Text>
       <Text className="text-sm font-semibold text-gray-800">
         {taskDetails.task_data[0].Task_owner || "N/A"}
       </Text>
-    </View>
+    </View> */}
+  {/* Owner and Actions */}
+  <View className="flex-row justify-end items-center mt-1">
+   
 
     <View className="flex-row justify-end space-x-4 gap-2 mt-2">
       <Link
         href={`/(addTask)/${projectId}-${taskDetails.task_data[0].Task_Id}-${0}-${taskDetails.task_data[0].BuyingCenterId}`}
         asChild
       >
-        <TouchableOpacity className="flex-row items-center bg-white border border-blue-100 px-4 py-2 rounded-lg shadow-sm">
-          <Feather name="edit-3" size={16} color="#940101" />
-          <Text className="ml-2 text-sm font-medium" style={{ color: '#940101' }}>
+        <TouchableOpacity className="flex-row items-center bg-white border px-4 py-2 rounded-lg shadow-sm" style={{ borderColor: '#EC1C24' }}>
+          <Feather name="edit-3" size={16} color="#EC1C24" />
+          <Text className="ml-2 text-sm font-medium" style={{ color: '#EC1C24' }}>
             Edit
           </Text>
         </TouchableOpacity>
@@ -511,7 +553,7 @@ const ProjectDetails = () => {
 
       <TouchableOpacity
         className="flex-row items-center px-4 py-2 rounded-lg shadow-sm"
-        style={{ backgroundColor: '#940101' }}
+        style={{ backgroundColor: '#EC1C24' }}
         onPress={() =>
           handleDeleteTask(taskDetails.task_data[0].Task_Id)
         }

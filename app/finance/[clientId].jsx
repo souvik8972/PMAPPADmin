@@ -83,9 +83,9 @@ const Client = () => {
       <View className="flex-row justify-between mt-1 pt-3 mb-6">
         {/* PoValue */}
         <View className="items-center w-1/3 border-r border-gray-200 px-1 ">
-          <View className="flex-row items-center justify-center gap-1 mb-1">
+          <View className="flex-row items-center justify-center gap-1">
             <Ionicons name="trending-up" size={20} color="#10B981" />
-            <Text className="text-sm text-gray-500">PoValue</Text>
+            <Text className="text-sm font-semibold text-gray-500">PoValue</Text>
           </View>
           <AnimatedNumber 
             value={currencyToNumber(currentClientInfo.PoValue)} 
@@ -95,10 +95,10 @@ const Client = () => {
         </View>
       
         {/* Predicated Gp */}
-        <View className="items-center w-1/3 border-r border-gray-200 px-1 m-1">
-          <View className="flex-row items-center justify-center gap-1 mb-1">
+        <View className="items-center w-1/3 border-r border-gray-200 px-1">
+          <View className="flex-row items-center justify-center gap-1 ">
            <Ionicons name="trending-up" size={20} color="#10B981" />
-            <Text className="text-sm text-gray-500">Predicated Gp</Text>
+            <Text className="text-sm font-semibold text-gray-500">Predicated Gp</Text>
           </View>
           <AnimatedNumber 
             value={currencyToNumber(currentClientInfo.Predicted_Gp)} 
@@ -109,11 +109,11 @@ const Client = () => {
       
         {/* Current GP */}
         <View className="items-center w-1/3 px-1">
-          <View className="flex-row items-center justify-center gap-1 mb-1">
+          <View className="flex-row items-center justify-center gap-1">
            <Ionicons name="trending-down" size={20} color="#EF4444" />
-            <Text className="text-sm text-gray-500">Actual GP</Text>
+            <Text className="text-sm font-semibold text-gray-500">Actual GP</Text>
           </View>
-          <AnimatedNumber  
+          <AnimatedNumber   
             value={currencyToNumber(currentClientInfo.Actual_Gp)} 
             color="text-black" 
           />
