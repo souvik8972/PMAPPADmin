@@ -1,9 +1,11 @@
 import * as SecureStore from "expo-secure-store";
 import { decode as atob } from "base-64";
+import   {savePushTokenToBackend} from '../services/api'
 
 import { useNavigation } from '@react-navigation/native';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { useRouter } from "expo-router";
+import { AuthContext } from "@/context/AuthContext";
 
 const AUTH_KEY = "auth_info";
 
@@ -27,7 +29,7 @@ const tokenExpiration = checkTokenExpiration(decoded.exp);
   const authInfo = {
     token: token,
     email: decoded.sub,
-    name:decoded?.sub?.split(".")[0],
+    name:decoded?.Emp_Name.split(" ")[0],
     empId: decoded.EmpId,
     exp:decoded.exp,
     checkTokenExpiration: tokenExpiration,
@@ -39,11 +41,16 @@ const tokenExpiration = checkTokenExpiration(decoded.exp);
 
 export async function getAuthInfo() {
   const result = await SecureStore.getItemAsync(AUTH_KEY);
+  
   return result ? JSON.parse(result) : null;
 }
 
 export async function removeAuthInfo() {
+
+  //  await  savePushTokenToBackend(user.empId,"",user.token)
+   
   await SecureStore.deleteItemAsync(AUTH_KEY);
+ 
 }
 
 export const checkTokenExpiration = (exp) => {

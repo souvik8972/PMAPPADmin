@@ -18,11 +18,11 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
   const {user}=useContext(AuthContext)
 
   useEffect(()=>{  setUserName(user.name)
-    console.log(userName,"UserName")
+   
   },[user])
-  const handleLogout = () => {
-    console.log("Logout button pressed");
-    logout(); // Call the logout function from AuthContext
+  const handleLogout =async () => {
+  
+    await logout(); // Call the logout function from AuthContext
     setModalVisible(false);
     router.replace('/login'); // Navigate to login screen
   };
@@ -57,7 +57,7 @@ const Header = ({ navigation }) => { // ✅ Receive navigation prop
       {/* Modal */}
       <Modal animationType="fade" transparent={true} visible={isModalVisible} onRequestClose={() => setModalVisible(false)}>
         <View className="flex-1 justify-center items-center bg-black/50">
-          <View className="bg-white p-10 rounded-lg w-80 items-center">
+          <View className="bg-white  p-6 rounded-lg w-80 items-center">
             <Text className="text-xl font-bold mb-4">Hello, {userName}</Text>
             
             <TouchableOpacity onPress={handleLogout} className="w-full rounded-full overflow-hidden">

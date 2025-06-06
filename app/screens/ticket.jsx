@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Modal, TextInput, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, Modal, TextInput, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, KeyboardAvoidingView, Platform } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from 'react-native';
 import { useFetchData } from '@/ReactQuery/hooks/useFetchData'
@@ -34,7 +34,7 @@ const IssueTracker = () => {
   const [openStatus, setOpenStatus] = useState(false);
 
   const { data, isLoading, error, refetch, isFetching } = useFetchData("Ticket/GetAllTickets", token);
-
+console.log("ticket data",data)
   const { mutate: submitMutate, isPending: isSubmitPending } = usePostData('Ticket/RaiseTicket', ["Ticket/GetAllTickets"]);
  
   useEffect(() => {
@@ -48,7 +48,9 @@ const IssueTracker = () => {
         date: issue.Issue_Date,
         employeeName: issue.Employee_Name,
         email: issue.EmailId,
-       resolvedDate: String(issue.Resolved_Date).split("T")[0],
+       resolvedDate : typeof issue.Resolved_Date === 'string' && issue.Resolved_Date.includes('T')
+    ? issue.Resolved_Date.split('T')[0]
+    : 'Pending',
 
         comments: issue.Comments
       }));
@@ -236,6 +238,10 @@ const IssueTracker = () => {
 
       {/* Report Issue Modal */}
       <Modal visible={modalVisible} animationType="fade" transparent>
+        <KeyboardAvoidingView 
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    className="flex-1"
+  >
         <View className="flex-1 justify-center items-center bg-black/50">
           <View className="w-4/5 bg-white p-5 rounded-lg">
             <Text className="text-xl font-bold text-center text-black mb-3">Report an Issue</Text>
@@ -326,11 +332,16 @@ const IssueTracker = () => {
             </View>
           </View>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Update Issue Modal (only for admin) */}
       {isAdmin && (
         <Modal visible={updateModalVisible} animationType="fade" transparent>
+          <KeyboardAvoidingView 
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    className="flex-1"
+  >
           <View className="flex-1 justify-center items-center bg-black/50">
             <View className="w-4/5 bg-white p-5 rounded-lg">
               <Text className="text-xl font-bold text-center text-black mb-3">
@@ -404,6 +415,7 @@ const IssueTracker = () => {
               </View>
             </View>
           </View>
+          </KeyboardAvoidingView>
         </Modal>
       )}
     </View>
@@ -450,7 +462,8 @@ const IssueItemContent = ({ item,isAdmin }) => {
       </View>
 
       <View className="flex-1 pr-2">
-        {isAdmin && <Text className="text-base font-bold text-gray-900 mb-1">{item.employeeName}</Text>}
+       
+        {/* {isAdmin && <Text className="text-base font-bold text-gray-900 mb-1">{item.employeeName}</Text>} */}
         <View className="flex-row items-center justify-between mb-1">
         <Text className="text-base font-bold text-gray-900">{item.type}</Text>
         <View className="flex-row items-center gap-2">
@@ -469,9 +482,30 @@ const IssueItemContent = ({ item,isAdmin }) => {
         
         
         <Text className="text-sm font-semibold text-gray-500 mb-1">ID: #{item.id}</Text>
-        <Text className="text-sm font-semibold text-gray-700 mb-1">{item.description}</Text>
+    {/* <Text className="text-sm font-medium text-gray-500">Employee Name : </Text> */}
 
-       
+        <View className="flex-row items-center justify-start mb-2 w-fit">
+
+           {isAdmin && ( <View 
+                   
+                        className="flex-row items-center justify-start rounded-full px-3 py-1 border  border-gray-200"
+                        style={{ backgroundColor: '#F3F4F6' }}
+                      >
+                        
+                        <View className=" h-5 rounded-full bg-red-100 mr-2 flex items-center justify-center">
+                          <Feather name="user" size={12} color="#940101" />
+                        </View>
+                        <Text className="text-sm  font-semibold text-gray-700">{item.employeeName}</Text>
+                      </View>)}
+        </View>
+        <View className='flex-row  justify-start  bg  '>
+          <Text className="text-sm font-medium text-gray-500">Reason : </Text>
+        
+        <Text className="text-sm font-semibold text-gray-700 mb-1">{item.description.trim()}</Text>
+
+
+        </View>
+   
 
         <Text className="text-sm font-semibold text-gray-500 mb-1">Reported: {item.date}</Text>
         {item.resolvedDate && Object.keys(item.resolvedDate).length > 0 && (

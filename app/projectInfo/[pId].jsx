@@ -48,7 +48,7 @@ const ProjectDetails = () => {
   const { data, isLoading: loading, refetch } = useFetchData(`FinanceModule/GetProjectDetails?projectId=${projectId}&clientId=${clientId}`, user?.token);
 
   const project = data?.[0] || {};
-  
+  console.log("Project Data:", project);
   // Parse numeric values from strings
   const parseCurrency = (value) => {
     if (!value) return 0;
@@ -64,6 +64,7 @@ const ProjectDetails = () => {
   const actualHours = project.Actual_Hours || 0;
   const outshourced = parseCurrency(project.Outsourcing_Cost);
   const EffortEstimateCost = parseCurrency(project.effect_EstimateCost);
+  const rateCard = project.BName || "Not Available";
 
   // State to toggle charts visibility
   const [showCostChart, setShowCostChart] = useState(false);
@@ -261,7 +262,7 @@ const ProjectDetails = () => {
                 <Ionicons name="pricetag" size={18} color="#4F46E5" />
               </View>
               <Text style={styles.infoLabel}>Rate Card</Text>
-              <Text style={styles.infoValue}>Premium Rate Card</Text>
+              <Text style={styles.infoValue}>{rateCard}</Text>
             </View>
 
             <View style={styles.infoRow}>

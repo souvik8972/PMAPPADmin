@@ -2,6 +2,8 @@ import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import React, { useState } from 'react';
 import { Ionicons, MaterialIcons, FontAwesome, AntDesign } from '@expo/vector-icons';
 import ComingSoonScreen from "../ComingSoonScreen"
+import FoodLoader from '../FoodLoader';
+import AssetLoading from '../AssetLoading';
 const AllRequest = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -117,7 +119,8 @@ const AllRequest = () => {
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
-      <ComingSoonScreen/>
+      {/* <ComingSoonScreen/> */}
+      <AssetLoading/>
 
       {/* Request List */}
       {/* <ScrollView className="px-6 pt-4" showsVerticalScrollIndicator={false}>

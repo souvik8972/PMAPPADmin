@@ -12,6 +12,7 @@ import {
   Animated,
   Easing,
   ActivityIndicator,
+  KeyboardAvoidingView
 } from "react-native";
 import { Feather, AntDesign, MaterialIcons } from "@expo/vector-icons";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -292,26 +293,24 @@ export default AddEditTask = () => {
 
   // Generate dates between start and end date, skipping weekends
   const getDatesInRange = (start, end) => {
-  const dates = [];
-  // Create new Date objects to avoid modifying the original dates
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  
-  // Reset time components to ensure pure date comparison
-  startDate.setHours(0, 0, 0, 0);
-  endDate.setHours(0, 0, 0, 0);
-  
-  let currentDate = new Date(startDate);
-  
-  while (currentDate <= endDate) {
-    if (!isWeekend(currentDate)) {
-      dates.push(new Date(currentDate));
+    const dates = [];
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+    
+    let currentDate = new Date(startDate);
+    
+    while (currentDate <= endDate) {
+      if (!isWeekend(currentDate)) {
+        dates.push(new Date(currentDate));
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
     }
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-  
-  return dates;
-};
+    
+    return dates;
+  };
 
   // Form submission
   const handleSubmit = () => {
@@ -394,17 +393,17 @@ export default AddEditTask = () => {
 
   if (isLoading || (isEditMode && allocationLoader)) {
     return (
-      <SafeAreaView   edges={['top']}  className="flex-1 bg-white justify-center items-center">
+      <SafeAreaView edges={['top']} className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#D01313" />
         <Text className="mt-4 text-slate-600">Loading task details...</Text>
       </SafeAreaView>
     );
   }
 
-
   return (
-    <SafeAreaView   edges={['top']}  className="flex-1 bg-white">
-      <View className="flex-row items-center justify-center p-4 pb-2 border-slate-200 bg-white shadow-sm">
+    <SafeAreaView edges={['top']} className="flex-1 bg-white">
+      {/* Header */}
+      <View className="flex-row items-center justify-center p-4 pb-2  bg-white ">
         <TouchableOpacity onPress={() => navigation.goBack()} className="absolute left-4 p-2 z-10">
           <AntDesign name="arrowleft" size={24} color="#4b5563" />
         </TouchableOpacity>
@@ -413,309 +412,316 @@ export default AddEditTask = () => {
         </Text>
       </View>
 
-      <ScrollView
-        className="flex-1 p-4"
-        contentContainerStyle={{ paddingBottom: 32 }}
-        keyboardShouldPersistTaps="handled"
+      {/* Main Content with KeyboardAvoidingView */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
       >
-        <View className="pb-4">
-          <View className="flex-row justify-between gap-4">
-            {/* Left Section */}
-            <View className="flex-1 gap-4">
-              <View className="rounded-xl p-4 border border-gray-100 flex-row items-center justify-between">
-                <View>
-                  <Text className="text-sm font-medium text-gray-500">Out source value</Text>
-                  <Text className="text-sm font-semibold text-gray-800">
-                    $ {(costs.OutSourceCost)}
-                  </Text>
+        <ScrollView
+          className="flex-1 p-4"
+          contentContainerStyle={{ paddingBottom: 32 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Cost Cards Section */}
+          <View className="pb-4">
+            <View className="flex-row justify-between gap-4">
+              {/* Left Section */}
+              <View className="flex-1 gap-4">
+                <View className="rounded-xl p-4 border border-gray-100 flex-row items-center justify-between">
+                  <View>
+                    <Text className="text-sm font-medium text-gray-500">Out source value</Text>
+                    <Text className="text-sm font-semibold text-gray-800">
+                      $ {(costs.OutSourceCost)}
+                    </Text>
+                  </View>
+                  <FontAwesome name="money" size={24} color="#CDFFF3" />
                 </View>
-                <FontAwesome name="money" size={24} color="#CDFFF3" />
+
+                <View className="rounded-xl p-4 border border-gray-100 flex-row items-center justify-between">
+                  <View>
+                    <Text className="text-sm font-medium text-gray-500">Predicted Cost</Text>
+                    <Text className="text-sm font-semibold text-gray-800">
+                     $ {(costs.PredictedCost)}
+                    </Text>
+                  </View>
+                  <FontAwesome name="money" size={24} color="#C3FFCC" />
+                </View>
               </View>
 
-              <View className="rounded-xl p-4 border border-gray-100 flex-row items-center justify-between">
-                <View>
-                  <Text className="text-sm font-medium text-gray-500">Predicted Cost</Text>
-                  <Text className="text-sm font-semibold text-gray-800">
-                   $ {(costs.PredictedCost)}
-                  </Text>
+              {/* Right Section */}
+              <View className="flex-1 gap-4">
+                <View className="rounded-xl p-4 border border-gray-100 flex-row items-center justify-between">
+                  <View>
+                    <Text className="text-sm font-medium text-gray-500">Total PO value</Text>
+                    <Text className="text-sm font-semibold text-gray-800">
+                     $ {(costs.PurchaseCost)}
+                    </Text>
+                  </View>
+                  <FontAwesome name="money" size={24} color="#6EF6D6" />
                 </View>
-                <FontAwesome name="money" size={24} color="#C3FFCC" />
-              </View>
-            </View>
 
-            {/* Right Section */}
-            <View className="flex-1 gap-4">
-              <View className="rounded-xl p-4 border border-gray-100 flex-row items-center justify-between">
-                <View>
-                  <Text className="text-sm font-medium text-gray-500">Total PO value</Text>
-                  <Text className="text-sm font-semibold text-gray-800">
-                   $ {(costs.PurchaseCost)}
-                  </Text>
+                <View className="rounded-xl p-4 border border-gray-100 flex-row items-center justify-between">
+                  <View>
+                    <Text className="text-sm font-medium text-gray-500">Utilization cost</Text>
+                    <Text className="text-sm font-semibold text-gray-800">
+                      $ {(costs.util_cost)}
+                    </Text>
+                  </View>
+                  <FontAwesome name="money" size={24} color="#86FF97" />
                 </View>
-                <FontAwesome name="money" size={24} color="#6EF6D6" />
-              </View>
-
-              <View className="rounded-xl p-4 border border-gray-100 flex-row items-center justify-between">
-                <View>
-                  <Text className="text-sm font-medium text-gray-500">Utilization cost</Text>
-                  <Text className="text-sm font-semibold text-gray-800">
-                    $ {(costs.util_cost)}
-                  </Text>
-                </View>
-                <FontAwesome name="money" size={24} color="#86FF97" />
               </View>
             </View>
           </View>
-        </View>
 
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-          <View>
-            {/* Task Name */}
-            <Text className="text-sm font-medium text-slate-600 mb-1">Task Name</Text>
-            <View className="bg-white rounded-lg border border-slate-200 shadow-xs mb-3">
-              <TextInput
-                value={taskName}
-                onChangeText={setTaskName}
-                placeholder="Enter task name"
-                placeholderTextColor="#9ca3af"
-                className="h-12 px-4 text-slate-800"
-              />
+          {/* Form Section */}
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View>
+              {/* Task Name */}
+              <Text className="text-sm font-medium text-slate-600 mb-1">Task Name</Text>
+              <View className="bg-white rounded-lg border border-slate-200 shadow-xs mb-3">
+                <TextInput
+                  value={taskName}
+                  onChangeText={setTaskName}
+                  placeholder="Enter task name"
+                  placeholderTextColor="#9ca3af"
+                  className="h-12 px-4 text-slate-800"
+                />
+              </View>
+
+              {/* Client Dropdown */}
+              <Text className="text-sm font-medium text-slate-600 mb-1">Client Name</Text>
+              <View className="z-50 mb-3">
+                <DropDownPicker
+                  open={clientOpen}
+                  value={client}
+                  items={clients}
+                  setOpen={setClientOpen}
+                  setValue={setClient}
+                  setItems={setClients}
+                  placeholder="Select a client"
+                  placeholderStyle={{ color: "#9ca3af" }}
+                  style={{ backgroundColor: "#fff", borderColor: "#e2e8f0", borderRadius: 8, minHeight: 48 }}
+                  dropDownContainerStyle={{ backgroundColor: "#fff", borderColor: "#e2e8f0", borderRadius: 8, marginTop: 2 }}
+                  textStyle={{ fontSize: 16, color: "#1e293b" }}
+                  labelStyle={{ fontWeight: "500" }}
+                  listMode="SCROLLVIEW"
+                  nestedScrollEnabled={true}
+                  ArrowDownIconComponent={() => <Feather name="chevron-down" size={18} color="#64748b" />}
+                  ArrowUpIconComponent={() => <Feather name="chevron-up" size={18} color="#64748b" />}
+                />
+              </View>
+
+              {/* Status Dropdown */}
+              <Text className="text-sm font-medium text-slate-600 mb-1">Status</Text>
+              <View className="z-40 mb-3">
+                <DropDownPicker
+                  open={statusOpen}
+                  value={status}
+                  items={statuses}
+                  setOpen={setStatusOpen}
+                  setValue={setStatus}
+                  setItems={setStatuses}
+                  placeholder="Select status"
+                  placeholderStyle={{ color: "#9ca3af" }}
+                  style={{ backgroundColor: "#fff", borderColor: "#e2e8f0", borderRadius: 8, minHeight: 48 }}
+                  dropDownContainerStyle={{ backgroundColor: "#fff", borderColor: "#e2e8f0", borderRadius: 8, marginTop: 2 }}
+                  textStyle={{ fontSize: 16, color: "#1e293b" }}
+                  labelStyle={{ fontWeight: "500" }}
+                  listMode="SCROLLVIEW"
+                  nestedScrollEnabled={true}
+                  ArrowDownIconComponent={() => <Feather name="chevron-down" size={18} color="#64748b" />}
+                  ArrowUpIconComponent={() => <Feather name="chevron-up" size={18} color="#64748b" />}
+                />
+              </View>
+
+              {/* Date Pickers */}
+              <View className="flex-row justify-between mb-3">
+                <View className="w-[48%]">
+                  <Text className="text-sm font-medium text-slate-600 mb-1">Start Date</Text>
+                  <TouchableOpacity 
+                    onPress={() => setShowStartDatePicker(true)} 
+                    className="rounded-lg border bg-red-800 h-12 px-4 flex-row items-center justify-between"
+                  >
+                    <Text className="text-white">{format(startDate, 'MM/dd/yyyy')}</Text>
+                    <Feather name="calendar" size={18} color="white" />
+                  </TouchableOpacity>
+                  {showStartDatePicker && (
+                    <DateTimePicker
+                      value={startDate}
+                      mode="date"
+                      display="default"
+                      onChange={handleStartDateChange}
+                      minimumDate={isEditMode ? undefined : new Date()}
+                    />
+                  )}
+                </View>
+                <View className="w-[48%]">
+                  <Text className="text-sm font-medium text-slate-600 mb-1">End Date</Text>
+                  <TouchableOpacity 
+                    onPress={() => setShowEndDatePicker(true)} 
+                    className="rounded-lg border bg-red-800 h-12 px-4 flex-row items-center justify-between"
+                  >
+                    <Text className="text-white">{format(endDate, 'MM/dd/yyyy')}</Text>
+                    <Feather name="calendar" size={18} color="white" />
+                  </TouchableOpacity>
+                  {showEndDatePicker && (
+                    <DateTimePicker
+                      value={endDate}
+                      mode="date"
+                      display="default"
+                      onChange={handleEndDateChange}
+                      minimumDate={startDate}
+                    />
+                  )}
+                </View>
+              </View>
+
+              {/* Team Members Section */}
+              <Text className="text-sm font-medium text-slate-600 mb-1">Team Members</Text>
+              <View className="mb-3">
+                <View className="bg-white rounded-lg border border-slate-200 shadow-xs">
+                  <TextInput
+                    value={resourceInput}
+                    onChangeText={(text) => {
+                      setResourceInput(text);
+                      setShowResourceDropdown(text.length > 0);
+                    }}
+                    placeholder="Add team members"
+                    placeholderTextColor="#9ca3af"
+                    className="h-12 px-4 text-slate-800"
+                  />
+                </View>
+                
+                {showResourceDropdown && (
+                  <View className="mt-1 bg-white border border-slate-200 rounded-lg max-h-40">
+                    <ScrollView nestedScrollEnabled={true}>
+                      {teamMembers
+                        .filter(member => 
+                          member.label.toLowerCase().includes(resourceInput.toLowerCase()) &&
+                          !selectedResources.some(r => r.id === member.id)
+                        )
+                        .map((member, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            onPress={() => addResource(member)}
+                            className="px-4 py-2 border-b border-slate-100"
+                          >
+                            <Text className="text-slate-800">{member.label}</Text>
+                          </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                  </View>
+                )}
+                
+                {selectedResources.length > 0 && (
+                  <View className="flex-row flex-wrap mt-2">
+                    {selectedResources.map((resource, index) => (
+                      <View key={index} className="flex-row items-center bg-slate-100 rounded-full px-3 py-1 mr-2 mb-2">
+                        <Text className="text-slate-700 mr-1">{resource.label || resource.name}</Text>
+                        <TouchableOpacity onPress={() => removeResource(resource)}>
+                          <Feather name="x" size={16} color="#64748b" />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Hours Input Section */}
+              <TouchableOpacity 
+                onPress={toggleHoursInput}
+                className="flex-row items-center justify-between bg-slate-50 p-3 rounded-lg mb-3"
+              >
+                <Text className="text-slate-700 font-medium">Add Hours for Team Members</Text>
+                <Animated.View style={{ transform: [{ rotate: rotateInterpolate }] }}>
+                  <Feather name="chevron-down" size={20} color="#64748b" />
+                </Animated.View>
+              </TouchableOpacity>
+
+              {showHoursInput && selectedResources.length > 0 && (
+                <View className="mb-4 border border-slate-200 rounded-lg p-3">
+                  <Text className="text-sm font-medium text-slate-600 mb-2">Enter Hours for Each Member</Text>
+                  
+                  {selectedResources.map((member, memberIndex) => (
+                    <View key={memberIndex} className="mb-4">
+                      <Text className="font-medium text-slate-700 mb-2">{member.label || member.name}</Text>
+                      
+                      {getDatesInRange(startDate, endDate).map((date, dateIndex) => {
+                        const dateStr = format(date, 'MM/dd/yyyy');
+                        const isWeekendDay = isWeekend(date);
+                        
+                        return (
+                          <View 
+                            key={dateIndex} 
+                            className={`flex-row items-center justify-between mb-2 ${isWeekendDay ? 'opacity-50' : ''}`}
+                          >
+                            <Text className="text-slate-600 w-24">
+                              {dateStr} {isWeekendDay ? '(Weekend)' : ''}
+                            </Text>
+                            <TextInput
+                              value={memberHours[member.id]?.[dateStr] ? memberHours[member.id][dateStr].toString() : "0"}
+                              onChangeText={(text) => {
+                                if (!isWeekendDay) {
+                                  handleHoursChange(member.id, dateStr, text);
+                                }
+                              }}
+                              placeholder=""
+                              keyboardType="numeric"
+                              editable={!isWeekendDay}
+                              className={`flex-1 ml-2 bg-white border border-slate-200 rounded px-3 py-2 text-slate-800 ${
+                                isWeekendDay ? 'bg-gray-100' : ''
+                              }`}
+                            />
+                            <Text className="text-slate-500 ml-2">hours</Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Submit Button */}
+              <TouchableOpacity 
+                onPress={handleSubmit} 
+                activeOpacity={0.9} 
+                className="rounded-lg h-14 justify-center items-center mt-4 shadow-md flex-row"
+              >
+                <LinearGradient 
+                  colors={["#D01313", "#6A0A0A"]} 
+                  start={{ x: 0, y: 0 }} 
+                  end={{ x: 1, y: 0 }}
+                  style={{ 
+                    width: '100%',
+                    borderRadius: 8, 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    flexDirection: "row", 
+                    shadowColor: "#000", 
+                    shadowOffset: { width: 0, height: 2 }, 
+                    shadowOpacity: 0.25, 
+                    shadowRadius: 3.84, 
+                    elevation: 5,
+                    height: 56
+                  }}
+                >
+                  {isSubmitPending ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Text className="text-white font-semibold text-lg mr-2">
+                        {isEditMode ? "Update Task" : "Add Task"}
+                      </Text>
+                      <MaterialIcons name="arrow-forward" size={24} color="#fff" />
+                    </>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
             </View>
-
-            {/* Client Dropdown */}
-            <Text className="text-sm font-medium text-slate-600 mb-1">Client Name</Text>
-            <View className="z-50 mb-3">
-              <DropDownPicker
-                open={clientOpen}
-                value={client}
-                items={clients}
-                setOpen={setClientOpen}
-                setValue={setClient}
-                setItems={setClients}
-                placeholder="Select a client"
-                placeholderStyle={{ color: "#9ca3af" }}
-                style={{ backgroundColor: "#fff", borderColor: "#e2e8f0", borderRadius: 8, minHeight: 48 }}
-                dropDownContainerStyle={{ backgroundColor: "#fff", borderColor: "#e2e8f0", borderRadius: 8, marginTop: 2 }}
-                textStyle={{ fontSize: 16, color: "#1e293b" }}
-                labelStyle={{ fontWeight: "500" }}
-                listMode="SCROLLVIEW"
-                nestedScrollEnabled={true}
-                ArrowDownIconComponent={() => <Feather name="chevron-down" size={18} color="#64748b" />}
-                ArrowUpIconComponent={() => <Feather name="chevron-up" size={18} color="#64748b" />}
-              />
-            </View>
-
-            {/* Status Dropdown */}
-            <Text className="text-sm font-medium text-slate-600 mb-1">Status</Text>
-            <View className="z-40 mb-3">
-              <DropDownPicker
-                open={statusOpen}
-                value={status}
-                items={statuses}
-                setOpen={setStatusOpen}
-                setValue={setStatus}
-                setItems={setStatuses}
-                placeholder="Select status"
-                placeholderStyle={{ color: "#9ca3af" }}
-                style={{ backgroundColor: "#fff", borderColor: "#e2e8f0", borderRadius: 8, minHeight: 48 }}
-                dropDownContainerStyle={{ backgroundColor: "#fff", borderColor: "#e2e8f0", borderRadius: 8, marginTop: 2 }}
-                textStyle={{ fontSize: 16, color: "#1e293b" }}
-                labelStyle={{ fontWeight: "500" }}
-                listMode="SCROLLVIEW"
-                nestedScrollEnabled={true}
-                ArrowDownIconComponent={() => <Feather name="chevron-down" size={18} color="#64748b" />}
-                ArrowUpIconComponent={() => <Feather name="chevron-up" size={18} color="#64748b" />}
-              />
-            </View>
-{/* Date Pickers */}
-<View className="flex-row justify-between mb-3">
-  <View className="w-[48%]">
-    <Text className="text-sm font-medium text-slate-600 mb-1">Start Date</Text>
-    <TouchableOpacity 
-      onPress={() => setShowStartDatePicker(true)} 
-      className="rounded-lg border bg-red-800 h-12 px-4 flex-row items-center justify-between"
-    >
-      <Text className="text-white">{format(startDate, 'MM/dd/yyyy')}</Text>
-      <Feather name="calendar" size={18} color="white" />
-    </TouchableOpacity>
-    {showStartDatePicker && (
-      <DateTimePicker
-        value={startDate}
-        mode="date"
-        display="default"
-        onChange={handleStartDateChange}
-        minimumDate={isEditMode ? undefined : new Date()}
-      />
-    )}
-  </View>
-  <View className="w-[48%]">
-    <Text className="text-sm font-medium text-slate-600 mb-1">End Date</Text>
-    <TouchableOpacity 
-      onPress={() => setShowEndDatePicker(true)} 
-      className="rounded-lg border bg-red-800 h-12 px-4 flex-row items-center justify-between"
-    >
-      <Text className="text-white">{format(endDate, 'MM/dd/yyyy')}</Text>
-      <Feather name="calendar" size={18} color="white" />
-    </TouchableOpacity>
-    {showEndDatePicker && (
-      <DateTimePicker
-        value={endDate}
-        mode="date"
-        display="default"
-        onChange={handleEndDateChange}
-        minimumDate={startDate}
-      />
-    )}
-  </View>
-</View>
-
-{/* Team Members Section */}
-<Text className="text-sm font-medium text-slate-600 mb-1">Team Members</Text>
-<View className="mb-3">
-  <View className="bg-white rounded-lg border border-slate-200 shadow-xs">
-    <TextInput
-      value={resourceInput}
-      onChangeText={(text) => {
-        setResourceInput(text);
-        setShowResourceDropdown(text.length > 0);
-      }}
-      placeholder="Add team members"
-      placeholderTextColor="#9ca3af"
-      className="h-12 px-4 text-slate-800"
-    />
-  </View>
-  
-  {showResourceDropdown && (
-    <View className="mt-1 bg-white border border-slate-200 rounded-lg max-h-40">
-      <ScrollView style={{zIndex: 100}} nestedScrollEnabled={true}>
-        {teamMembers
-          .filter(member => 
-            member.label.toLowerCase().includes(resourceInput.toLowerCase()) &&
-            !selectedResources.some(r => r.id === member.id)
-          )
-          .map((member, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => addResource(member)}
-              className="px-4 py-2 border-b border-slate-100"
-            >
-              <Text className="text-slate-800">{member.label}</Text>
-            </TouchableOpacity>
-          ))}
-      </ScrollView>
-    </View>
-  )}
-  
-  {selectedResources.length > 0 && (
-    <View className="flex-row flex-wrap mt-2">
-      {selectedResources.map((resource, index) => (
-        <View key={index} className="flex-row items-center bg-slate-100 rounded-full px-3 py-1 mr-2 mb-2">
-          <Text className="text-slate-700 mr-1">{resource.label || resource.name}</Text>
-          <TouchableOpacity onPress={() => removeResource(resource)}>
-            <Feather name="x" size={16} color="#64748b" />
-          </TouchableOpacity>
-        </View>
-      ))}
-    </View>
-  )}
-</View>
-
-{/* Hours Input Section */}
-<TouchableOpacity 
-  onPress={toggleHoursInput}
-  className="flex-row items-center justify-between bg-slate-50 p-3 rounded-lg mb-3"
->
-  <Text className="text-slate-700 font-medium">Add Hours for Team Members</Text>
-  <Animated.View style={{ transform: [{ rotate: rotateInterpolate }] }}>
-    <Feather name="chevron-down" size={20} color="#64748b" />
-  </Animated.View>
-</TouchableOpacity>
-
-{showHoursInput && selectedResources.length > 0 && (
-  <View className="mb-4 border border-slate-200 rounded-lg p-3">
-    <Text className="text-sm font-medium text-slate-600 mb-2">Enter Hours for Each Member</Text>
-    
-    {selectedResources.map((member, memberIndex) => (
-      <View key={memberIndex} className="mb-4">
-        <Text className="font-medium text-slate-700 mb-2">{member.label || member.name}</Text>
-        
-        {getDatesInRange(startDate, endDate).map((date, dateIndex) => {
-          const dateStr = format(date, 'MM/dd/yyyy');
-          const isWeekendDay = isWeekend(date);
-          
-          return (
-            <View 
-              key={dateIndex} 
-              className={`flex-row items-center justify-between mb-2 ${isWeekendDay ? 'opacity-50' : ''}`}
-            >
-              <Text className="text-slate-600 w-24">
-                {dateStr} {isWeekendDay ? '(Weekend)' : ''}
-              </Text>
-              <TextInput
-                value={memberHours[member.id]?.[dateStr] ? memberHours[member.id][dateStr].toString() : "0"}
-                onChangeText={(text) => {
-                  if (!isWeekendDay) {
-                    handleHoursChange(member.id, dateStr, text);
-                  }
-                }}
-                placeholder=""
-                keyboardType="numeric"
-                editable={!isWeekendDay}
-                className={`flex-1 ml-2 bg-white border border-slate-200 rounded px-3 py-2 text-slate-800 ${
-                  isWeekendDay ? 'bg-gray-100' : ''
-                }`}
-              />
-              <Text className="text-slate-500 ml-2">hours</Text>
-            </View>
-          );
-        })}
-      </View>
-    ))}
-  </View>
-)}
-
-            {/* Submit Button */}
-            <TouchableOpacity 
-              onPress={handleSubmit} 
-              activeOpacity={0.9} 
-              className="rounded-lg h-14 justify-center items-center mt-4 shadow-md flex-row"
-            >
-              <LinearGradient 
-  colors={["#D01313", "#6A0A0A"]} 
-  start={{ x: 0, y: 0 }} 
-  end={{ x: 1, y: 0 }}
-  style={{ 
-    width: '100%',
-    borderRadius: 8, 
-    alignItems: "center", 
-    justifyContent: "center", 
-    flexDirection: "row", 
-    shadowColor: "#000", 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.25, 
-    shadowRadius: 3.84, 
-    elevation: 5,
-    height: 56
-  }}
->
-  {isSubmitPending ? (
-    <ActivityIndicator size="small" color="#fff" />
-  ) : (
-    <>
-      <Text className="text-white font-semibold text-lg mr-2">
-        {isEditMode ? "Update Task" : "Add Task"}
-      </Text>
-      <MaterialIcons name="arrow-forward" size={24} color="#fff" />
-    </>
-  )}
-</LinearGradient>
-
-            </TouchableOpacity>
-          </View>
-        </TouchableWithoutFeedback>
-      </ScrollView>
+          </TouchableWithoutFeedback>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
-
- 

@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState } from "react";
 import { getAuthInfo, saveAuthInfo, removeAuthInfo,checkTokenExpiration } from "../utils/auth"; // Updated to reflect changes
+import { savePushTokenToBackend } from "@/services/api";
 
 export const AuthContext = createContext(null);
 
@@ -45,8 +46,12 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
+   
+       await  savePushTokenToBackend(user.empId,"",user.token)
       await removeAuthInfo(); // Remove all auth info (token + user data)
-      setUser(null); // Clear user state on logout
+   console.log(user,"User")
+      
+     console.log("Logout button pressed 1");
     } catch (error) {
       // console.error("Failed to remove token:", error);
       throw error;

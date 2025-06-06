@@ -13,7 +13,7 @@ const AssetsScreen = () => {
 
   const tabs = [
     { name: "Asset Management", component: AssetManagement },
-    { name: isSystemAdmin ? "AllRequest" : "My Request", component: isSystemAdmin ? AllRequest : MyRequest }
+    { name: isSystemAdmin ? "All Request" : "My Request", component: isSystemAdmin ? AllRequest : MyRequest }
   ];
 
   const handleTabPress = (index) => {
@@ -31,6 +31,7 @@ const AssetsScreen = () => {
 
   const ActiveComponent = tabs[activeTab].component;
 
+  
   return (
     <View style={styles.container}>
       {/* Tab Bar */}
@@ -39,7 +40,7 @@ const AssetsScreen = () => {
           <TouchableOpacity
             key={index}
             style={styles.tab}
-            className={` ${activeTab === index?'bg-[#6a040f]':'bg-gray-50'}`}
+            className={` ${activeTab === index?'bg-[#d82133]':'bg-gray-100'}`}
             onPress={() => handleTabPress(index)}
           >
             <Text 

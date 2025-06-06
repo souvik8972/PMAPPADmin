@@ -342,13 +342,13 @@ const TaskDropdown = ({ emp }) => {
       <View className="flex-row flex-wrap gap-2">
         <View className="bg-green-100 px-2 py-1 rounded-lg">
           <Text className="text-sm text-green-800 font-semibold">
-          Planned: {task.Logged_hours}h
+          Planned: {task.Working_hours}h
           </Text>
         </View>
 
         <View className="px-2 bg-green-100 py-1 rounded-lg">
           <Text className="text-sm font-semibold" style={{ color: '#213448' }}>
-            Logged: {task.Working_hours}h
+            Logged: {task.Logged_hours}h
           </Text>
         </View>
 

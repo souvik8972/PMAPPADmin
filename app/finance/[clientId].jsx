@@ -37,6 +37,8 @@ const Client = () => {
     Actual_percentage: clientData[7] || '00',
   };
 
+
+
   const endpoint = `FinanceModule/GetAllProjectName_ByClientIdd?FinYrId=${clientInfo.Year_ID}&clientId=${clientInfo.Client_ID}`;
   const { data, isLoading: loading, refetch } = useFetchData(endpoint, user?.token);
 
@@ -49,7 +51,11 @@ const Client = () => {
     }
   }, [data]);
 
- 
+ const safeCurrencyToNumber = (value) => {
+  if (value === null || value === undefined || value === "") return 0;
+  const num = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.-]/g, '')) : Number(value);
+  return isNaN(num) ? 0 : num;
+}
   const currentClientInfo = clientsInfo.length > 0 ? clientsInfo[0] : clientInfo;
   const currencyToNumber = (currency) => {
     if (!currency) return 0;
@@ -94,30 +100,37 @@ const Client = () => {
           />
         </View>
       
-        {/* Predicated Gp */}
-        <View className="items-center w-1/3 border-r border-gray-200 px-1">
-          <View className="flex-row items-center justify-center gap-1 ">
-           <Ionicons name="trending-up" size={20} color="#10B981" />
-            <Text className="text-sm font-semibold text-gray-500">Predicated Gp</Text>
-          </View>
-          <AnimatedNumber 
-            value={currencyToNumber(currentClientInfo.Predicted_Gp)} 
-            color="text-black" 
-            
-          />
-        </View>
-      
-        {/* Current GP */}
-        <View className="items-center w-1/3 px-1">
-          <View className="flex-row items-center justify-center gap-1">
-           <Ionicons name="trending-down" size={20} color="#EF4444" />
-            <Text className="text-sm font-semibold text-gray-500">Actual GP</Text>
-          </View>
-          <AnimatedNumber   
-            value={currencyToNumber(currentClientInfo.Actual_Gp)} 
-            color="text-black" 
-          />
-        </View>
+       <View className="items-center w-1/3 border-r border-gray-200 px-1">
+  <View className="flex-row items-center justify-center gap-1">
+    {safeCurrencyToNumber(currentClientInfo.Predicted_Gp) > safeCurrencyToNumber(currentClientInfo.Actual_Gp) ? (
+      <Ionicons name="trending-up" size={20} color="#10B981" />
+    ) : (
+      <Ionicons name="trending-down" size={20} color="#EF4444" />
+    )}
+    <Text className="text-sm font-semibold text-gray-500">Predicted GP</Text>
+  </View>
+  <AnimatedNumber 
+    value={safeCurrencyToNumber(currentClientInfo.Predicted_Gp)} 
+    color="text-black" 
+  />
+</View>
+
+{/* Actual GP */}
+<View className="items-center w-1/3 px-1">
+  <View className="flex-row items-center justify-center gap-1">
+    {safeCurrencyToNumber(currentClientInfo.Actual_Gp) > safeCurrencyToNumber(currentClientInfo.Predicted_Gp) ? (
+      <Ionicons name="trending-up" size={20} color="#10B981" />
+    ) : (
+      <Ionicons name="trending-down" size={20} color="#EF4444" />
+    )}
+    <Text className="text-sm font-semibold text-gray-500">Actual GP</Text>
+  </View>
+  <AnimatedNumber   
+    value={safeCurrencyToNumber(currentClientInfo.Actual_Gp)} 
+    color="text-black" 
+  />
+</View>
+
       </View>
 
       {/* Progress Bar */}

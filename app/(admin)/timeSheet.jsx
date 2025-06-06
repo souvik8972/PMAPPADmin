@@ -195,8 +195,12 @@ export default function TaskScreen() {
             color="#6b7280"
           />
         </View>
-
+  <KeyboardAvoidingView 
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    className="flex-1"
+  >
         <Collapsible collapsed={activeIndex !== index}>
+        
           <View className="mt-4">
             {/* Task ID */}
             <View className="mb-3">
@@ -315,7 +319,9 @@ export default function TaskScreen() {
               </LinearGradient>
             </TouchableOpacity>
           </View>
+       
         </Collapsible>
+           </KeyboardAvoidingView>
       </TouchableOpacity>
     </View>
   );
@@ -392,7 +398,7 @@ export default function TaskScreen() {
   keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}  // Increased offset
 >
       <View className="flex-1 bg-gray-50">
-        <View className="p-4 pt-0 pb-1">
+        <View className="p-4 pt-0 pb-1 z-40 ">
           <DropDown
             open={open}
             setActiveIndex={setActiveIndex}

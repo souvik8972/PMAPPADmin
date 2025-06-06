@@ -16,7 +16,8 @@ const Task = lazy(() => import("./index"));
 const Resource = lazy(() => import("../screens/resource"));
 const Ticket = lazy(() => import("../screens/ticket"));
 const Assets = lazy(() => import("../screens/assets"));
-const Food = lazy(() => import("../screens/food"));
+// const Food = lazy(() => import("../screens/food"));
+import Food from "../screens/food";
 const FoodDashboard= lazy(()=> import("./FoodDashboard"));
 const Project = lazy(() => import("./project"));
 const TimeSheet = lazy(() => import("./timeSheet"));
@@ -38,8 +39,8 @@ const CustomDrawerContent = (props) => {
   const { state, navigation } = props;
   const isAdmin = user?.userType==5;
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async() => {
+    await logout()
     router.replace('/login');
   };
 

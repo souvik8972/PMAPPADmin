@@ -195,8 +195,12 @@ export default function TaskScreen() {
             color="#6b7280"
           />
         </View>
-
+  <KeyboardAvoidingView 
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    className="flex-1"
+  >
         <Collapsible collapsed={activeIndex !== index}>
+        
           <View className="mt-4">
             {/* Task ID */}
             <View className="mb-3">
@@ -315,7 +319,9 @@ export default function TaskScreen() {
               </LinearGradient>
             </TouchableOpacity>
           </View>
+       
         </Collapsible>
+           </KeyboardAvoidingView>
       </TouchableOpacity>
     </View>
   );

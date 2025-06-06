@@ -10,6 +10,8 @@ import {
   StyleSheet,
   Dimensions,
   RefreshControl,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import RenderItem from "../../components/Assets/RenderItem";
@@ -231,6 +233,11 @@ const AssetManagement = () => {
 
       {/* Modal */}
       <Modal visible={modalVisible} transparent animationType="fade">
+       
+  <KeyboardAvoidingView 
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    className="flex-1"
+  >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Reason for Checkout</Text>
@@ -263,6 +270,7 @@ const AssetManagement = () => {
             </View>
           </View>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
     </ScrollView>
   );
