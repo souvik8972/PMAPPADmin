@@ -10,10 +10,10 @@ const AssetLoading = () => {
          <View style={styles.container}>
              
                    <LottieView
-         source={require('../assets/animation/food.json')}
+         source={require('../assets/animation/asset.json')}
          autoPlay
          loop={true}
-         style={{ width: '100%', height: '100%' }}
+         style={{ width: '60%', height: '50%' }}
          resizeMode="contain"
         
        />

@@ -165,7 +165,7 @@ const FoodComponent = () => {
   if (isFetching && !refreshing) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <AssetLoading/>
+        <Text className="text-gray-500 mb-4">Loading...</Text>
       </View>
     );
   }
