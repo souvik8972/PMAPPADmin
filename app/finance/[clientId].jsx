@@ -47,7 +47,7 @@ const Client = () => {
       
       setClientsInfo(data.clientGpValues || []);
       setProjects(data.projectNames || []);
-      console.log("API response data:", data); // Better to log the raw data
+      // console.log("API response data:", data); // Better to log the raw data
     }
   }, [data]);
 

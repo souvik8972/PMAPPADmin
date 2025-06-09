@@ -12,12 +12,13 @@ import { API_URL } from '@env';
 
 
 const Login = () => {
-  console.log("My API URL:", API_URL);
+  // console.log("My API URL:", API_URL);
   
- 
+  const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
+ const [password, setPassword] = useState('lavgZzsS');
 
-   const [password, setPassword] = useState('');
-    const [email, setEmail] = useState('');
+  //  const [password, setPassword] = useState('');
+  //   const [email, setEmail] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
   const { login } = useContext(AuthContext);
@@ -26,11 +27,11 @@ const Login = () => {
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
-      console.log("Login successful", data.token);
+      // console.log("Login successful", data.token);
       const userData = parseJwt(data.token);
-      console.log("User data from token:", userData);
+      // console.log("User data from token:", userData);
 savePushTokenToBackend(userData.EmpId,expoTokenToSend,data.token)
-     console.log("chececece")
+    //  console.log("chececece")
 
       login(data.token, userData).then(() => {
         if (userData?.UserType == "3") {

@@ -325,7 +325,7 @@ export default function TaskScreen() {
       setHasMore(true);
       refetchBasicTasks();
     }
-      console.log(('Selected Date Range:', params));
+      // console.log(('Selected Date Range:', params));
   }, [refetchBasicTasks,selectedRange]);
 
   return (

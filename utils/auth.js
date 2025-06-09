@@ -23,7 +23,7 @@ export function parseJwt(token) {
 
 export async function saveAuthInfo(token) {
   const decoded = parseJwt(token);
-  console.log("Decoded JWT:", decoded);
+  // console.log("Decoded JWT:", decoded);
   if (!decoded) return;
 const tokenExpiration = checkTokenExpiration(decoded.exp);
   const authInfo = {

@@ -7,8 +7,8 @@ import { LinearGradient } from "expo-linear-gradient";
 const TaskItem = ({ filteredTasks, activeIndex, setActiveIndex, handleActualHoursChange }) => {
   // Function to handle submit
   const handleSubmit = (taskId, actual) => {
-    console.log("Task ID:", taskId);
-    console.log("Actual Hours:", actual);
+    // console.log("Task ID:", taskId);
+    // console.log("Actual Hours:", actual);
   };
 
   return (

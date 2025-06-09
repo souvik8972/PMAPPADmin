@@ -33,7 +33,7 @@ const ShimmerItem = () => (
 );
 
 const AssetManagement = () => {
-  console.log("AssetManagement");
+  // console.log("AssetManagement");
   const { mutate } = usePostData("Assests/SendAssestdetails", ["Assests/GetAllAssests"]);
   const { user } = useContext(AuthContext);
   const navigation = useNavigation();

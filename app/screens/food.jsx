@@ -113,7 +113,7 @@ const FoodComponent = () => {
               refetch();
             },
             onError: (error) => {
-              console.log('API Error:', error);
+              // console.log('API Error:', error);
             }
           }
         );

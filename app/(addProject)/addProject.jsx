@@ -76,7 +76,7 @@ const FormScreen = () => {
   };
 
   const handleSubmit = () => {
-    console.log('Form submitted:', formData);
+    // console.log('Form submitted:', formData);
     alert('Project created successfully!');
   };
 

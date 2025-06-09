@@ -11,6 +11,7 @@ import {
   RefreshControl,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from "react-native";
 import Collapsible from "react-native-collapsible";
 import { FontAwesome } from "@expo/vector-icons";
@@ -120,6 +121,17 @@ export default function TaskScreen() {
     }
   };
 
+  const handleInputFocus = (index) => {
+    setActiveIndex(index);
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({
+        index: index,
+        viewPosition: 0.5, // Center the item in view
+        animated: true,
+      });
+    }, 100);
+  };
+
   const handleSubmit = async (taskId) => {
     const task = apiData?._Tasks?.find(t => t.Task_Id.toString() === taskId);
     if (!task) return;
@@ -153,7 +165,7 @@ export default function TaskScreen() {
       refetch();
       Alert.alert("Success", "Hours submitted successfully");
     } catch (error) {
-      console.log("Submission error:", error);
+      // console.log("Submission error:", error);
       Alert.alert("Error", "Failed to submit hours");
     } finally {
       setIsProcessing(false);
@@ -171,14 +183,16 @@ export default function TaskScreen() {
   );
 
   const renderTaskItem = (task, index) => (
-    <View key={`${task.taskId}-${index}`} className="mb-4 ">
+    <View key={`${task.taskId}-${index}`} className="mb-4">
       <TouchableOpacity
         className={`p-5 rounded-lg ${activeIndex === index ? "bg-white" : "bg-gray-50"}`}
-        onPress={() => setActiveIndex(activeIndex === index ? null : index)}
+        onPress={() => {
+          Keyboard.dismiss();
+          setActiveIndex(activeIndex === index ? null : index);
+        }}
         activeOpacity={0.8}
         style={{
           shadowColor: "#000",
-         
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
@@ -195,17 +209,12 @@ export default function TaskScreen() {
             color="#6b7280"
           />
         </View>
-  <KeyboardAvoidingView 
-    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    className="flex-1"
-  >
+
         <Collapsible collapsed={activeIndex !== index}>
-        
           <View className="mt-4">
             {/* Task ID */}
             <View className="mb-3">
               <View className="flex-row items-center">
-                {/* <Text className="text-gray-500 text-sm font-medium">#</Text> */}
                 <Text className="text-gray-500 text-sm font-medium ">Task ID</Text>
               </View>
               <Text className="text-gray-900 text-base font-semibold"># {task.taskId}</Text>
@@ -214,7 +223,6 @@ export default function TaskScreen() {
             {/* Task Owner */}
             <View className="mb-4">
               <View className="flex-row items-center">
-                {/* <MaterialCommunityIcons name="account" size={16} color="#6b7280" /> */}
                 <Text className="text-gray-500 text-sm font-medium ">Task Owner</Text>
               </View>
               <Text className="text-gray-900 text-base font-semibold ">👤 {task.owner}</Text>
@@ -225,67 +233,57 @@ export default function TaskScreen() {
               {/* Planned Hours */}
               <View className="flex-none justify-center flex mr-4">
                 <View className="flex-row items-center mb-1">
-                  {/* <MaterialCommunityIcons name="clock-outline" size={16} color="#6b7280" /> */}
                   <Text className="text-gray-600 text-sm font-medium ">Planned Hours</Text>
                 </View>
                 <View style={{
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.1,
-                        shadowRadius: 4,
-                        elevation: 3,
-                        backgroundColor: "#f3f4f6", 
-                        borderRadius: 8,
-                      }}
-                      className="w-20 mx-2"
-                  ><TextInput
-                  className="bg-gray-100 px-4 py-2 w-20 rounded-lg text-center text-md font-semibold text-gray-800"
-                  value={task.planned}
-                  editable={false}
-                  style={{
-                   textAlign: "center",
-                  }}
-                /></View>
-                
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                  backgroundColor: "#f3f4f6", 
+                  borderRadius: 8,
+                }}
+                className="w-20 mx-2"
+                >
+                  <TextInput
+                    className="bg-gray-100 px-4 py-2 w-20 rounded-lg text-center text-md font-semibold text-gray-800"
+                    value={task.planned}
+                    editable={false}
+                    style={{
+                      textAlign: "center",
+                    }}
+                  />
+                </View>
               </View>
 
               {/* Actual Hours */}
               <View className="">
                 <View className="flex-row items-center mb-1">
-                  {/* <MaterialCommunityIcons name="clock-check-outline" size={16} color="#6b7280" /> */}
                   <Text className="text-gray-600 text-sm font-medium">Actual Hours</Text>
                 </View>
                 <View
-  style={{
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    backgroundColor: "#fff", 
-    borderRadius: 8,
-  }}
-  className="w-20"
->
-  <TextInput
-    className="px-4 py-2 text-center text-md font-md text-gray-800 font-semibold"
-    keyboardType="decimal-pad"
-    placeholder=""
-    maxLength={5}
-    value={task.actual}
-    onChangeText={(text) => handleActualHoursChange(text, task.taskId)}
-    onFocus={() => {
-      setTimeout(() => {
-        flatListRef.current?.scrollToIndex({
-          index: index,
-          viewOffset: 50,
-          animated: true,
-        });
-      }, 100);
-    }}
-  />
-</View>
-
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    backgroundColor: "#fff", 
+                    borderRadius: 8,
+                  }}
+                  className="w-20"
+                >
+                  <TextInput
+                    className="px-4 py-2 text-center text-md font-md text-gray-800 font-semibold"
+                    keyboardType="decimal-pad"
+                    placeholder=""
+                    maxLength={5}
+                    value={task.actual}
+                    onChangeText={(text) => handleActualHoursChange(text, task.taskId)}
+                    onFocus={() => handleInputFocus(index)}
+                  />
+                </View>
               </View>
             </View>
 
@@ -319,9 +317,7 @@ export default function TaskScreen() {
               </LinearGradient>
             </TouchableOpacity>
           </View>
-       
         </Collapsible>
-           </KeyboardAvoidingView>
       </TouchableOpacity>
     </View>
   );
@@ -374,11 +370,12 @@ export default function TaskScreen() {
       <Animated.FlatList
         data={filteredTasks}
         ref={flatListRef} 
-        style={{marginBottom: 10,padding:8}}
+        style={{marginBottom: 10, padding: 8}}
         renderItem={({ item, index }) => renderTaskItem(item, index)}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        // contentContainerStyle={{  }}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 20 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -387,89 +384,103 @@ export default function TaskScreen() {
             colors={["#D01313"]}
           />
         }
+        onScrollToIndexFailed={info => {
+          const wait = new Promise(resolve => setTimeout(resolve, 500));
+          wait.then(() => {
+            flatListRef.current?.scrollToIndex({
+              index: info.index,
+              animated: true,
+            });
+          });
+        }}
       />
     );
   };
 
   return (
-   <KeyboardAvoidingView
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
-  style={{ flex: 1 }}
-  keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}  // Increased offset
->
-      <View className="flex-1 bg-gray-50">
-        <View className="p-4 pt-0 pb-1 z-40 ">
-          <DropDown
-            open={open}
-            setActiveIndex={setActiveIndex}
-            setOpen={setOpen}
-            items={items}
-            selectedOption={selectedOption}
-            setSelectedOption={setSelectedOption}
-          />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.select({
+        ios: 90,
+        android: 70
+      })}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View className="flex-1 bg-gray-50">
+          <View className="p-4 pt-0 pb-1 z-40">
+            <DropDown
+              open={open}
+              setActiveIndex={setActiveIndex}
+              setOpen={setOpen}
+              items={items}
+              selectedOption={selectedOption}
+              setSelectedOption={setSelectedOption}
+            />
 
-          <View className="flex-row items-center border border-gray-200 rounded-lg h-[40px] px-4 my-4 bg-white">
-            <TextInput
-              placeholder="Search your task"
-              className="flex-1 text-gray-800"
-              placeholderTextColor="#9ca3af"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            <FontAwesome
-              name="search"
-              size={18}
-              color="#9ca3af"
-              style={{ marginRight: 8 }}
-            />
+            <View className="flex-row items-center border border-gray-200 rounded-lg h-[40px] px-4 my-4 bg-white">
+              <TextInput
+                placeholder="Search your task"
+                className="flex-1 text-gray-800"
+                placeholderTextColor="#9ca3af"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+              <FontAwesome
+                name="search"
+                size={18}
+                color="#9ca3af"
+                style={{ marginRight: 8 }}
+              />
+            </View>
+
+            {selectedOption === "last7days" && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="h-[80px] flex-grow-0 mb-2"
+                contentContainerStyle={{ paddingHorizontal: 8 }}
+              >
+                {dates.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleDateChange(item.date)}
+                    activeOpacity={0.8}
+                    className="mr-3"
+                  >
+                    <View
+                      className={`h-[70px] w-[50px] rounded-xl justify-center items-center border border-gray-200 ${
+                        selectedDate === item.date ? "bg-gray-200" : "bg-white"
+                      }`}
+                    >
+                      <Text
+                        className={`${
+                          selectedDate === item.date ? "text-gray" : "text-gray-800"
+                        } font-bold text-xs`}
+                      >
+                        {item.label.split(" ")[0]}
+                      </Text>
+                      <Text
+                        className={`${
+                          selectedDate === item.date ? "text-gray" : "text-gray-800"
+                        } font-bold text-base mt-1`}
+                      >
+                        {item.label.split(" ")[1]}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+
+            <Text className="text-lg font-semibold text-gray-800">My Task List</Text>
           </View>
 
-          {selectedOption === "last7days" && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              className="h-[80px] flex-grow-0 mb-2"
-              contentContainerStyle={{ paddingHorizontal: 8 }}
-            >
-              {dates.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => handleDateChange(item.date)}
-                  activeOpacity={0.8}
-                  className="mr-3"
-                >
-                  <View
-                    className={`h-[70px] w-[50px] rounded-xl justify-center items-center border border-gray-200 ${
-                      selectedDate === item.date ? "bg-gray-200" : "bg-white"
-                    }`}
-                  >
-                    <Text
-                      className={`${
-                        selectedDate === item.date ? "text-gray" : "text-gray-800"
-                      } font-bold text-xs`}
-                    >
-                      {item.label.split(" ")[0]}
-                    </Text>
-                    <Text
-                      className={`${
-                        selectedDate === item.date ? "text-gray" : "text-gray-800"
-                      } font-bold text-base mt-1`}
-                    >
-                      {item.label.split(" ")[1]}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-
-          <Text className="text-lg font-semibold text-gray-800">My Task List</Text>
+          <View className="flex-1 px-2">
+            {renderContent()}
+          </View>
         </View>
-
-        <View className="flex-1 px-2">
-          {renderContent()}
-        </View>
-      </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }

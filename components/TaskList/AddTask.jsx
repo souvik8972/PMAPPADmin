@@ -106,7 +106,7 @@ const AddTask = () => {
       hours: showHoursInput ? dateHours : null,
     };
     
-    console.log("Task Data:", taskData);
+    // console.log("Task Data:", taskData);
     Alert.alert("Success", "Task data has been logged to console");
   };
 

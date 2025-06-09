@@ -73,7 +73,7 @@ const ProjectDetails = () => {
 
     try {
       const result = await deleteTask(deleteTaskId, user.token);
-      console.log(result, "delete result");
+      // console.log(result, "delete result");
 
       if (result.success) {
         // Refetch task list after deletion
@@ -109,7 +109,7 @@ const ProjectDetails = () => {
     user.token,
     !!selectedTaskId
   );
-  console.log(taskDetails);
+  // console.log(taskDetails);
 
   // Handle task click
   const handleTaskClick = async (taskId, index) => {

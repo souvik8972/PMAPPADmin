@@ -48,7 +48,7 @@ const ProjectDetails = () => {
   const { data, isLoading: loading, refetch } = useFetchData(`FinanceModule/GetProjectDetails?projectId=${projectId}&clientId=${clientId}`, user?.token);
 
   const project = data?.[0] || {};
-  console.log("Project Data:", project);
+  // console.log("Project Data:", project);
   // Parse numeric values from strings
   const parseCurrency = (value) => {
     if (!value) return 0;

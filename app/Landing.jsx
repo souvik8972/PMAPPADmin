@@ -33,10 +33,10 @@ const {user}=useContext(AuthContext)
  
     initNotificationListeners(
       notification => {
-        console.log('Foreground Notification:', notification);
+        // console.log('Foreground Notification:', notification);
       },
       response => {
-        console.log('Tapped Notification:', response);
+        // console.log('Tapped Notification:', response);
       }
     );
  

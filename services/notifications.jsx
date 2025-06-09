@@ -27,7 +27,7 @@ export async function registerForPushNotificationsAsync() {
  
   const tokenData = await Notifications.getExpoPushTokenAsync();
 //   await savePushTokenToBackend('userId', tokenData.data); // Replace 'userId' with actual user ID
-  console.log('Push token:', tokenData.data);
+  // console.log('Push token:', tokenData.data);
  
   return tokenData.data; // ExponentPushToken[...]
 }

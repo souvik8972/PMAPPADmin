@@ -153,7 +153,7 @@ export default function TaskScreen() {
       refetch();
       Alert.alert("Success", "Hours submitted successfully");
     } catch (error) {
-      console.log("Submission error:", error);
+      // console.log("Submission error:", error);
       Alert.alert("Error", "Failed to submit hours");
     } finally {
       setIsProcessing(false);

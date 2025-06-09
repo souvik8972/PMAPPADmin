@@ -31,7 +31,7 @@ const TABS = [{"Tech":1}, {"Creative":2}, {"Content":3}, {"PM":4}, ];
   const {data,isLoading,isError} = useFetchData(`Resource/GetTeamMembers?teamId=${teamId}`, TOKEN)
  const today = new Date();
 const formattedDate = `${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}/${today.getFullYear()}`;
-console.log(formattedDate);
+// console.log(formattedDate);
 
   const {data:utilData,isLoading:utillLoading,isError:utillError} = useFetchData(`Task/GetTeamUtilData?teamId=${teamId}&date_val=${formattedDate}`, TOKEN)
   
@@ -44,17 +44,17 @@ const parseTheData = Math.min(utilData?.utilizationPercent ?? 0, 100);
   const HandleTab = async (tab) => {
     setSearchText("");
     setActiveTab(tab);
-    console.log(activeTab);
+    // console.log(activeTab);
   };
  
   let  FilterTaskData= activeData.filter((emp) =>
     emp.Employee_Name.toLowerCase().includes(searchText.toLowerCase()))
-   console.log(FilterTaskData);
+  //  console.log(FilterTaskData);
  
   useEffect(()=>{
  
     if(data){
-      console.log(data);
+      // console.log(data);
      
      
       setActiveData(data?.teamMembers);
@@ -186,8 +186,8 @@ const TaskDropdown = ({ emp }) => {
   const [SearchTask,SetSearchTask]=useState("")
  
   const TOKEN=user.token||null;
-  console.log(selectedDate);
-  console.log(emp);
+  // console.log(selectedDate);
+  // console.log(emp);
  
  
   const {data,isLoading, isError}= useFetchData(`Task/TaskDetails?date_val=${selectedDate}&emp_id=${emp.EmpId}`, TOKEN)
@@ -217,7 +217,7 @@ const TaskDropdown = ({ emp }) => {
   },[])
   useEffect(() => {
     if (data?._Tasks) {
-      console.log(data._Tasks);
+      // console.log(data._Tasks);
      
       setTaskData(data._Tasks);
     }

@@ -34,7 +34,7 @@ const IssueTracker = () => {
   const [openStatus, setOpenStatus] = useState(false);
 
   const { data, isLoading, error, refetch, isFetching } = useFetchData("Ticket/GetAllTickets", token);
-console.log("ticket data",data)
+// console.log("ticket data",data)
   const { mutate: submitMutate, isPending: isSubmitPending } = usePostData('Ticket/RaiseTicket', ["Ticket/GetAllTickets"]);
  
   useEffect(() => {
@@ -109,7 +109,7 @@ console.log("ticket data",data)
           refetch(); 
         },
         onError: (error) => {
-        console.log(error,`Error submitting ticket`);
+        // console.log(error,`Error submitting ticket`);
           alert("Failed to submit ticket.");
         }
       });
@@ -131,7 +131,7 @@ console.log("ticket data",data)
   
       // Full URL with query params
       const fullUrl = `${API_URL}Ticket/UpdateIssueStatus?${queryParams.toString()}`;
-      console.log(fullUrl);
+      // console.log(fullUrl);
   
       const response = await fetch(fullUrl, {
         method: "POST", // Ensure it's a POST request
