@@ -40,7 +40,7 @@ export const loginUser = async ({ email, password }) => {
     return data; 
   };
 
-export async function savePushTokenToBackend(empId, Expotoken, jwtToken) {
+export async function savePushTokenToBackend(empId, Expotoken="", jwtToken) {
   console.log("Start-1111");
 
   try {
