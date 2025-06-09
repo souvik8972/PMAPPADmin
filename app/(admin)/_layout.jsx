@@ -20,7 +20,7 @@ const Assets = lazy(() => import("../screens/assets"));
 import Food from "../screens/food";
 const FoodDashboard= lazy(()=> import("./FoodDashboard"));
 const Project = lazy(() => import("./project"));
-const TimeSheet = lazy(() => import("./timeSheet"));
+const TimeSheet = lazy(() => import("../screens/Timesheet"));
 const Finance = lazy(() => import("./finance"));
 
 const Drawer = createDrawerNavigator();
