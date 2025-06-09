@@ -1,18 +1,15 @@
-import React, { useContext } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import React, { useContext, useEffect, useState } from 'react';
+import { SafeAreaView, Keyboard } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
 import Header from '../../components/Header';
 import MyTabBar from '../../components/MyTabBar';
 import { AuthContext } from '../../context/AuthContext';
-
 import { MaterialIcons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-// Import screens directly
+// Import screens
 import Assets from '../screens/assets';
 import Food from '../screens/food';
 import Home from '../screens/Timesheet';
@@ -23,23 +20,42 @@ const Tab = createBottomTabNavigator();
 
 export default function TabLayout() {
   const { user } = useContext(AuthContext);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   return (
-    <SafeAreaView  edges={['bottom']} style={{ flex: 1}}>
+    <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
       <Header />
 
       <Tab.Navigator
-        tabBar={(props) => <MyTabBar {...props} />}
+        tabBar={(props) => !keyboardVisible && <MyTabBar {...props} />}
         screenOptions={{
           headerShown: false,
-
         }}
         sceneContainerStyle={{
-         
           flex: 1,
         }}
       >
-         <Tab.Screen
+        <Tab.Screen
           name="Home"
           component={Home}
           options={{
@@ -57,7 +73,6 @@ export default function TabLayout() {
             ),
           }}
         />
-       
         <Tab.Screen
           name="Ticket"
           component={Ticket}

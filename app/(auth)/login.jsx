@@ -14,10 +14,11 @@ import { API_URL } from '@env';
 const Login = () => {
   console.log("My API URL:", API_URL);
   
- 
+   const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
+   const [password, setPassword] = useState('lavgZzsS');
 
-   const [password, setPassword] = useState('');
-    const [email, setEmail] = useState('');
+  //  const [password, setPassword] = useState('');
+  //   const [email, setEmail] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
   const { login } = useContext(AuthContext);
