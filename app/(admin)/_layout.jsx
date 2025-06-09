@@ -244,6 +244,23 @@ export default function DrawerLayout() {
               ),
             }}
           />
+             {!isSystemAdmin && (
+            <Drawer.Screen 
+              name="Finance Module" 
+              children={() => (
+                <Suspense fallback={<LoadingScreen />}>
+                  <Finance />
+                </Suspense>
+              )}
+              options={{
+                drawerIcon: ({ color }) => (
+                  <View className="w-9">
+                    <FontAwesome name="money" size={26} color={color} />
+                  </View>
+                ),
+              }}
+            />
+          )}
           
           <Drawer.Screen 
             name="Food" 
@@ -279,23 +296,7 @@ export default function DrawerLayout() {
             />
           )} */}
           
-          {!isSystemAdmin && (
-            <Drawer.Screen 
-              name="Finance Module" 
-              children={() => (
-                <Suspense fallback={<LoadingScreen />}>
-                  <Finance />
-                </Suspense>
-              )}
-              options={{
-                drawerIcon: ({ color }) => (
-                  <View className="w-9">
-                    <FontAwesome name="money" size={26} color={color} />
-                  </View>
-                ),
-              }}
-            />
-          )}
+       
         </>
       )}
 

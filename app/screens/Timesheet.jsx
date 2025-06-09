@@ -113,13 +113,21 @@ export default function TaskScreen() {
   };
 
   const handleActualHoursChange = (text, taskId) => {
-    if (/^\d*\.?\d*$/.test(text)) {
+  // Allow only decimal numbers
+  if (/^\d*\.?\d*$/.test(text)) {
+    // Convert the value to float (or 0 if empty)
+    const floatValue = parseFloat(text) || 0;
+
+    // If value <= 9, allow it; otherwise do not update
+    if (floatValue <= 9) {
       setLocalTaskData(prev => ({
         ...prev,
         [taskId]: text
       }));
     }
-  };
+  }
+};
+
 
   const handleInputFocus = (index) => {
     setActiveIndex(index);

@@ -126,7 +126,7 @@ const GradientProgressBar = ({ progress }) => (
       colors={["#D01313", "#6A0A0A"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
-      style={[tw`h-full rounded-lg`, { width: `${progress * 100}%` }]}
+      style={[tw`h-full rounded-lg`, { width: `${progress * 100>100?100:progress * 100}%` }]}
     />
   </View>
 );

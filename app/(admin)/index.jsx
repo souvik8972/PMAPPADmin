@@ -157,8 +157,6 @@ export default function TaskScreen() {
   const [basicTaskList, setBasicTaskList] = useState([]);
   const [taskDetails, setTaskDetails] = useState({});
   const [filteredTasks, setFilteredTasks] = useState([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
@@ -177,7 +175,7 @@ export default function TaskScreen() {
 
   const { data: basicTaskData, isLoading: loadingBasicTasks, refetch: refetchBasicTasks } = useFetchData(basicTaskEndpoint, token);
 
-  // Memoize filtered tasks to prevent unnecessary recalculations
+  // Memoize filtered tasks
   const memoizedFilteredTasks = useMemo(() => {
     if (searchQuery.trim() === "") {
       return basicTaskList;
@@ -189,20 +187,14 @@ export default function TaskScreen() {
   }, [searchQuery, basicTaskList]);
 
   useEffect(() => {
-    setFilteredTasks(memoizedFilteredTasks);
-  }, [memoizedFilteredTasks]);
+    if (basicTaskData?._Tasks) {
+      setBasicTaskList(basicTaskData._Tasks || []);
+    }
+  }, [basicTaskData]);
 
   useEffect(() => {
-    if (basicTaskData?._Tasks) {
-      const newTasks = basicTaskData._Tasks || [];
-      if (page === 1) {
-        setBasicTaskList(newTasks);
-      } else {
-        setBasicTaskList(prev => [...prev, ...newTasks]);
-      }
-      setHasMore(newTasks.length === 20);
-    }
-  }, [basicTaskData, page]);
+    setFilteredTasks(memoizedFilteredTasks);
+  }, [memoizedFilteredTasks]);
 
   const fetchTaskDetails = useCallback(async (taskId) => {
     if (taskDetails[taskId]) return;
@@ -229,12 +221,6 @@ export default function TaskScreen() {
       setLoadingDetails(false);
     }
   }, [taskDetails, token]);
-
-  const handleLoadMore = useCallback(() => {
-    if (!loadingBasicTasks && hasMore) {
-      setPage(prev => prev + 1);
-    }
-  }, [loadingBasicTasks, hasMore]);
 
   const handleDelete = useCallback((taskId) => {
     setTaskToDelete(taskId);
@@ -271,8 +257,6 @@ export default function TaskScreen() {
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
-    setPage(1);
-    setHasMore(true);
     refetchBasicTasks().finally(() => setIsRefreshing(false));
   }, [refetchBasicTasks]);
 
@@ -295,17 +279,7 @@ export default function TaskScreen() {
     />
   ), [selectedTaskId, taskDetails, loadingDetails, handleTaskPress, handleDelete, ActionType]);
 
-  const renderFooter = useCallback(() => {
-    if (!loadingBasicTasks || page === 1) return null;
-    return (
-      <View style={styles.footer}>
-        <ActivityIndicator size="small" color="#940101" />
-      </View>
-    );
-  }, [loadingBasicTasks, page]);
-
   const onDateConfirm = useCallback((params) => {
- 
     setDatePickerOpen(false);
     if (params.startDate) {
       const startDate = params.startDate;
@@ -320,13 +294,10 @@ export default function TaskScreen() {
       }
 
       setSelectedRange({ startDate, endDate });
-      setPage(1);
-      setFilteredTasks([]);
-      setHasMore(true);
+      setBasicTaskList([]); // Clear previous tasks before loading new ones
       refetchBasicTasks();
     }
-      // console.log(('Selected Date Range:', params));
-  }, [refetchBasicTasks,selectedRange]);
+  }, [refetchBasicTasks]);
 
   return (
     <View style={styles.container}>
@@ -372,7 +343,7 @@ export default function TaskScreen() {
       </View>
   
       {/* Loading shimmer when first loading */}
-      {loadingBasicTasks && page === 1 ? (
+      {loadingBasicTasks && basicTaskList.length === 0 ? (
         <FlatList
           data={[1, 2, 3, 4]}
           renderItem={() => (
@@ -405,22 +376,18 @@ export default function TaskScreen() {
         <FlatList
           data={filteredTasks}
           renderItem={renderItem}
-            keyExtractor={(item, index) => `${item.Task_Id}_${index}`}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={renderFooter}
+          keyExtractor={(item) => item.Task_Id.toString()}
           refreshing={isRefreshing}
           onRefresh={handleRefresh}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           initialNumToRender={10}
-          maxToRenderPerBatch={5}
+          maxToRenderPerBatch={10}
           windowSize={21}
           removeClippedSubviews={true}
-          updateCellsBatchingPeriod={50}
         />
       )}
-      
+
       {/* Delete Confirmation Modal */}
       <Modal
         animationType="fade"

@@ -235,16 +235,17 @@ export default function ProjectList() {
                       {details.Pstart_date} - {details.end_date}
                     </Text>
                   </View>
-                  <TouchableOpacity 
-                  style={{
-                    backgroundColor:"#940101"
-                  }}
-                    onPress={() => router.push(`/details/${project.PROJECT_ID}`)}
-                    className="flex-row items-center space-x-1  px-3 py-2 rounded-lg border border-blue-100"
-                  >
-                    <Text className="text-sm font-medium text-white">View Tasks</Text>
-                    <MaterialCommunityIcons name="arrow-right" size={16} color="white" />
-                  </TouchableOpacity>
+                
+<TouchableOpacity 
+  style={{
+    backgroundColor:"#940101"
+  }}
+  onPress={() => router.push(`/details/${project.PROJECT_ID}`)}
+  className="flex-row items-center space-x-1  px-3 py-2 rounded-lg border border-blue-100"
+>
+  <Text className="text-sm font-medium text-white">View Tasks</Text>
+  <MaterialCommunityIcons name="arrow-right" size={16} color="white" />
+</TouchableOpacity>
                 </View>
           
                 {/* Client and Region */}
