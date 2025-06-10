@@ -310,7 +310,7 @@ const ProjectDetails = () => {
             <Text
               style={[
                 styles.metricValue,
-                gpVariance >= 0 ? styles.positive : styles.negative,
+                gpVariance >= 0 ?   styles.negative:styles.positive,
               ]}
             >
               ${Math.abs(gpVariance).toLocaleString()}
@@ -318,10 +318,10 @@ const ProjectDetails = () => {
             <Text
               style={[
                 styles.metricPercentage,
-                gpVariance >= 0 ? styles.positive : styles.negative,
+                gpVariance >= 0 ?  styles.negative:styles.positive ,
               ]}
             >
-              ({gpVariancePercentage}%)
+              ({Math.abs(gpVariancePercentage)}%)
             </Text>
           </View>
 

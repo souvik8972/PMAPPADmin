@@ -76,7 +76,7 @@ export default AddEditTask = () => {
   });
 
   // Use the usePostData hook
-  const { mutate: submitTask, isPending: isSubmitPending } = usePostData('Task/CreateTask');
+ const { mutate: submitTask, isPending: isSubmitPending } = usePostData('Task/CreateTask', ["Task/GetTasks"]);
   
   // Fetch task details
   const { data, isLoading, refetch } = useFetchData(
