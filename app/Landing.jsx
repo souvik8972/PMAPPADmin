@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
-import Loading from './loading';
+
 // import { useNotificationPermission } from '../ReactQuery/hooks/useNotificationPermission';
 // import { scheduleDailyNotification } from '../utils/notifications';
 import { initNotificationListeners, registerForPushNotificationsAsync, removeNotificationListeners } from '@/services/notifications';
@@ -14,7 +14,7 @@ const { width, height } = Dimensions.get('window');
 
 const Landing = () => {
 
-  const [loading ,setLoading]=useState(true)
+
  
 const {user}=useContext(AuthContext)
  const [expoToken, setExpoToken] = useState(null);
@@ -33,10 +33,10 @@ const {user}=useContext(AuthContext)
  
     initNotificationListeners(
       notification => {
-        // console.log('Foreground Notification:', notification);
+        console.log('Foreground Notification:', notification);
       },
       response => {
-        // console.log('Tapped Notification:', response);
+        console.log('Tapped Notification:', response);
       }
     );
  
