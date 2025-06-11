@@ -17,7 +17,7 @@ const Landing = () => {
 
  
 const {user}=useContext(AuthContext)
- const [expoToken, setExpoToken] = useState(null);
+
 
  const {setExpoTokenToSend} = useContext(AuthContext)
  
