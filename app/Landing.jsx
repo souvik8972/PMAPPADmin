@@ -14,10 +14,9 @@ const { width, height } = Dimensions.get('window');
 
 const Landing = () => {
 
-  const [loading ,setLoading]=useState(true)
  
 const {user}=useContext(AuthContext)
- const [expoToken, setExpoToken] = useState(null);
+
 
  const {setExpoTokenToSend} = useContext(AuthContext)
  
@@ -33,10 +32,10 @@ const {user}=useContext(AuthContext)
  
     initNotificationListeners(
       notification => {
-        // console.log('Foreground Notification:', notification);
+        console.log('Foreground Notification:', notification);
       },
       response => {
-        // console.log('Tapped Notification:', response);
+        console.log('Tapped Notification:', response);
       }
     );
  
