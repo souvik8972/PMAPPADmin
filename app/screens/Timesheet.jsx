@@ -367,6 +367,7 @@ export default function TaskScreen() {
     return (
       <FlatList
         data={filteredTasks}
+        showsVerticalScrollIndicator={false}
         ref={flatListRef}
         style={{flex: 1, marginBottom: 10, padding: 8}}
         renderItem={renderTaskItem}
