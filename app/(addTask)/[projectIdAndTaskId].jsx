@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -25,15 +25,6 @@ import { usePostData } from '../../ReactQuery/hooks/usePostData';
 import { AuthContext } from "../../context/AuthContext";
 import { format, isWeekend, addDays } from 'date-fns';
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
-import { API_URL } from "@env";
-// Debounce function outside component
-const debounce = (func, delay) => {
-  let timeoutId;
-  return function(...args) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func.apply(this, args), delay);
-  };
-};
 
 export default AddEditTask = () => {
   const navigation = useNavigation();
@@ -51,10 +42,6 @@ export default AddEditTask = () => {
   const [endDate, setEndDate] = useState(new Date());
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-
-  // Task name validation states
-  const [isTaskNameValid, setIsTaskNameValid] = useState(null);
-  const [isCheckingTaskName, setIsCheckingTaskName] = useState(false);
 
   // Cost states from API
   const [costs, setCosts] = useState({
@@ -89,7 +76,7 @@ export default AddEditTask = () => {
   });
 
   // Use the usePostData hook
-  const { mutate: submitTask, isPending: isSubmitPending } = usePostData('Task/CreateTask', ["Task/GetTasks"]);
+ const { mutate: submitTask, isPending: isSubmitPending } = usePostData('Task/CreateTask', ["Task/GetTasks"]);
   
   // Fetch task details
   const { data, isLoading, refetch } = useFetchData(
@@ -105,45 +92,13 @@ export default AddEditTask = () => {
     user.token
   );
 
-  // Debounced task name validation
-  const debouncedCheckTaskName = useCallback(
-    debounce(async (name) => {
-      if (!name.trim()) {
-        setIsTaskNameValid(null);
-        return;
-      }
-
-      setIsCheckingTaskName(true);
-      try {
-        const response = await fetch(
-          `${API_URL}Task/CheckTaskNameByTitle?tskTitle=${name}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${user.token}`,
-            },
-          }
-        );
-        const data = await response.json();
-        
-        if (data.message === "There is no Task available you can create the task.") {
-          setIsTaskNameValid(true);
-        } else if (data.message === "Task Title is already Exist!") {
-          setIsTaskNameValid(false);
-        }
-      } catch (error) {
-        console.error("Error checking task name:", error);
-        setIsTaskNameValid(null);
-      } finally {
-        setIsCheckingTaskName(false);
-      }
-    }, 500),
-    [user.token]
-  );
-
-  // Handle task name change
-  const handleTaskNameChange = (text) => {
-    setTaskName(text);
-    debouncedCheckTaskName(text);
+  // Function to skip weekends when setting dates
+  const skipWeekends = (date) => {
+    let newDate = new Date(date);
+    while (isWeekend(newDate)) {
+      newDate = addDays(newDate, 1);
+    }
+    return newDate;
   };
 
   // Process API response for task details
@@ -234,17 +189,17 @@ export default AddEditTask = () => {
         setOriginalId(taskDetails?.Originalempids || "");
         setTaskName(taskDetails.TskTitle || "");
         
-        // Set dates
+        // Set dates (skip weekends)
         if (taskDetails.StartDate) {
           const [month, day, year] = taskDetails.StartDate.split('/');
           const initialStartDate = new Date(year, month - 1, day);
-          setStartDate(initialStartDate);
+          setStartDate(skipWeekends(initialStartDate));
         }
         
         if (taskDetails.EndDate) {
           const [month, day, year] = taskDetails.EndDate.split('/');
           const initialEndDate = new Date(year, month - 1, day);
-          setEndDate(initialEndDate);
+          setEndDate(skipWeekends(initialEndDate));
         }
         
         // Set status
@@ -273,13 +228,16 @@ export default AddEditTask = () => {
     }
   };
 
-  // Date handlers
+  // Date handlers with weekend skipping
   const handleStartDateChange = (event, selectedDate) => {
     setShowStartDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
-      setStartDate(selectedDate);
-      if (selectedDate > endDate) {
-        setEndDate(selectedDate);
+      const newDate = skipWeekends(selectedDate);
+      setStartDate(newDate);
+      
+      // Adjust end date if needed
+      if (newDate > endDate) {
+        setEndDate(skipWeekends(newDate));
       }
     }
   };
@@ -287,7 +245,7 @@ export default AddEditTask = () => {
   const handleEndDateChange = (event, selectedDate) => {
     setShowEndDatePicker(Platform.OS === 'ios');
     if (selectedDate && selectedDate >= startDate) {
-      setEndDate(selectedDate);
+      setEndDate(skipWeekends(selectedDate));
     }
   };
 
@@ -333,7 +291,7 @@ export default AddEditTask = () => {
     }));
   };
 
-  // Generate dates between start and end date
+  // Generate dates between start and end date, skipping weekends
   const getDatesInRange = (start, end) => {
     const dates = [];
     const startDate = new Date(start);
@@ -345,7 +303,9 @@ export default AddEditTask = () => {
     let currentDate = new Date(startDate);
     
     while (currentDate <= endDate) {
-      dates.push(new Date(currentDate));
+      if (!isWeekend(currentDate)) {
+        dates.push(new Date(currentDate));
+      }
       currentDate.setDate(currentDate.getDate() + 1);
     }
     
@@ -357,11 +317,6 @@ export default AddEditTask = () => {
     // Validate required fields
     if (!taskName) {
       Alert.alert("Error", "Please enter a task name");
-      return;
-    }
-
-    if (isTaskNameValid === false) {
-      Alert.alert("Error", "Task name already exists");
       return;
     }
   
@@ -448,7 +403,7 @@ export default AddEditTask = () => {
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center justify-center p-4 pb-2 bg-white">
+      <View className="flex-row items-center justify-center p-4 pb-2  bg-white ">
         <TouchableOpacity onPress={() => navigation.goBack()} className="absolute left-4 p-2 z-10">
           <AntDesign name="arrowleft" size={24} color="#4b5563" />
         </TouchableOpacity>
@@ -524,33 +479,15 @@ export default AddEditTask = () => {
             <View>
               {/* Task Name */}
               <Text className="text-sm font-medium text-slate-600 mb-1">Task Name</Text>
-              <View className={`bg-white rounded-lg border ${isTaskNameValid === false ? 'border-red-500' : isTaskNameValid === true ? 'border-green-500' : 'border-slate-200'} shadow-xs mb-3`}>
+              <View className="bg-white rounded-lg border border-slate-200 shadow-xs mb-3">
                 <TextInput
                   value={taskName}
-                  onChangeText={handleTaskNameChange}
+                  onChangeText={setTaskName}
                   placeholder="Enter task name"
                   placeholderTextColor="#9ca3af"
                   className="h-12 px-4 text-slate-800"
                 />
-                {isCheckingTaskName && (
-                  <View className="absolute right-3 top-3">
-                    <ActivityIndicator size="small" color="#64748b" />
-                  </View>
-                )}
-                {!isCheckingTaskName && isTaskNameValid === false && (
-                  <View className="absolute right-3 top-3">
-                    <Feather name="x-circle" size={20} color="#ef4444" />
-                  </View>
-                )}
-                {!isCheckingTaskName && isTaskNameValid === true && (
-                  <View className="absolute right-3 top-3">
-                    <Feather name="check-circle" size={20} color="#22c55e" />
-                  </View>
-                )}
               </View>
-              {isTaskNameValid === false && (
-                <Text className="text-red-500 text-xs mb-2">Task name already exists</Text>
-              )}
 
               {/* Client Dropdown */}
               <Text className="text-sm font-medium text-slate-600 mb-1">Client Name</Text>
@@ -712,16 +649,29 @@ export default AddEditTask = () => {
                       
                       {getDatesInRange(startDate, endDate).map((date, dateIndex) => {
                         const dateStr = format(date, 'MM/dd/yyyy');
+                        const isWeekendDay = isWeekend(date);
                         
                         return (
-                          <View key={dateIndex} className="flex-row items-center justify-between mb-2">
-                            <Text className="text-slate-600 w-24">{dateStr}</Text>
+                          <View 
+                            key={dateIndex} 
+                            className={`flex-row items-center justify-between mb-2 ${isWeekendDay ? 'opacity-50' : ''}`}
+                          >
+                            <Text className="text-slate-600 w-24">
+                              {dateStr} {isWeekendDay ? '(Weekend)' : ''}
+                            </Text>
                             <TextInput
                               value={memberHours[member.id]?.[dateStr] ? memberHours[member.id][dateStr].toString() : "0"}
-                              onChangeText={(text) => handleHoursChange(member.id, dateStr, text)}
+                              onChangeText={(text) => {
+                                if (!isWeekendDay) {
+                                  handleHoursChange(member.id, dateStr, text);
+                                }
+                              }}
                               placeholder=""
                               keyboardType="numeric"
-                              className="flex-1 ml-2 bg-white border border-slate-200 rounded px-3 py-2 text-slate-800"
+                              editable={!isWeekendDay}
+                              className={`flex-1 ml-2 bg-white border border-slate-200 rounded px-3 py-2 text-slate-800 ${
+                                isWeekendDay ? 'bg-gray-100' : ''
+                              }`}
                             />
                             <Text className="text-slate-500 ml-2">hours</Text>
                           </View>
