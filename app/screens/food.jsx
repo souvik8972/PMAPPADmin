@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, Modal, Image, Animated, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Image, Animated, RefreshControl, ScrollView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { format, addDays, isAfter } from 'date-fns';
 import { AuthContext } from '@/context/AuthContext';
@@ -162,13 +162,14 @@ const FoodComponent = () => {
     }).start();
   }, []);
 
-  if (isFetching && !refreshing) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-gray-500 mb-4">Loading...</Text>
-      </View>
-    );
-  }
+if (isFetching && !refreshing) {
+  return (
+    <View className="flex-1 items-center justify-center bg-white">
+      <ActivityIndicator size="large" color="#FF6347" /> 
+      
+    </View>
+  );
+}
 
   return (
     <ScrollView
@@ -242,9 +243,11 @@ const FoodComponent = () => {
               <Text className="text-xl font-semibold text-center text-gray-800 p-6 pb-2">
                 Office Attendance & Lunch Preference
               </Text>
-              <Text className="text-sm text-gray-500 text-center mb-6">
-                Please let us know your plans for {getDisplayDate()}
-              </Text>
+             <Text className="text-sm text-gray-500 text-center mb-6">
+  Please let us know your plans for{' '}
+  <Text className="font-bold text-red-700 ">{getDisplayDate()}</Text>
+</Text>
+
 
               {/* Radio Buttons */}
               <View className="justify-center p-4 gap-6">

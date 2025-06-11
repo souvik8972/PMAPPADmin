@@ -7,6 +7,7 @@ import { loginUser, savePushTokenToBackend } from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
 import { parseJwt } from '../../utils/auth';
 import { API_URL } from '@env';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 
 
@@ -17,11 +18,11 @@ const Login = () => {
 
   //   const [email, setEmail] = useState('');
   // const [password, setPassword] = useState('');
-  //    const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
-  // const [password, setPassword] = useState('lavgZzsS');
+     const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
+  const [password, setPassword] = useState('lavgZzsS');
 
-   const [password, setPassword] = useState('hello@123');
-    const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
+  //  const [password, setPassword] = useState('hello@123');
+  //   const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
   const { login } = useContext(AuthContext);
@@ -33,8 +34,8 @@ const Login = () => {
       console.log("Login successful", data.token);
       const userData = parseJwt(data.token);
       console.log("User data from token:", userData);
-savePushTokenToBackend(userData.EmpId,expoTokenToSend,data.token)
-     console.log("chececece")
+savePushTokenToBackend(userData.EmpId,expoTokenToSend||"",data.token)
+     console.log("chececece",expoTokenToSend)
 
       login(data.token, userData).then(() => {
         if (userData?.UserType == "3") {
@@ -68,9 +69,12 @@ savePushTokenToBackend(userData.EmpId,expoTokenToSend,data.token)
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
+    <KeyboardAwareScrollView 
+      contentContainerStyle={{ flexGrow: 1 }}
+  enableOnAndroid={true}
+  extraScrollHeight={20}
+  keyboardShouldPersistTaps="handled"
+  className="bg-white"
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
@@ -185,7 +189,7 @@ savePushTokenToBackend(userData.EmpId,expoTokenToSend,data.token)
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView >
   );
 };
 

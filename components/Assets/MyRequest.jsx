@@ -1,4 +1,4 @@
-import { View, Text, FlatList, ActivityIndicator, StyleSheet, ImageBackground, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import React, { useContext, useEffect, useRef } from 'react';
 import { AuthContext } from '@/context/AuthContext';
 import { useFetchData } from '@/ReactQuery/hooks/useFetchData';
@@ -13,10 +13,6 @@ const MyRequest = () => {
   );
   
   const shimmerAnim = useRef(new Animated.Value(-1)).current;
-  
-  // Handle data properly - assuming data comes as direct array
- 
-
 
   // Shimmer animation effect
   useEffect(() => {
@@ -35,12 +31,35 @@ const MyRequest = () => {
 
   const formatDate = (dateValue) => {
     try {
+      // Handle null/undefined/empty string
       if (!dateValue || typeof dateValue !== 'string') return 'N/A';
-      return format(new Date(dateValue), 'MMM dd, yyyy');
+      
+      // Handle invalid date strings
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return 'N/A';
+      
+      return format(date, 'MMM dd, yyyy');
     } catch {
       return 'N/A';
     }
   };
+
+  // Safely get asset data
+  const getAssetData = () => {
+    try {
+      // Handle cases where data might be null/undefined
+      if (!data) return [];
+      
+      // Handle cases where assests might be null/undefined or not an array
+      if (!Array.isArray(data.assests)) return [];
+      
+      return data.assests;
+    } catch {
+      return [];
+    }
+  };
+
+  const assetData = getAssetData();
 
   // Loading state
   if (isLoading) {
@@ -52,7 +71,9 @@ const MyRequest = () => {
       </View>
     );
   }
-  if(error) {
+
+  // Error state
+  if (error) {
     return (
       <View style={styles.errorContainer}>
         <RetryButton onRetry={refetch} message="Failed to load asset requests. Please try again." />
@@ -62,11 +83,11 @@ const MyRequest = () => {
 
   return (
     <View style={styles.container}>
-      {data?.assests.length > 0 ? (
+      {assetData.length > 0 ? (
         <FlatList
-          data={data?.assests}
+          data={assetData}
           renderItem={({ item }) => <RequestCard item={item} formatDate={formatDate} />}
-          keyExtractor={(item) => item.Id.toString()}
+          keyExtractor={(item) => item?.Id?.toString() || Math.random().toString()}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
@@ -79,7 +100,6 @@ const MyRequest = () => {
   );
 };
 
-// Separate component for skeleton loading
 const SkeletonCard = ({ shimmerAnim }) => {
   return (
     <View style={[styles.cardContainer, styles.skeletonCard]}>
@@ -205,54 +225,87 @@ const SkeletonCard = ({ shimmerAnim }) => {
   );
 };
 
-
 const RequestCard = ({ item, formatDate }) => {
+  // Safely get and format all item properties with fallbacks
+  const requestId = item?.Request_Id ? String(item.Request_Id) : 'N/A';
+  const status = item?.status || 0;
+  const statusName = item?.statusName ? String(item.statusName) : 'Unknown';
+  
+  // Handle ItemList which might be an object or array
+  let itemList = 'No items specified';
+  if (item?.ItemList) {
+    if (typeof item.ItemList === 'string') {
+      itemList = item.ItemList;
+    } else if (Array.isArray(item.ItemList)) {
+      itemList = item.ItemList.join(', ');
+    } else if (typeof item.ItemList === 'object') {
+      try {
+        itemList = JSON.stringify(item.ItemList);
+      } catch {
+        itemList = 'Invalid items data';
+      }
+    }
+  }
+
+  const requestDate = item?.Request_RaisedDate;
+  const returnDate = item?.Item_TakeBackDate;
+  
+  // Handle reason which might be an object
+  let reason = null;
+  if (item?.Reason) {
+    if (typeof item.Reason === 'string') {
+      reason = item.Reason.trim();
+    } else if (typeof item.Reason === 'object') {
+      try {
+        reason = JSON.stringify(item.Reason);
+      } catch {
+        reason = 'Invalid reason format';
+      }
+    }
+  }
+
   return (
     <TouchableOpacity activeOpacity={1}>
-      <View
-        
-        style={styles.cardContainer}
-       
-      >
+      <View style={styles.cardContainer}>
         <View style={styles.cardContent}>
           <View style={styles.cardHeader}>
-            <Text style={styles.requestId}>Request #{item.Request_Id}</Text>
+            <Text style={styles.requestId}>Request #{requestId}</Text>
             <View style={[
               styles.statusBadge, 
               { 
-                backgroundColor: item.status === 3 ? '#DCFCE7' : '#FEE2E2',
-                borderColor: item.status === 3 ? '#166534' : '#B91C1C'
+                backgroundColor: status === 3 ? '#DCFCE7' : '#FEE2E2',
+                borderColor: status === 3 ? '#166534' : '#B91C1C'
               }
             ]}>
               <Text style={[
                 styles.statusText, 
-                { color: item.status === 3 ? '#166534' : '#B91C1C' }
+                { color: status === 3 ? '#166534' : '#B91C1C' }
               ]}>
-                {item?.statusName}
+                {statusName}
               </Text>
             </View>
           </View>
           
           <View style={styles.itemContainer}>
             <Text style={styles.itemLabel}>Items:</Text>
-            <Text style={styles.itemText}>{item.ItemList}</Text>
+            <Text style={styles.itemText}>{itemList}</Text>
           </View>
           
           <View style={styles.datesContainer}>
             <View style={styles.dateBox}>
               <Text style={styles.dateLabel}>Issued</Text>
-              <Text style={styles.dateText}>{formatDate(item?.Request_RaisedDate)}</Text>
+              <Text style={styles.dateText}>{formatDate(requestDate)}</Text>
             </View>
             <View style={styles.dateBox}>
               <Text style={styles.dateLabel}>Returned</Text>
-              <Text style={styles.dateText}>{formatDate(item?.Item_TakeBackDate)}</Text>
+              <Text style={styles.dateText}>{formatDate(returnDate)}</Text>
             </View>
           </View>
           
-          {item.Reason && (
+          {reason && (
             <View style={styles.reasonContainer}>
               <Text style={styles.reasonLabel}>Reason:</Text>
-              <Text style={styles.reasonText}>{item?.Reason.trim()}</Text>
+              <Text style={styles.reasonText}>{reason}</Text>
             </View>
           )}
         </View>
@@ -260,6 +313,7 @@ const RequestCard = ({ item, formatDate }) => {
     </TouchableOpacity>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

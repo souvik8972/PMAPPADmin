@@ -12,24 +12,27 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  LayoutAnimation,
+  FlatList
 } from "react-native";
 import Collapsible from "react-native-collapsible";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import DropDown from "../../components/TaskList/DropDown";
-import Animated, { SlideInDown, SlideOutUp } from "react-native-reanimated";
-import { getLast7Weekdays, getFormattedDate } from "../../utils/functions/last7Days";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { AuthContext } from "../../context/AuthContext";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
-import { usePostData } from "../../ReactQuery/hooks/usePostData";
 import { API_URL } from '@env';
+import { getLast7Weekdays, getFormattedDate } from "../../utils/functions/last7Days";
+// Configure layout animation
+LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
 export default function TaskScreen() {
   const { user } = useContext(AuthContext);
-  const scrollViewRef = useRef();
-  const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
+  const flatListRef = useRef(null);
 
   const today = getFormattedDate(0);
   const yesterday = getFormattedDate(1);
@@ -53,7 +56,6 @@ export default function TaskScreen() {
     `Task/TaskDetails?emp_id=${user.empId}&date_val=${selectedDate}`,
     user.token
   );
-  const flatListRef = useRef(null);
 
   useEffect(() => {
     if (apiData?._Tasks) {
@@ -113,31 +115,26 @@ export default function TaskScreen() {
   };
 
   const handleActualHoursChange = (text, taskId) => {
-  // Allow only decimal numbers
-  if (/^\d*\.?\d*$/.test(text)) {
-    // Convert the value to float (or 0 if empty)
-    const floatValue = parseFloat(text) || 0;
-
-    // If value <= 9, allow it; otherwise do not update
-    if (floatValue <= 9) {
-      setLocalTaskData(prev => ({
-        ...prev,
-        [taskId]: text
-      }));
+    if (/^\d*\.?\d*$/.test(text)) {
+      const floatValue = parseFloat(text) || 0;
+      if (floatValue <= 9) {
+        setLocalTaskData(prev => ({
+          ...prev,
+          [taskId]: text
+        }));
+      }
     }
-  }
-};
-
+  };
 
   const handleInputFocus = (index) => {
     setActiveIndex(index);
     setTimeout(() => {
       flatListRef.current?.scrollToIndex({
         index: index,
-        viewPosition: 0.5, // Center the item in view
+        viewOffset: 100,
         animated: true,
       });
-    }, 100);
+    }, 300);
   };
 
   const handleSubmit = async (taskId) => {
@@ -173,7 +170,6 @@ export default function TaskScreen() {
       refetch();
       Alert.alert("Success", "Hours submitted successfully");
     } catch (error) {
-      // console.log("Submission error:", error);
       Alert.alert("Error", "Failed to submit hours");
     } finally {
       setIsProcessing(false);
@@ -190,7 +186,7 @@ export default function TaskScreen() {
     task.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const renderTaskItem = (task, index) => (
+  const renderTaskItem = ({item: task, index}) => (
     <View key={`${task.taskId}-${index}`} className="mb-4">
       <TouchableOpacity
         className={`p-5 rounded-lg ${activeIndex === index ? "bg-white" : "bg-gray-50"}`}
@@ -220,7 +216,6 @@ export default function TaskScreen() {
 
         <Collapsible collapsed={activeIndex !== index}>
           <View className="mt-4">
-            {/* Task ID */}
             <View className="mb-3">
               <View className="flex-row items-center">
                 <Text className="text-gray-500 text-sm font-medium ">Task ID</Text>
@@ -228,7 +223,6 @@ export default function TaskScreen() {
               <Text className="text-gray-900 text-base font-semibold"># {task.taskId}</Text>
             </View>
 
-            {/* Task Owner */}
             <View className="mb-4">
               <View className="flex-row items-center">
                 <Text className="text-gray-500 text-sm font-medium ">Task Owner</Text>
@@ -236,9 +230,7 @@ export default function TaskScreen() {
               <Text className="text-gray-900 text-base font-semibold ">👤 {task.owner}</Text>
             </View>
 
-            {/* Hours Section */}
             <View className="flex-row gap-6 justify-start flex-none mb-6">
-              {/* Planned Hours */}
               <View className="flex-none justify-center flex mr-4">
                 <View className="flex-row items-center mb-1">
                   <Text className="text-gray-600 text-sm font-medium ">Planned Hours</Text>
@@ -265,7 +257,6 @@ export default function TaskScreen() {
                 </View>
               </View>
 
-              {/* Actual Hours */}
               <View className="">
                 <View className="flex-row items-center mb-1">
                   <Text className="text-gray-600 text-sm font-medium">Actual Hours</Text>
@@ -295,7 +286,6 @@ export default function TaskScreen() {
               </View>
             </View>
 
-            {/* Submit Button */}
             <TouchableOpacity
               className="rounded-lg overflow-hidden"
               onPress={() => handleSubmit(task.taskId)}
@@ -375,13 +365,12 @@ export default function TaskScreen() {
     }
 
     return (
-      <Animated.FlatList
+      <FlatList
         data={filteredTasks}
-        ref={flatListRef} 
-        style={{marginBottom: 10, padding: 8}}
-        renderItem={({ item, index }) => renderTaskItem(item, index)}
+        ref={flatListRef}
+        style={{flex: 1, marginBottom: 10, padding: 8}}
+        renderItem={renderTaskItem}
         keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 20 }}
         refreshControl={
@@ -397,6 +386,7 @@ export default function TaskScreen() {
           wait.then(() => {
             flatListRef.current?.scrollToIndex({
               index: info.index,
+              viewOffset: 100,
               animated: true,
             });
           });
@@ -492,3 +482,23 @@ export default function TaskScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+// Helper functions (make sure these are defined or imported)
+// function getFormattedDate(daysAgo) {
+//   const date = new Date();
+//   date.setDate(date.getDate() - daysAgo);
+//   return date.toISOString().split('T')[0];
+// }
+
+// function getLast7Weekdays() {
+//   const dates = [];
+//   for (let i = 0; i < 7; i++) {
+//     const date = new Date();
+//     date.setDate(date.getDate() - i);
+//     dates.push({
+//       date: date.toISOString().split('T')[0],
+//       label: `${date.toLocaleString('default', { weekday: 'short' })} ${date.getDate()}`
+//     });
+//   }
+//   return dates.reverse();
+// }
