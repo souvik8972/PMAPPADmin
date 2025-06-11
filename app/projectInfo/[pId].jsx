@@ -55,15 +55,15 @@ const ProjectDetails = () => {
     return parseFloat(value.replace(/[^0-9.-]+/g, ''));
   };
   
-  const poValue = parseCurrency(project.PO_Value);
-  const predictedCost = parseCurrency(project.predicted_Cost);
-  const actualCost = parseCurrency(project.Actual_Cost);
-  const predictedGP = parseCurrency(project.Predicted_GP);
-  const actualGP = parseCurrency(project.Actual_GP);
+  const poValue = parseCurrency(project.PO_Value)||0;
+  const predictedCost = parseCurrency(project.predicted_Cost)||0;
+  const actualCost = parseCurrency(project.Actual_Cost)||0;
+  const predictedGP = parseCurrency(project.Predicted_GP)||0;
+  const actualGP = parseCurrency(project.Actual_GP)||0;
   const predictedHours = project.Predicted_Hours || 0;
   const actualHours = project.Actual_Hours || 0;
-  const outshourced = parseCurrency(project.Outsourcing_Cost);
-  const EffortEstimateCost = parseCurrency(project.effect_EstimateCost);
+  const outshourced = parseCurrency(project.Outsourcing_Cost)||0;
+  const EffortEstimateCost = parseCurrency(project.effect_EstimateCost)||0;
   const rateCard = project.BName || "Not Available";
 
   // State to toggle charts visibility
