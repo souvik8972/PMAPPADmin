@@ -8,7 +8,13 @@ import EvilIcons from '@expo/vector-icons/EvilIcons';
 import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../context/AuthContext";
 import { API_URL } from '@env';
-const fetchProjectList = async (token) => {
+import {isTokenValid} from '@/utils/functions/checkTokenexp';
+const fetchProjectList = async (token,user,logout) => {
+    const tokenvalid= await isTokenValid(user,logout)
+     if(!tokenvalid) {
+        alert("Session expired. Please log in again.");
+        return;
+      }
   const response = await fetch(`${API_URL}Projects/GetAllProjectNames`, {
     headers: {
       'Authorization': `Bearer ${token}`
@@ -76,7 +82,7 @@ const ProjectSkeleton = () => {
 };
 
 export default function ProjectList() {
-  const { user } = useContext(AuthContext);
+  const { user,logout  } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
   const token = user?.token;
   const [projectDetails, setProjectDetails] = useState({});
@@ -92,7 +98,7 @@ export default function ProjectList() {
     refetch
   } = useQuery({
     queryKey: ['projectList'],
-    queryFn: () => fetchProjectList(token),
+    queryFn: () => fetchProjectList(token,user,logout),
     enabled: !!token
   });
 

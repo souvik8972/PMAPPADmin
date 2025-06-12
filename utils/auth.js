@@ -3,9 +3,9 @@ import { decode as atob } from "base-64";
 import   {savePushTokenToBackend} from '../services/api'
 
 import { useNavigation } from '@react-navigation/native';
-import { useContext, useEffect } from 'react';
+import {  useEffect } from 'react';
 import { useRouter } from "expo-router";
-import { AuthContext } from "@/context/AuthContext";
+
 
 const AUTH_KEY = "auth_info";
 

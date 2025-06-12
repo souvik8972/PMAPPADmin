@@ -10,8 +10,9 @@ import { usePostData } from '@/ReactQuery/hooks/usePostData';
 import { usePostDataParam } from '@/ReactQuery/hooks/usePostDataParam';
 import RetryButton from '@/components/Retry';
 import { API_URL } from '@env';
+import {isTokenValid} from '@/utils/functions/checkTokenexp';
 const IssueTracker = () => {
-  const { user } = useContext(AuthContext);
+  const { user,logout } = useContext(AuthContext);
   const token = user?.token || null;
   const isAdmin = user?.userType==5;
   
@@ -120,6 +121,14 @@ const IssueTracker = () => {
 
   const handleUpdateSubmit = async () => {
     try {
+
+     const tokenvalid= await isTokenValid(user,logout)
+     if(!tokenvalid) {
+        alert("Session expired. Please log in again.");
+        return;
+      }
+    
+
       if (!selectedIssue || !updateStatus || !updateReason) return;
   
       // Construct the query parameters

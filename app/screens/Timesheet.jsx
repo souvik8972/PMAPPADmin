@@ -25,14 +25,17 @@ import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { API_URL } from '@env';
 import { getLast7Weekdays, getFormattedDate } from "../../utils/functions/last7Days";
+import {isTokenValid} from '@/utils/functions/checkTokenexp';
+
 // Configure layout animation
 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
 export default function TaskScreen() {
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const flatListRef = useRef(null);
+  const itemRefs = useRef({});
 
   const today = getFormattedDate(0);
   const yesterday = getFormattedDate(1);
@@ -137,6 +140,22 @@ export default function TaskScreen() {
     }, 300);
   };
 
+  const handleItemPress = (index) => {
+    Keyboard.dismiss();
+    const newIndex = activeIndex === index ? null : index;
+    setActiveIndex(newIndex);
+    
+    if (newIndex !== null) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({
+          index: index,
+          viewOffset: 100,
+          animated: true,
+        });
+      }, 300);
+    }
+  };
+
   const handleSubmit = async (taskId) => {
     const task = apiData?._Tasks?.find(t => t.Task_Id.toString() === taskId);
     if (!task) return;
@@ -150,6 +169,11 @@ export default function TaskScreen() {
     setIsProcessing(true);
   
     try {
+      const tokenvalid= await isTokenValid(user,logout)
+     if(!tokenvalid) {
+        alert("Session expired. Please log in again.");
+        return;
+      }
       const response = await fetch(
         `${API_URL}Task/SendActualHours?TimelogId=${task.LogId}&TaskId=${task.Task_Id}&Emp_Id=${user.empId}&logDate=${encodeURIComponent(selectedDate)}&Log=${logValue}&Billing_type=${task.Billing_Type}&Notes=Na`,
         {
@@ -187,13 +211,14 @@ export default function TaskScreen() {
   );
 
   const renderTaskItem = ({item: task, index}) => (
-    <View key={`${task.taskId}-${index}`} className="mb-4">
+    <View 
+      key={`${task.taskId}-${index}`} 
+      className="mb-4"
+      ref={ref => itemRefs.current[index] = ref}
+    >
       <TouchableOpacity
         className={`p-5 rounded-lg ${activeIndex === index ? "bg-white" : "bg-gray-50"}`}
-        onPress={() => {
-          Keyboard.dismiss();
-          setActiveIndex(activeIndex === index ? null : index);
-        }}
+        onPress={() => handleItemPress(index)}
         activeOpacity={0.8}
         style={{
           shadowColor: "#000",
@@ -374,6 +399,13 @@ export default function TaskScreen() {
         keyExtractor={(item) => item.id}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 20 }}
+        getItemLayout={(data, index) => (
+          {
+            length: activeIndex === index ? 350 : 100, // Approximate heights
+            offset: (activeIndex === index ? 350 : 100) * index,
+            index
+          }
+        )}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -483,23 +515,3 @@ export default function TaskScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-// Helper functions (make sure these are defined or imported)
-// function getFormattedDate(daysAgo) {
-//   const date = new Date();
-//   date.setDate(date.getDate() - daysAgo);
-//   return date.toISOString().split('T')[0];
-// }
-
-// function getLast7Weekdays() {
-//   const dates = [];
-//   for (let i = 0; i < 7; i++) {
-//     const date = new Date();
-//     date.setDate(date.getDate() - i);
-//     dates.push({
-//       date: date.toISOString().split('T')[0],
-//       label: `${date.toLocaleString('default', { weekday: 'short' })} ${date.getDate()}`
-//     });
-//   }
-//   return dates.reverse();
-// }

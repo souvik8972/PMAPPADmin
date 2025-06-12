@@ -18,11 +18,14 @@ import Food from '../screens/food';
 import Home from '../screens/Timesheet';
 import Resource from '../screens/resource';
 import Ticket from '../screens/ticket';
+import useTokenExpiryCheck from "../../hooks/useTokenExpiryCheck";
 
 const Tab = createBottomTabNavigator();
 
 export default function TabLayout() {
-  const { user } = useContext(AuthContext);
+ const { user, logout } = useContext(AuthContext);
+//  console.log("first",user?.exp)
+   useTokenExpiryCheck(user?.token, logout);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {

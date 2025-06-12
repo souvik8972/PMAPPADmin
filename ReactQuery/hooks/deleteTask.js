@@ -4,6 +4,7 @@ import { API_URL } from '@env';
 
 
 export const deleteTask = async (taskId, token) => {
+  
   try {
     const response = await fetch(
       `${API_URL}Task/DeleteTask?TaskId=${taskId}`,

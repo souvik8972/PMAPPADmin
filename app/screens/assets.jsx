@@ -40,7 +40,7 @@ const AssetsScreen = () => {
           <TouchableOpacity
             key={index}
             style={styles.tab}
-            className={` ${activeTab === index?'bg-[#d82133]':'bg-gray-100'}`}
+            className={` ${activeTab === index?'bg-[#910614]':'bg-gray-100'}`}
             onPress={() => handleTabPress(index)}
           >
             <Text 

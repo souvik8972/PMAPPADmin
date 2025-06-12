@@ -1,7 +1,7 @@
 import React, { useContext, useMemo, useState } from "react";
 import { ScrollView, View, Text, RefreshControl } from "react-native";
 import GradientCard from "../../components/GradientCard";
-import { API_URL } from "@env";
+
 import { AuthContext } from "../../context/AuthContext";
 import GetCurrentDate from "../../components/GetCurrentDate";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";

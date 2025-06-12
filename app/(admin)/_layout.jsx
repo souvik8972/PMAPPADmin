@@ -18,6 +18,7 @@ const Ticket = lazy(() => import("../screens/ticket"));
 const Assets = lazy(() => import("../screens/assets"));
 // const Food = lazy(() => import("../screens/food"));
 import Food from "../screens/food";
+import useTokenExpiryCheck from "../../hooks/useTokenExpiryCheck";
 const FoodDashboard= lazy(()=> import("./FoodDashboard"));
 const Project = lazy(() => import("./project"));
 const TimeSheet = lazy(() => import("../screens/Timesheet"));
@@ -108,10 +109,13 @@ const CustomDrawerContent = (props) => {
 
 export default function DrawerLayout() {
 
-  const { user } = useContext(AuthContext);
+  // const { user } = useContext(AuthContext);
+   const { user,  logout } = useContext(AuthContext);
+
+  useTokenExpiryCheck(user?.token, logout);
 
   const isSystemAdmin = user?.userType==5;
-  const isFoodAdmin=user?.userType==6
+  const isFoodAdmin=user?.userType==6;
 
 
   return (

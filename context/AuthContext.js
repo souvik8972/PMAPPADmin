@@ -51,7 +51,7 @@ export function AuthProvider({ children }) {
       await removeAuthInfo(); // Remove all auth info (token + user data)
   //  console.log(user,"User")
       
-    //  console.log("Logout button pressed 1");
+     console.log("Logout button pressed 1");
     } catch (error) {
       // console.error("Failed to remove token:", error);
       throw error;

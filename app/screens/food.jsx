@@ -6,7 +6,8 @@ import { AuthContext } from '@/context/AuthContext';
 import { usePostData } from '@/ReactQuery/hooks/usePostData';
 import { useFetchData } from '@/ReactQuery/hooks/useFetchData';
 import FoodLoader from '@/components/FoodLoader';
-import AssetLoading from '@/components/AssetLoading';
+import FoodLoading from '@/components/FoodLoading';
+// import AssetLoading from '@/components/AssetLoading';
 const FoodComponent = () => {
   const [selectedValue, setSelectedValue] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -164,10 +165,11 @@ const FoodComponent = () => {
 
 if (isFetching && !refreshing) {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <ActivityIndicator size="large" color="#FF6347" /> 
+         <FoodLoading/>
+    // <View className="flex-1 items-center justify-center bg-white">
+    //   <ActivityIndicator size="large" color="#FF6347" /> 
       
-    </View>
+    // </View>
   );
 }
 

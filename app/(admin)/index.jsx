@@ -14,7 +14,7 @@ import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { AuthContext } from "../../context/AuthContext";
 import { deleteTask } from "../../ReactQuery/hooks/deleteTask";
 import { API_URL } from '@env';
-
+import {isTokenValid} from '@/utils/functions/checkTokenexp';
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
 // Memoized Task Item Component
@@ -150,7 +150,7 @@ const TaskItem = React.memo(({
 });
 
 export default function TaskScreen() {
-  const { user } = useContext(AuthContext);
+  const { user,logout } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [selectedRange, setSelectedRange] = useState({ startDate: new Date(), endDate: null });
@@ -198,8 +198,15 @@ export default function TaskScreen() {
 
   const fetchTaskDetails = useCallback(async (taskId) => {
     if (taskDetails[taskId]) return;
+    
+    
 
     try {
+        const tokenvalid= await isTokenValid(user,logout)
+     if(!tokenvalid) {
+        alert("Session expired. Please log in again.");
+        return;
+      }
       setLoadingDetails(true);
       const response = await fetch(taskDetailsEndpoint(taskId), {
         headers: {
