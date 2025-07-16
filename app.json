@@ -28,6 +28,7 @@
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.souvik8582.pmtool",
+      "googleServicesFile": "./google-services.json",
       "versionCode": 1
     },
     "web": {
