@@ -13,7 +13,7 @@ const AssetsScreen = () => {
 
   const tabs = [
     { name: "Asset Management", component: AssetManagement },
-    { name: isSystemAdmin ? "All Request" : "My Request", component: isSystemAdmin ? AllRequest : MyRequest }
+    { name: isSystemAdmin ? "All Requests" : "My Request", component: isSystemAdmin ? AllRequest : MyRequest }
   ];
 
   const handleTabPress = (index) => {

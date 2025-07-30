@@ -16,13 +16,13 @@ const Login = () => {
   console.log("My API URL:", API_URL);
   
 
-    const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  //   const [email, setEmail] = useState('system_admin@medtrixhealthcare.com');
+  // const [password, setPassword] = useState('hello123');
   //    const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
   // const [password, setPassword] = useState('lavgZzsS');
 
-  //  const [password, setPassword] = useState('hello@123');
-  //   const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
+   const [password, setPassword] = useState('hello@123');
+    const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
   const { login } = useContext(AuthContext);

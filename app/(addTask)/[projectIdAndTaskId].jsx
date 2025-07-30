@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import {
   View,
   Text,
@@ -69,6 +69,10 @@ export default AddEditTask = () => {
   const [rotateAnim] = useState(new Animated.Value(0));
   const [originalId, setOriginalId] = useState("");
 
+  // Employee working hours state
+  const [employeeWorkingHours, setEmployeeWorkingHours] = useState({});
+  const [loadingHours, setLoadingHours] = useState(false);
+
   // Animation interpolation
   const rotateInterpolate = rotateAnim.interpolate({
     inputRange: [0, 1],
@@ -76,7 +80,7 @@ export default AddEditTask = () => {
   });
 
   // Use the usePostData hook
- const { mutate: submitTask, isPending: isSubmitPending } = usePostData('Task/CreateTask', ["Task/GetTasks"]);
+  const { mutate: submitTask, isPending: isSubmitPending } = usePostData('Task/CreateTask', ["Task/GetTasks"]);
   
   // Fetch task details
   const { data, isLoading, refetch } = useFetchData(
@@ -91,6 +95,50 @@ export default AddEditTask = () => {
     isEditMode ? `Task/getTaskHoursDetailsByID?taskid=${taskId}` : null,
     user.token
   );
+
+  // Function to fetch employee working hours
+  const fetchEmployeeWorkingHours = useCallback(async (empId, startDate, endDate) => {
+    try {
+      setLoadingHours(true);
+      const response = await fetch(
+        `https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/Task/GetEmpTaskWorkingHours?emp_id=${empId}&startdate=${format(startDate, 'MM/dd/yyyy')}&endDate=${format(endDate, 'MM/dd/yyyy')}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${user.token}`
+          }
+        }
+      );
+      
+      const data = await response.json();
+      
+      if (data && data.emp_task_data) {
+        const hoursData = {};
+        
+        data.emp_task_data.forEach(item => {
+          const dateStr = format(new Date(item.WorkDate), 'MM/dd/yyyy');
+          hoursData[dateStr] = item.TotalWorkingHours;
+        });
+        
+        setEmployeeWorkingHours(prev => ({
+          ...prev,
+          [empId]: hoursData
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching working hours:", error);
+    } finally {
+      setLoadingHours(false);
+    }
+  }, [user.token]);
+
+  // Fetch working hours when dates or team members change
+  useEffect(() => {
+    if (selectedResources.length > 0) {
+      selectedResources.forEach(resource => {
+        fetchEmployeeWorkingHours(resource.id, startDate, endDate);
+      });
+    }
+  }, [selectedResources, startDate, endDate, fetchEmployeeWorkingHours]);
 
   // Function to skip weekends when setting dates
   const skipWeekends = (date) => {
@@ -257,6 +305,8 @@ export default AddEditTask = () => {
         ...prev,
         [resource.id]: prev[resource.id] || {}
       }));
+      // Fetch working hours for the new member
+      fetchEmployeeWorkingHours(resource.id, startDate, endDate);
     }
     setResourceInput('');
     setShowResourceDropdown(false);
@@ -267,6 +317,10 @@ export default AddEditTask = () => {
     const newMemberHours = {...memberHours};
     delete newMemberHours[resource.id];
     setMemberHours(newMemberHours);
+    
+    const newWorkingHours = {...employeeWorkingHours};
+    delete newWorkingHours[resource.id];
+    setEmployeeWorkingHours(newWorkingHours);
   };
 
   // Hours input toggle
@@ -315,82 +369,206 @@ export default AddEditTask = () => {
   // Form submission
   const handleSubmit = () => {
     // Validate required fields
-    if (!taskName) {
-      Alert.alert("Error", "Please enter a task name");
-      return;
-    }
+  if (!taskName) {
+    Alert.alert("Error", "Please enter a task name");
+    return;
+  }
+
+  if (!client) {
+    Alert.alert("Error", "Please select a client");
+    return;
+  }
+
+  if (!status) {
+    Alert.alert("Error", "Please select a status");
+    return;
+  }
+
+  if (selectedResources.length === 0) {
+    Alert.alert("Error", "Please add at least one team member");
+    return;
+  }
+
+  // Validate hours don't exceed available hours
+  let hasExceededHours = false;
+  const MAX_HOURS = 9;
   
-    if (!client) {
-      Alert.alert("Error", "Please select a client");
-      return;
-    }
+  selectedResources.forEach(member => {
+    const memberId = member.id;
+    const dates = getDatesInRange(startDate, endDate);
+    
+    dates.forEach(date => {
+      const dateStr = format(date, 'MM/dd/yyyy');
+      const enteredHours = memberHours[memberId]?.[dateStr] || 0;
+      const workedHours = employeeWorkingHours[memberId]?.[dateStr] || 0;
+      
+      // For edit mode, we need to check if the hours are being increased beyond available
+      // Get the original hours for this task (if any)
+      const originalHoursForThisTask = isEditMode ? 
+        allocationTime?.find(emp => emp.empId.toString() === memberId)?.allocations
+          ?.find(a => a.date === dateStr)?.hours || 0 : 0;
+      
+      // Calculate available hours differently for edit mode
+      const availableHours = isEditMode ? 
+        MAX_HOURS - (workedHours - originalHoursForThisTask) : 
+        MAX_HOURS - workedHours;
+      
+      // Check if the new hours exceed available capacity
+      if (enteredHours > availableHours) {
+        hasExceededHours = true;
+      }
+    });
+  });
   
-    if (!status) {
-      Alert.alert("Error", "Please select a status");
-      return;
-    }
-  
-    if (selectedResources.length === 0) {
-      Alert.alert("Error", "Please add at least one team member");
-      return;
-    }
+  if (hasExceededHours) {
+    Alert.alert(
+      "Warning", 
+      "Some team members have hours that exceed their available capacity. Please adjust the hours before submitting.",
+      [{ text: "OK" }]
+    );
+    return;
+  }
+
   
     // Prepare employee data with hours
-    const employees = selectedResources.map(resource => {
-      const hoursData = memberHours[resource.id] || {};
-      const datesInRange = getDatesInRange(startDate, endDate);
+      const employees = selectedResources.map(resource => {
+    const hoursData = memberHours[resource.id] || {};
+    const datesInRange = getDatesInRange(startDate, endDate);
+    
+    const logDetails = datesInRange.map(date => {
+      const dateStr = format(date, 'MM/dd/yyyy');
+      const hours = hoursData[dateStr] || 0;
       
-      const logDetails = datesInRange.map(date => {
-        const dateStr = format(date, 'MM/dd/yyyy');
-        const hours = hoursData[dateStr] || 0;
-        
-        return {
-          date: dateStr,
-          hr: hours,
-          startTime: "00:00:00",
-          endTime: "00:00:00"
-        };
-      });
-  
       return {
-        empId: parseInt(resource.id),
-        empName: resource.label || resource.name,
-        logDetails
+        date: dateStr,
+        hr: hours,
+        startTime: "00:00:00",
+        endTime: "00:00:00"
       };
     });
-  
-    // Prepare the complete task data for API
-    const taskData = {
-      tskTitle: taskName,
-      startDate: format(startDate, 'yyyy-MM-dd'),
-      endDate: format(endDate, 'yyyy-MM-dd'),
-      tskStatus: parseInt(status),
-      projectId: parseInt(projectId),
-      clientId: parseInt(client),
-      taskId: isEditMode ? parseInt(taskId) : null,
-      Empids: selectedResources.map(r => r.id).join(','),
-      Originalempids: originalId,
-      employees
+
+    return {
+      empId: parseInt(resource.id),
+      empName: resource.label || resource.name,
+      logDetails
     };
-  
-    submitTask(
-      { 
-        data: taskData,
-        token: user?.token 
-      },
-      {
-        onSuccess: (data) => {
-          Alert.alert("Success", isEditMode ? "Task updated successfully" : "Task created successfully");
-          navigation.goBack();
-        },
-        onError: (error) => {
-          console.error("Submission failed:", error);
-          Alert.alert("Error", error.message || "Failed to submit task");
-        }
-      }
-    );
+  });
+
+  // Prepare the complete task data for API
+  const taskData = {
+    tskTitle: taskName,
+    startDate: format(startDate, 'yyyy-MM-dd'),
+    endDate: format(endDate, 'yyyy-MM-dd'),
+    tskStatus: parseInt(status),
+    projectId: parseInt(projectId),
+    clientId: parseInt(client),
+    taskId: isEditMode ? parseInt(taskId) : null,
+    Empids: selectedResources.map(r => r.id).join(','),
+    Originalempids: originalId,
+    employees
   };
 
+  submitTask(
+    { 
+      data: taskData,
+      token: user?.token 
+    },
+    {
+      onSuccess: (data) => {
+        Alert.alert("Success", isEditMode ? "Task updated successfully" : "Task created successfully");
+        navigation.goBack();
+      },
+      onError: (error) => {
+        console.error("Submission failed:", error);
+        Alert.alert("Error", error.message || "Failed to submit task");
+      }
+    }
+  );
+};
+
+
+  // Render function for hours input
+ const renderHoursInput = (member, date, dateStr) => {
+  const isWeekendDay = isWeekend(date);
+  const MAX_HOURS = 9;
+  const workedHours = employeeWorkingHours[member.id]?.[dateStr] || 0;
+  const currentHours = memberHours[member.id]?.[dateStr] || 0;
+  
+  // For edit mode, get original hours for this task
+  const originalHoursForThisTask = isEditMode ? 
+    allocationTime?.find(emp => emp.empId.toString() === member.id)?.allocations
+      ?.find(a => a.date === dateStr)?.hours || 0 : 0;
+  
+  // Calculate available hours differently for edit mode
+  const availableHours = isEditMode ? 
+    MAX_HOURS - (workedHours - originalHoursForThisTask) : 
+    MAX_HOURS - workedHours;
+  
+  const exceedsAvailable = currentHours > availableHours;
+  
+  return (
+    <View 
+      key={dateStr} 
+      className={`flex-row items-center justify-between mb-2 ${isWeekendDay ? 'opacity-50' : ''}`}
+    >
+      <Text className={`text-gray-600 w-24`}>
+        {dateStr} {isWeekendDay ? '(Weekend)' : ''}
+      </Text>
+      
+      <View className="flex-1 ml-2 flex-row items-center">
+        <TextInput
+          value={currentHours.toString()}
+          onChangeText={(text) => {
+            if (!isWeekendDay) {
+              handleHoursChange(member.id, dateStr, text);
+            }
+          }}
+          placeholder="0"
+          keyboardType="numeric"
+          editable={!isWeekendDay}
+          className={`bg-white border rounded px-3 py-2 text-gray-700 flex-1 ${
+            isWeekendDay ? 'bg-gray-100' : ''
+          } ${exceedsAvailable ? 'border-red-500' : 'border-gray-200'}`}
+        />
+        <Text className="text-gray-600 ml-2">hours</Text>
+      </View>
+      
+     {!isWeekendDay && (
+  <View className="flex-row items-center ml-2">
+    {/* Available hours indicator */}
+    <View className={`px-2 py-1 rounded-md ${
+      exceedsAvailable ? 'bg-red-200' : 'bg-green-50'
+    }`}>
+      <Text className={`text-xs font-medium ${
+        exceedsAvailable ? 'text-red-400' : 'text-green-500'
+      }`}>
+        {exceedsAvailable ? (
+          <>
+            <Text className="font-bold">+{currentHours - availableHours}h</Text>
+            <Text className="text-red-400"> over</Text>
+          </>
+        ) : (
+          <>
+            <Text className="font-bold">{availableHours - currentHours}h</Text>
+            <Text className="text-green-500"> free</Text>
+          </>
+        )}
+      </Text>
+    </View>
+
+    {/* Original hours indicator (edit mode only) */}
+    {/* {isEditMode && originalHoursForThisTask > 0 && (
+      <View className="ml-2 px-2 py-1 bg-gray-100 rounded-md">
+        <Text className="text-xs text-gray-500 font-medium">
+          Prev: <Text className="font-semibold">{originalHoursForThisTask}h</Text>
+        </Text>
+      </View>
+    )} */}
+  </View>
+)}
+    </View>
+  );
+};
   if (isLoading || (isEditMode && allocationLoader)) {
     return (
       <SafeAreaView edges={['top']} className="flex-1 bg-white justify-center items-center">
@@ -579,6 +757,26 @@ export default AddEditTask = () => {
 
               {/* Team Members Section */}
               <Text className="text-sm font-medium text-slate-600 mb-1">Team Members</Text>
+              {showResourceDropdown && (
+                  <View className="mt-1 bg-white border border-slate-200   rounded-lg max-h-40">
+                    <ScrollView nestedScrollEnabled={true}>
+                      {teamMembers
+                        .filter(member => 
+                          member.label.toLowerCase().includes(resourceInput.toLowerCase()) &&
+                          !selectedResources.some(r => r.id === member.id)
+                        )
+                        .map((member, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            onPress={() => addResource(member)}
+                            className="px-4 py-2 border-b border-slate-100 "
+                          >
+                            <Text className="text-slate-800 ">{member.label}</Text>
+                          </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                  </View>
+                )}
               <View className="mb-3">
                 <View className="bg-white rounded-lg border border-slate-200 shadow-xs">
                   <TextInput
@@ -592,27 +790,6 @@ export default AddEditTask = () => {
                     className="h-12 px-4 text-slate-800"
                   />
                 </View>
-                
-                {showResourceDropdown && (
-                  <View className="mt-1 bg-white border border-slate-200 rounded-lg max-h-40">
-                    <ScrollView nestedScrollEnabled={true}>
-                      {teamMembers
-                        .filter(member => 
-                          member.label.toLowerCase().includes(resourceInput.toLowerCase()) &&
-                          !selectedResources.some(r => r.id === member.id)
-                        )
-                        .map((member, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() => addResource(member)}
-                            className="px-4 py-2 border-b border-slate-100"
-                          >
-                            <Text className="text-slate-800">{member.label}</Text>
-                          </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                  </View>
-                )}
                 
                 {selectedResources.length > 0 && (
                   <View className="flex-row flex-wrap mt-2">
@@ -629,59 +806,35 @@ export default AddEditTask = () => {
               </View>
 
               {/* Hours Input Section */}
-              <TouchableOpacity 
-                onPress={toggleHoursInput}
-                className="flex-row items-center justify-between bg-slate-50 p-3 rounded-lg mb-3"
-              >
-                <Text className="text-slate-700 font-medium">Add Hours for Team Members</Text>
-                <Animated.View style={{ transform: [{ rotate: rotateInterpolate }] }}>
-                  <Feather name="chevron-down" size={20} color="#64748b" />
-                </Animated.View>
-              </TouchableOpacity>
-
-              {showHoursInput && selectedResources.length > 0 && (
+              {selectedResources.length > 0 && (
                 <View className="mb-4 border border-slate-200 rounded-lg p-3">
-                  <Text className="text-sm font-medium text-slate-600 mb-2">Enter Hours for Each Member</Text>
+                  <Text className="text-sm font-medium text-slate-600 mb-2">
+                    Enter Hours for Each Member
+                    {loadingHours && (
+                      <Text className="text-xs text-gray-500 ml-2">(Loading availability...)</Text>
+                    )}
+                  </Text>
                   
-                  {selectedResources.map((member, memberIndex) => (
-                    <View key={memberIndex} className="mb-4">
-                      <Text className="font-medium text-slate-700 mb-2">{member.label || member.name}</Text>
-                      
-                      {getDatesInRange(startDate, endDate).map((date, dateIndex) => {
-                        const dateStr = format(date, 'MM/dd/yyyy');
-                        const isWeekendDay = isWeekend(date);
+                  {selectedResources.map((member, memberIndex) => {
+                    const isOddIndex = memberIndex % 2 !== 0;
+                    const bgColor = isOddIndex ? 'bg-gray-100' : 'bg-red-50';
+                    
+                    return (
+                      <View key={memberIndex} className={`mb-4 p-2 rounded ${bgColor}`}>
+                        <Text className="font-medium text-gray-700 mb-2">
+                          {member.label || member.name}
+                        </Text>
                         
-                        return (
-                          <View 
-                            key={dateIndex} 
-                            className={`flex-row items-center justify-between mb-2 ${isWeekendDay ? 'opacity-50' : ''}`}
-                          >
-                            <Text className="text-slate-600 w-24">
-                              {dateStr} {isWeekendDay ? '(Weekend)' : ''}
-                            </Text>
-                            <TextInput
-                              value={memberHours[member.id]?.[dateStr] ? memberHours[member.id][dateStr].toString() : "0"}
-                              onChangeText={(text) => {
-                                if (!isWeekendDay) {
-                                  handleHoursChange(member.id, dateStr, text);
-                                }
-                              }}
-                              placeholder=""
-                              keyboardType="numeric"
-                              editable={!isWeekendDay}
-                              className={`flex-1 ml-2 bg-white border border-slate-200 rounded px-3 py-2 text-slate-800 ${
-                                isWeekendDay ? 'bg-gray-100' : ''
-                              }`}
-                            />
-                            <Text className="text-slate-500 ml-2">hours</Text>
-                          </View>
-                        );
-                      })}
-                    </View>
-                  ))}
+                        {getDatesInRange(startDate, endDate).map((date, dateIndex) => {
+                          const dateStr = format(date, 'MM/dd/yyyy');
+                          return renderHoursInput(member, date, dateStr);
+                        })}
+                      </View>
+                    );
+                  })}
                 </View>
               )}
-
+                
               {/* Submit Button */}
               <TouchableOpacity 
                 onPress={handleSubmit} 

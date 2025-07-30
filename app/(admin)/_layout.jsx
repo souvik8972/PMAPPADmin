@@ -218,7 +218,7 @@ export default function DrawerLayout() {
           />
           
           <Drawer.Screen 
-            name="Ticket" 
+            name="IT Support" 
             children={() => (
               <Suspense fallback={<LoadingScreen />}>
                 <Ticket />

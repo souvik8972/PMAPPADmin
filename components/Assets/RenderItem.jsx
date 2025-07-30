@@ -55,7 +55,7 @@ const RenderItem = ({ item, selectedAssets, handlePress, itemWidth }) => {
         {item.name}
       </Text>
       {isTaken && (
-        <Text style={styles.takenText}>Taken</Text>
+        <Text style={styles.takenText}>Claimed</Text>
       )}
     </TouchableOpacity>
   );
