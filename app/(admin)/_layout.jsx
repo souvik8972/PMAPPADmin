@@ -150,6 +150,7 @@ export default function DrawerLayout() {
         header: () => <Header navigation={navigation} />,
         drawerActiveBackgroundColor: "transparent",
         drawerActiveTintColor: "#ffffff",
+        drawerType:"front",
         drawerInactiveTintColor: "#333",
         drawerLabelStyle: { fontSize: 14 },
       })}
