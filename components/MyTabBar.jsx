@@ -1,13 +1,20 @@
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient'; // Import the LinearGradient component
+import { View, TouchableOpacity, Text } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const MyTabBar = ({ state, descriptors, navigation }) => {
   return (
-    <View  style={{ flexDirection: 'row', height: 60,padding:8 ,backgroundColor:'white' }}>
+    <View style={{ flexDirection: 'row', height: 80, padding: 8, backgroundColor: 'white' }}>
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
         const { options } = descriptors[route.key];
+        
+        // Get the label from options
+        const label = options.tabBarLabel !== undefined
+          ? options.tabBarLabel
+          : options.title !== undefined
+          ? options.title
+          : route.name;
 
         const handlePress = () => {
           const event = navigation.emit({
@@ -21,7 +28,7 @@ const MyTabBar = ({ state, descriptors, navigation }) => {
         };
 
         // Define the gradient colors
-        const gradientColors = isFocused ? ["#D01313", "#6A0A0A"] : ['white','white']; // Active gradient and inactive solid color
+        const gradientColors = isFocused ? ["#D01313", "#6A0A0A"] : ['white','white'];
 
         return (
           <TouchableOpacity
@@ -32,25 +39,36 @@ const MyTabBar = ({ state, descriptors, navigation }) => {
               justifyContent: 'center',
               alignItems: 'center',
               borderRadius: 12,
-              
-               // Optional: add padding to space out icons
             }}
           >
             <LinearGradient
-              colors={gradientColors} // Apply the gradient colors based on whether the tab is focused
-              start={[0, 0]} // Gradient start position (left)
-              end={[1, 1]} // Gradient end position (bottom-right)
+              colors={gradientColors}
+              start={[0, 0]}
+              end={[1, 1]}
               style={{
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderRadius: 12,
                 width: '100%',
-                height: '100%', // Make sure the gradient covers the whole button
-                paddingVertical: 10, // Optional: maintain padding if desired
+                height: '100%',
+                paddingVertical: 10,
               }}
             >
-              {options.tabBarIcon && options.tabBarIcon({ focused: isFocused, color: isFocused ? 'white' : 'gray' })}
+              {options.tabBarIcon && options.tabBarIcon({ 
+                focused: isFocused, 
+                color: isFocused ? 'white' : 'gray' 
+              })}
+              
+              {/* Add the tab label */}
+              <Text style={{ 
+                color: isFocused ? 'white' : 'gray', 
+                fontSize: 10,
+                marginTop: 4,
+                fontWeight: isFocused ? 'bold' : 'normal'
+              }}>
+                {label}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         );

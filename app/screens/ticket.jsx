@@ -228,7 +228,7 @@ const IssueTracker = () => {
           renderItem={({ item }) => (
             <View className="bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-3 mb-4">
               <TouchableOpacity onPress={() => toggleExpand(item.id)}>
-                <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center  justify-between">
                   <View className="flex-row items-center">
                     <View className="mr-3">
                       <View className="p-3 bg-red-100 rounded-full items-center justify-center">
@@ -239,11 +239,11 @@ const IssueTracker = () => {
                         />
                       </View>
                     </View>
-                    <View>
+                    <View style={{width: '50%'}} className=''>
                        {isAdmin? 
                       <Text className="text-sm font-semibold text-gray-700">{item.employeeName}</Text>:<Text className="text-sm font-semibold text-gray-700">#{item.id}</Text>}
                      
-                      <Text className="text-sm text-gray-500">{item.type}</Text>
+                      <Text className="text-sm  text-gray-500">{item.type}</Text>
                     </View>
                   </View>
                   <View className="flex-row items-center gap-2">

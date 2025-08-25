@@ -21,6 +21,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import Retry from "../../components/Retry";
 import RetryButton from "../../components/Retry";
+import { Toast } from "toastify-react-native";
 
 const windowWidth = Dimensions.get("window").width;
 const itemWidth = (windowWidth - 60) / 3;
@@ -118,7 +119,8 @@ const AssetManagement = () => {
 
   const handleSubmit = () => {
     if (selectedAssets.length === 0) {
-      alert("Please select at least one asset.");
+      // alert("Please select at least one asset.");
+      Toast.success('Please select at least one asset.');
       return;
     }
     setModalVisible(true);
@@ -126,7 +128,7 @@ const AssetManagement = () => {
 
   const handleModalSubmit = () => {
     if (!textInput.trim()) {
-      alert("Please enter some text before submitting.");
+      Toast.error("Please enter some text before submitting.");
       return;
     }
 
@@ -149,10 +151,10 @@ const AssetManagement = () => {
           setModalVisible(false);
           setTextInput("");
           setSelectedAssets([]);
-          alert("Asset checkout submitted successfully.");
+          Toast.success("Asset checkout submitted successfully.");
         },
         onError: (error) => {
-          alert("Failed to submit asset checkout.");
+          Toast.error("Failed to submit asset checkout.");
         },
       }
     );
@@ -184,19 +186,8 @@ const AssetManagement = () => {
   }
 
   return (
-    <ScrollView 
-      showsVerticalScrollIndicator={false} 
-      contentContainerStyle={styles.container}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          colors={['#D01313']} // Android
-          tintColor="#D01313" // iOS
-        />
-      }
-    >
-      <View style={styles.buttonContainer}>
+<>
+          <View className="flex  mt-8  justify-center items-center" style={styles.buttonContainer}>
         <TouchableOpacity onPress={handleSubmit} activeOpacity={0.8}>
           <LinearGradient
             colors={
@@ -218,6 +209,19 @@ const AssetManagement = () => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+    <ScrollView 
+      showsVerticalScrollIndicator={false} 
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#D01313']} // Android
+          tintColor="#D01313" // iOS
+        />
+      }
+    >
+
 
       <View style={styles.assetsGrid}>
         {assets.map((item) => (
@@ -273,6 +277,7 @@ const AssetManagement = () => {
         </KeyboardAvoidingView>
       </Modal>
     </ScrollView>
+    </>
   );
 };
 
@@ -281,7 +286,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: "white",
     paddingHorizontal: 20,
-    paddingTop: 20,
+    // paddingTop: 20,
     paddingBottom: 48,
   },
   loadingContainer: {
@@ -290,6 +295,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     paddingHorizontal: 16,
+    
   },
   shimmerContainer: {
     flexDirection: "row",

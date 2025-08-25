@@ -20,7 +20,8 @@ const Login = () => {
   // const [password, setPassword] = useState('hello123');
   //    const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
   // const [password, setPassword] = useState('lavgZzsS');
-
+  //    const [email, setEmail] = useState('vignesh.vc@medtrixhealthcare.com');
+  // const [password, setPassword] = useState('vyl7IvKM');
    const [password, setPassword] = useState('hello@123');
     const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
   const [rememberMe, setRememberMe] = useState(false);
@@ -108,7 +109,7 @@ savePushTokenToBackend(userData.EmpId,expoTokenToSend||"",data.token)
             <View className="mb-4">
               <Text className="text-gray-700 text-[15px] pl-1 font-medium mb-1">Email</Text>
               <TextInput
-                placeholder={error.email && error.email !== 'Invalid email or password' ? error.email : "Enter email"}
+                placeholder={error.email && error.email !== 'Invalid email or password' ? error.email : "Enter your email"}
                 keyboardType="email-address"
                 placeholderTextColor={error.email ? "red" : "#D3D3D3"}
                 value={email}
@@ -162,7 +163,7 @@ savePushTokenToBackend(userData.EmpId,expoTokenToSend||"",data.token)
                 />
                 <Text className="pl-2">Remember Me</Text> */}
               </View>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/ForgotPassword')}>
                 <Text className="text-red-700 font-medium">Forgot Password?</Text>
               </TouchableOpacity>
             </View>

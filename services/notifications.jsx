@@ -2,13 +2,14 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { savePushTokenToBackend } from './api';
+import { Toast } from "toastify-react-native";
  
 let notificationListener;
 let responseListener;
  
 export async function registerForPushNotificationsAsync() {
   if (!Device.isDevice) {
-    alert('Must use physical device for push notifications');
+    Toast.error('Must use physical device for push notifications');
     return;
   }
  
@@ -21,7 +22,7 @@ export async function registerForPushNotificationsAsync() {
   }
  
   if (finalStatus !== 'granted') {
-    alert('Permission not granted!');
+    Toast.error('Permission not granted!');
     return;
   }
  

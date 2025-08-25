@@ -9,10 +9,11 @@ import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../context/AuthContext";
 import { API_URL } from '@env';
 import {isTokenValid} from '@/utils/functions/checkTokenexp';
+import  { Toast } from 'toastify-react-native'
 const fetchProjectList = async (token,user,logout) => {
     const tokenvalid= await isTokenValid(user,logout)
      if(!tokenvalid) {
-        alert("Session expired. Please log in again.");
+        Toast.error("Session expired. Please log in again.");
         return;
       }
   const response = await fetch(`${API_URL}Projects/GetAllProjectNames`, {
@@ -35,6 +36,7 @@ const fetchProjectDetails = async (projectId, token) => {
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
+  // console.log("aaa",response)
   return response.json();
 };
 const ProjectSkeleton = () => {
@@ -121,14 +123,18 @@ export default function ProjectList() {
       try {
         setLoadingDetails(prev => ({ ...prev, [projectId]: true }));
         const details = await fetchProjectDetails(projectId, token);
-        // console.log(details,"details")
+        console.log(details,"details")
         setProjectDetails(prev => ({
           ...prev,
           [projectId]: details.project_list[0]
         }));
+
+
+
       } catch (error) {
         console.error("Error fetching project details:", error);
       } finally {
+        // console.log(details, "details");
         setLoadingDetails(prev => ({ ...prev, [projectId]: false }));
       }
     }
@@ -201,9 +207,14 @@ export default function ProjectList() {
         keyExtractor={(item) => item.PROJECT_ID.toString()}
         renderItem={({ item: project }) => {
           const details = projectDetails[project.PROJECT_ID];
-          const isLoading = loadingDetails[project.PROJECT_ID];
-          const isExpanded = expandedProjects[project.PROJECT_ID];
+        
           
+          const isLoading = loadingDetails[project.PROJECT_ID];
+          
+          const isExpanded = expandedProjects[project.PROJECT_ID];
+          if(isExpanded){
+            // console.log("Loading project details:", details);
+          }
           return (
             <View className="bg-white rounded-xl border-2 border-gray-300 shadow-xs mb-4 overflow-hidden">
             {/* Project Header - Clickable Area */}
@@ -239,6 +250,7 @@ export default function ProjectList() {
                     <MaterialCommunityIcons name="calendar-range" size={18} color="#6B7280" />
                     <Text className="text-sm text-gray-600">
                       {details.Pstart_date} - {details.end_date}
+                
                     </Text>
                   </View>
                 

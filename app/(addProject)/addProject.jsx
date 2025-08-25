@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ScrollView, TextInput, View, Text, Pressable, Switch, KeyboardAvoidingView, Platform } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { Toast } from "toastify-react-native";
 
 const FormScreen = () => {
   // Form state
@@ -77,7 +78,7 @@ const FormScreen = () => {
 
   const handleSubmit = () => {
     // console.log('Form submitted:', formData);
-    alert('Project created successfully!');
+    Toast.success('Project created successfully!');
   };
 
   return (

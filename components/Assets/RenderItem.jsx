@@ -41,7 +41,7 @@ const RenderItem = ({ item, selectedAssets, handlePress, itemWidth }) => {
     >
       <Icon
         name={item.icon}
-        size={32}
+        size={28}
         color={getIconColor()}
         style={styles.icon}
       />
@@ -50,7 +50,7 @@ const RenderItem = ({ item, selectedAssets, handlePress, itemWidth }) => {
           styles.itemText,
           { color: getTextColor() },
         ]}
-        numberOfLines={2}
+        numberOfLines={8}
       >
         {item.name}
       </Text>
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   itemText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
     textAlign: "center",
   },

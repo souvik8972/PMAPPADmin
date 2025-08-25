@@ -26,7 +26,7 @@ import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { API_URL } from '@env';
 import { getLast7Weekdays, getFormattedDate } from "../../utils/functions/last7Days";
 import {isTokenValid} from '@/utils/functions/checkTokenexp';
-
+import  { Toast } from 'toastify-react-native'
 // Configure layout animation
 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
@@ -36,6 +36,7 @@ export default function TaskScreen() {
   const { user, logout } = useContext(AuthContext);
   const flatListRef = useRef(null);
   const itemRefs = useRef({});
+  const inputRefs = useRef({});
 
   const today = getFormattedDate(0);
   const yesterday = getFormattedDate(1);
@@ -131,13 +132,17 @@ export default function TaskScreen() {
 
   const handleInputFocus = (index) => {
     setActiveIndex(index);
-    setTimeout(() => {
-      flatListRef.current?.scrollToIndex({
-        index: index,
-        viewOffset: 100,
-        animated: true,
-      });
-    }, 300);
+    
+    // Use requestAnimationFrame for smoother scrolling
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({
+          index: index,
+          viewOffset: 150, // Increased offset for better visibility
+          animated: true,
+        });
+      }, 350); // Slightly longer delay to ensure expansion completes
+    });
   };
 
   const handleItemPress = (index) => {
@@ -162,7 +167,8 @@ export default function TaskScreen() {
   
     const logValue = localTaskData[taskId]||0;
     if (!logValue || isNaN(logValue)) {
-      Alert.alert("Error", "Invalid log value");
+      // Alert.alert("Error", "Invalid log value");
+      Toast.error("Invalid log value");
       return;
     }
   
@@ -171,7 +177,8 @@ export default function TaskScreen() {
     try {
       const tokenvalid= await isTokenValid(user,logout)
      if(!tokenvalid) {
-        alert("Session expired. Please log in again.");
+        // alert("Session expired. Please log in again.");
+        Toast.error("Session expired. Please log in again.");
         return;
       }
       const response = await fetch(
@@ -192,10 +199,12 @@ export default function TaskScreen() {
       }
       
       refetch();
-      Alert.alert("Success", "Hours submitted successfully");
+      // Toast.success('Success message!');
+      Toast.success("Hours submitted successfully");
     } catch (error) {
-      Alert.alert("Error", "Failed to submit hours");
+      Toast.error("Failed to submit hours");
     } finally {
+      Keyboard.dismiss()
       setIsProcessing(false);
     }
   };
@@ -299,13 +308,20 @@ export default function TaskScreen() {
                   className="w-20"
                 >
                   <TextInput
+                    ref={ref => inputRefs.current[task.taskId] = ref}
                     className="px-4 py-2 text-center text-md font-md text-gray-800 font-semibold"
                     keyboardType="decimal-pad"
                     placeholder=""
                     maxLength={5}
                     value={task.actual}
                     onChangeText={(text) => handleActualHoursChange(text, task.taskId)}
-                    onFocus={() => handleInputFocus(index)}
+                    onFocus={() => {
+                      handleInputFocus(index);
+                      setTimeout(() => {
+                        inputRefs.current[task.taskId]?.focus();
+                      }, 100);
+                    }}
+                    showSoftInputOnFocus={true}
                   />
                 </View>
               </View>
@@ -397,11 +413,12 @@ export default function TaskScreen() {
         style={{flex: 1, marginBottom: 10, padding: 8}}
         renderItem={renderTaskItem}
         keyExtractor={(item) => item.id}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
+        keyboardDismissMode="on-drag"
         contentContainerStyle={{ paddingBottom: 20 }}
         getItemLayout={(data, index) => (
           {
-            length: activeIndex === index ? 350 : 100, // Approximate heights
+            length: activeIndex === index ? 350 : 100,
             offset: (activeIndex === index ? 350 : 100) * index,
             index
           }
@@ -430,12 +447,13 @@ export default function TaskScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1 }}
       keyboardVerticalOffset={Platform.select({
         ios: 90,
-        android: 70
+        android: 0 // Let Android handle it natively
       })}
+      enabled={Platform.OS === "ios"} 
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View className="flex-1 bg-gray-50">

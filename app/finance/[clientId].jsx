@@ -248,7 +248,7 @@ const TaskList = ({ projects, clientId, loading }) => {
                 <View className="flex-1 mr-4">
                   <Text 
                     className="text-lg font-semibold text-gray-800"
-                    numberOfLines={1}
+                    numberOfLines={2}
                     ellipsizeMode="tail"
                   >
                     {project.project_Title}

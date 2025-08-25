@@ -22,7 +22,7 @@ import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { FontAwesome } from "@expo/vector-icons";
 import { deleteTask } from "../../ReactQuery/hooks/deleteTask";
-
+import  { Toast } from 'toastify-react-native'
 const ProjectDetails = () => {
   const [showModal, setShowModal] = useState(false);
   const [deleteTaskId, setDeleteTaskId] = useState(null);
@@ -32,6 +32,7 @@ const ProjectDetails = () => {
   const router = useRouter();
 
   const handleDeleteTask = (taskId) => {
+    // console.log("Task ID:", taskId);
     setDeleteTaskId(taskId);
     setShowModal(true);
   };
@@ -79,14 +80,14 @@ const ProjectDetails = () => {
         await refetchTaskList();
         setShowModal(false);
         setDeleteTaskId(null);
-        Alert.alert("Success", result.message || "Task deleted successfully");
+        Toast.success(result.message || "Task deleted successfully");
       }
     } catch (error) {
       console.error("Delete error:", error);
-      Alert.alert(
-        "Error",
+      Toast.error(
         error.message || "Failed to delete task. Please try again."
       );
+        
       setShowModal(false);
       setDeleteTaskId(null);
     }
@@ -109,6 +110,7 @@ const ProjectDetails = () => {
 
   // Handle task click
   const handleTaskClick = async (taskId, index) => {
+    // console.log()
     if (activeIndex === index) {
       setActiveIndex(null);
       setSelectedTaskId(null);
@@ -349,17 +351,17 @@ const ProjectDetails = () => {
                     >
                       {/* Top Row: Title + Arrow */}
                       <View className="flex-row justify-between items-center">
-                        {activeIndex !== index && (
+                        {selectedTaskId !== task.Task_Id && (
                           <Text
                             className="text-base font-semibold text-gray-800 w-[85%]"
-                            numberOfLines={1}
+                            numberOfLines={4}
                           >
                             {renderSafeValue(task.Task_Title).trim()}
                           </Text>
                         )}
 
                         {/* Expanded Task Details */}
-                        {activeIndex === index && taskDetails?.task_data?.[0] && (
+                        {selectedTaskId == task.Task_Id && taskDetails?.task_data?.[0] && (
                           <View className="flex-row flex-wrap gap-2 items-center">
                             <Text className="text-sm font-semibold text-gray-500">
                               {renderSafeValue(taskDetails.task_data[0].Start_Date)} -{" "}
@@ -384,7 +386,7 @@ const ProjectDetails = () => {
                           </View>
                         )}
                         <FontAwesome
-                          name={activeIndex === index ? "angle-up" : "angle-down"}
+                          name={selectedTaskId == task.Task_Id ? "angle-up" : "angle-down"}
                           size={26}
                           color="#1f2937"
                         />
@@ -392,7 +394,7 @@ const ProjectDetails = () => {
                     </TouchableOpacity>
 
                     {/* Task Detail Section */}
-                    {activeIndex === index && (
+                    {selectedTaskId == task.Task_Id && (
                       <View className="px-4 py-1">
                         {isTaskDetailsLoading ? (
                           <>

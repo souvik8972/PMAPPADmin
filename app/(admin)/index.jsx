@@ -15,6 +15,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { deleteTask } from "../../ReactQuery/hooks/deleteTask";
 import { API_URL } from '@env';
 import {isTokenValid} from '@/utils/functions/checkTokenexp';
+import  { Toast } from 'toastify-react-native'
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
 // Memoized Task Item Component
@@ -36,7 +37,7 @@ const TaskItem = React.memo(({
       {/* Basic Task Info (always visible) */}
       <View className="w-full">
         <View className=" flex-col justify-between items-start gap-2">
-          <Text className="text-md max-w-[40%] font-semibold text-gray-800" numberOfLines={1}>
+          <Text className="text-md w-[95%] bg-re font-semibold text-gray-800" numberOfLines={3}>
             {item.Task_Title}
           </Text>
           <View className="h-[28px] rounded-md  flex-row items-center justify-center " style={{ backgroundColor: isSelected ? '#fff' : '#fff', borderWidth: isSelected ? 1 : 1,
@@ -204,7 +205,7 @@ export default function TaskScreen() {
     try {
         const tokenvalid= await isTokenValid(user,logout)
      if(!tokenvalid) {
-        alert("Session expired. Please log in again.");
+       Toast.error("Session expired. Please log in again.");
         return;
       }
       setLoadingDetails(true);
@@ -250,13 +251,11 @@ export default function TaskScreen() {
         
         setDeleteModalVisible(false);
         setTaskToDelete(null);
-        Alert.alert('Success', result.message);
+        Toast.success(result.message);
       }
     } catch (error) {
-      Alert.alert(
-        'Error',
-        error.message || 'Failed to delete task. Please try again.'
-      );
+      Toast.error(error.message || 'Failed to delete task. Please try again.');
+      
       setDeleteModalVisible(false);
       setTaskToDelete(null);
     }
@@ -296,7 +295,7 @@ export default function TaskScreen() {
       const diffInDays = diffInTime / (1000 * 3600 * 24);
 
       if (diffInDays > 7) {
-        Alert.alert('Error', 'You can only select a date range of up to 7 days.');
+        Toast.error('You can only select a date range of up to 7 days.');
         return;
       }
 
@@ -340,7 +339,7 @@ export default function TaskScreen() {
         endDate={selectedRange.endDate}
         onConfirm={onDateConfirm}
         presentationStyle="fullScreen"
-        allowFontScaling={false}
+        allowFontScaling={true}
       />
   
       {/* Task List Header */}

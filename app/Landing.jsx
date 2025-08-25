@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
 import Loading from './loading';
+
 // import { useNotificationPermission } from '../ReactQuery/hooks/useNotificationPermission';
 // import { scheduleDailyNotification } from '../utils/notifications';
 import { initNotificationListeners, registerForPushNotificationsAsync, removeNotificationListeners } from '@/services/notifications';
@@ -63,6 +64,7 @@ const handleClick = () => {
 
   return (
      <SafeAreaView   style={styles.container}>
+       
     <View style={styles.content}>
       <Image 
         source={require('../assets/images/manage.png')} 

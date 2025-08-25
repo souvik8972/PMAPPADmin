@@ -48,10 +48,10 @@ export function AuthProvider({ children }) {
     try {
    
        await  savePushTokenToBackend(user.empId,"",user.token)
-      await removeAuthInfo(); // Remove all auth info (token + user data)
+      await removeAuthInfo();
   //  console.log(user,"User")
       
-     console.log("Logout button pressed 1");
+    //  console.log("Logout button pressed 1");
     } catch (error) {
       // console.error("Failed to remove token:", error);
       throw error;

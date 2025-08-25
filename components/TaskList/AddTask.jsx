@@ -15,6 +15,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Toast } from "toastify-react-native";
 
 const AddTask = () => {
   const [taskName, setTaskName] = useState("");
@@ -78,7 +79,7 @@ const AddTask = () => {
     if (currentDate >= startDate) {
       setEndDate(currentDate);
     } else {
-      Alert.alert("Invalid Date", "End date cannot be before start date");
+      Toast.error("Invalid Date", "End date cannot be before start date");
       setEndDate(startDate);
     }
   };
@@ -107,7 +108,7 @@ const AddTask = () => {
     };
     
     // console.log("Task Data:", taskData);
-    Alert.alert("Success", "Task data has been logged to console");
+    Toast.success("Success", "Task data has been logged to console");
   };
 
   return (

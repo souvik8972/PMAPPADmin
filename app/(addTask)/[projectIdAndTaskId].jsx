@@ -25,7 +25,7 @@ import { usePostData } from '../../ReactQuery/hooks/usePostData';
 import { AuthContext } from "../../context/AuthContext";
 import { format, isWeekend, addDays } from 'date-fns';
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
-
+import  { Toast } from 'toastify-react-native'
 export default AddEditTask = () => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -370,22 +370,22 @@ export default AddEditTask = () => {
   const handleSubmit = () => {
     // Validate required fields
   if (!taskName) {
-    Alert.alert("Error", "Please enter a task name");
+    Toast.error("Please enter a task name");
     return;
   }
 
   if (!client) {
-    Alert.alert("Error", "Please select a client");
+    Toast.error("Please select a client");
     return;
   }
 
   if (!status) {
-    Alert.alert("Error", "Please select a status");
+    Toast.error("Please select a status");
     return;
   }
 
   if (selectedResources.length === 0) {
-    Alert.alert("Error", "Please add at least one team member");
+    Toast.error("Please add at least one team member");
     return;
   }
 
@@ -421,10 +421,8 @@ export default AddEditTask = () => {
   });
   
   if (hasExceededHours) {
-    Alert.alert(
-      "Warning", 
-      "Some team members have hours that exceed their available capacity. Please adjust the hours before submitting.",
-      [{ text: "OK" }]
+    Toast.warn(
+      "Some team members have hours that exceed their available capacity"
     );
     return;
   }
@@ -475,12 +473,12 @@ export default AddEditTask = () => {
     },
     {
       onSuccess: (data) => {
-        Alert.alert("Success", isEditMode ? "Task updated successfully" : "Task created successfully");
+        Toast.success( isEditMode ? "Task updated successfully" : "Task created successfully");
         navigation.goBack();
       },
       onError: (error) => {
         console.error("Submission failed:", error);
-        Alert.alert("Error", error.message || "Failed to submit task");
+        Toast.error("Error", error.message || "Failed to submit task");
       }
     }
   );
@@ -756,54 +754,68 @@ export default AddEditTask = () => {
               </View>
 
               {/* Team Members Section */}
-              <Text className="text-sm font-medium text-slate-600 mb-1">Team Members</Text>
-              {showResourceDropdown && (
-                  <View className="mt-1 bg-white border border-slate-200   rounded-lg max-h-40">
-                    <ScrollView nestedScrollEnabled={true}>
-                      {teamMembers
-                        .filter(member => 
-                          member.label.toLowerCase().includes(resourceInput.toLowerCase()) &&
-                          !selectedResources.some(r => r.id === member.id)
-                        )
-                        .map((member, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() => addResource(member)}
-                            className="px-4 py-2 border-b border-slate-100 "
-                          >
-                            <Text className="text-slate-800 ">{member.label}</Text>
-                          </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                  </View>
-                )}
-              <View className="mb-3">
-                <View className="bg-white rounded-lg border border-slate-200 shadow-xs">
-                  <TextInput
-                    value={resourceInput}
-                    onChangeText={(text) => {
-                      setResourceInput(text);
-                      setShowResourceDropdown(text.length > 0);
-                    }}
-                    placeholder="Add team members"
-                    placeholderTextColor="#9ca3af"
-                    className="h-12 px-4 text-slate-800"
-                  />
-                </View>
-                
-                {selectedResources.length > 0 && (
-                  <View className="flex-row flex-wrap mt-2">
-                    {selectedResources.map((resource, index) => (
-                      <View key={index} className="flex-row items-center bg-slate-100 rounded-full px-3 py-1 mr-2 mb-2">
-                        <Text className="text-slate-700 mr-1">{resource.label || resource.name}</Text>
-                        <TouchableOpacity onPress={() => removeResource(resource)}>
-                          <Feather name="x" size={16} color="#64748b" />
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
+             {/* Team Members Section */}
+<Text className="text-sm font-medium text-slate-600 mb-1">Team Members</Text>
+<View className="mb-3">
+  {showResourceDropdown && resourceInput.length > 0 && (
+    <View className="mt-1 bg-white border border-slate-200 rounded-lg max-h-40">
+      <ScrollView 
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps="always" 
+      >
+        {teamMembers
+          .filter(member => 
+            member.label.toLowerCase().includes(resourceInput.toLowerCase()) &&
+            !selectedResources.some(r => r.id === member.id)
+          )
+          .map((member, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => {
+                addResource(member);
+                // Keep focus on input for next selection
+                setResourceInput('');
+                setShowResourceDropdown(true);
+              }}
+              className="px-4 py-2 border-b border-slate-100"
+            >
+              <Text className="text-slate-800">{member.label}</Text>
+            </TouchableOpacity>
+          ))}
+      </ScrollView>
+    </View>
+  )}
+  <View className="bg-white rounded-lg border border-slate-200 shadow-xs">
+    <TextInput
+      value={resourceInput}
+      onChangeText={(text) => {
+        setResourceInput(text);
+        setShowResourceDropdown(text.length > 0);
+      }}
+      placeholder="Add team members"
+      placeholderTextColor="#9ca3af"
+      className="h-12 px-4 text-slate-800"
+      // Add these props to prevent keyboard from closing
+      blurOnSubmit={true}
+      onSubmitEditing={() => {}}
+    />
+  </View>
+  
+  
+  
+  {selectedResources.length > 0 && (
+    <View className="flex-row flex-wrap mt-2">
+      {selectedResources.map((resource, index) => (
+        <View key={index} className="flex-row items-center bg-slate-100 rounded-full px-3 py-1 mr-2 mb-2">
+          <Text className="text-slate-700 mr-1">{resource.label || resource.name}</Text>
+          <TouchableOpacity onPress={() => removeResource(resource)}>
+            <Feather name="x" size={16} color="#64748b" />
+          </TouchableOpacity>
+        </View>
+      ))}
+    </View>
+  )}
+</View>
 
               {/* Hours Input Section */}
               {selectedResources.length > 0 && (

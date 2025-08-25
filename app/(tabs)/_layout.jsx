@@ -23,9 +23,11 @@ import useTokenExpiryCheck from "../../hooks/useTokenExpiryCheck";
 const Tab = createBottomTabNavigator();
 
 export default function TabLayout() {
- const { user, logout } = useContext(AuthContext);
-//  console.log("first",user?.exp)
-   useTokenExpiryCheck(user?.token, logout);
+  const { user, logout } = useContext(AuthContext);
+  
+  // Check token expiry on app state changes (background to foreground)
+  useTokenExpiryCheck(user?.token, logout);
+  
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
@@ -42,23 +44,55 @@ export default function TabLayout() {
     };
   }, []);
 
+  /**
+   * Function to check token expiry on tab change
+   * This will be called every time a tab is pressed
+   */
+  const checkTokenOnTabChange = async () => {
+    console.log(`Checking token on tab change`);
+    if (!user?.token) return;
+    
+    try {
+      const currentTime = Date.now() / 1000;
+      // Check if token exists and has expired
+      if (user?.exp && currentTime > user.exp) {
+        await logout();
+      }
+    } catch (error) {
+      console.error('Token validation error:', error);
+    }
+  };
+
   return (
     <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
       <Header />
 
       <Tab.Navigator
-        tabBar={(props) => !isKeyboardVisible && <MyTabBar {...props} />}
+        tabBar={(props) => !isKeyboardVisible && (
+          <MyTabBar 
+            {...props} 
+            // Add onTabPress handler to check token on each tab press
+            onTabPress={checkTokenOnTabChange}
+          />
+        )}
         screenOptions={{
           headerShown: false,
         }}
         sceneContainerStyle={{
           flex: 1,
         }}
+        // Add listener for tab changes to check token
+        screenListeners={{
+          tabPress: (e) => {
+            checkTokenOnTabChange();
+          },
+        }}
       >
         <Tab.Screen
           name="Home"
           component={Home}
           options={{
+            tabBarLabel: "My Task", 
             tabBarIcon: ({ color }) => (
               <FontAwesome5 name="calendar-alt" size={24} color={color} />
             ),
@@ -68,6 +102,7 @@ export default function TabLayout() {
           name="Resource"
           component={Resource}
           options={{
+            tabBarLabel: "Resource", 
             tabBarIcon: ({ color }) => (
               <Feather name="users" size={24} color={color} />
             ),
@@ -77,6 +112,7 @@ export default function TabLayout() {
           name="Ticket"
           component={Ticket}
           options={{
+            tabBarLabel: "IT Support", 
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="receipt-long" size={26} color={color} />
             ),
@@ -86,6 +122,7 @@ export default function TabLayout() {
           name="Assets"
           component={Assets}
           options={{
+            tabBarLabel: "Assets", 
             tabBarIcon: ({ color }) => (
               <FontAwesome5 name="mobile" size={24} color={color} />
             ),
@@ -95,6 +132,7 @@ export default function TabLayout() {
           name="Food"
           component={Food}
           options={{
+            tabBarLabel: "Food",
             tabBarIcon: ({ color }) => (
               <Ionicons name="fast-food" size={24} color={color} />
             ),

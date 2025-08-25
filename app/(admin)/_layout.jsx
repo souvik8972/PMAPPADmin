@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, lazy, Suspense } from "react";
+import React, { useContext, useEffect, lazy, Suspense, useCallback } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, ActivityIndicator } from "react-native";
 import { createDrawerNavigator, DrawerContentScrollView } from "@react-navigation/drawer";
 import { MaterialIcons, Feather, FontAwesome5, Ionicons } from "@expo/vector-icons";
@@ -10,7 +10,6 @@ import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-
 // Create lazy-loaded components for each screen
 const Task = lazy(() => import("./index"));
 const Resource = lazy(() => import("../screens/resource"));
@@ -19,7 +18,8 @@ const Assets = lazy(() => import("../screens/assets"));
 // const Food = lazy(() => import("../screens/food"));
 import Food from "../screens/food";
 import useTokenExpiryCheck from "../../hooks/useTokenExpiryCheck";
-const FoodDashboard= lazy(()=> import("./FoodDashboard"));
+import { Toast } from "toastify-react-native";
+const FoodDashboard = lazy(() => import("./FoodDashboard"));
 const Project = lazy(() => import("./project"));
 const TimeSheet = lazy(() => import("../screens/Timesheet"));
 const Finance = lazy(() => import("./finance"));
@@ -34,32 +34,61 @@ const LoadingScreen = () => (
 );
 
 const CustomDrawerContent = (props) => {
-  const { user } = useContext(AuthContext);
-  const {logout}=useContext(AuthContext)
+  const { user, logout } = useContext(AuthContext);
   const router = useRouter();
   const { state, navigation } = props;
-  const isAdmin = user?.userType==5;
+  const isAdmin = user?.userType == 5;
 
-  const handleLogout = async() => {
+  /**
+   * Function to check token expiry before navigation
+   */
+  const checkTokenBeforeNavigation = useCallback(async (routeName) => {
+    if (!user?.token) return;
+
+    // console.log("Checking token before navigation");
+    try {
+      const currentTime = Date.now() / 1000;
+      // Check if token exists and has expired
+      if (user?.exp && currentTime > user.exp) {
+        Toast.error("Session expired. Please log in again.");
+
+        await logout();
+        router.replace('/login');
+        return false; // Prevent navigation
+      }
+      return true; // Allow navigation
+    } catch (error) {
+      console.error('Token validation error:', error);
+      return true; // Allow navigation in case of error
+    }
+  }, [user, logout, router]);
+
+  const handleLogout = async () => {
     await logout()
     router.replace('/login');
   };
 
+  const handleNavigation = async (routeName) => {
+    const canNavigate = await checkTokenBeforeNavigation(routeName);
+    if (canNavigate) {
+      navigation.navigate(routeName);
+    }
+  };
+
   return (
-    
     <DrawerContentScrollView style={{}} {...props} contentContainerStyle={{ flex: 1 }}>
       <View style={styles.profileContainer}>
         <Image source={require('../../assets/images/icon.png')} style={styles.profileImage} />
         <Text style={styles.profileName}>Hello, {user?.name || "User"}</Text>
       </View>
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}> 
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {props.state.routes.map((route, index) => {
           const isActive = state.index === index;
           return (
             <TouchableOpacity
               key={route.key}
-              onPress={() => navigation.navigate(route.name)}
+              onPress={() => handleNavigation(route.name)}
               style={[styles.drawerItem, isActive && styles.activeItem]}
             >
               {isActive ? (
@@ -103,20 +132,16 @@ const CustomDrawerContent = (props) => {
         resizeMode="cover"
       />
     </DrawerContentScrollView>
-    
   );
 };
 
 export default function DrawerLayout() {
-
-  // const { user } = useContext(AuthContext);
-   const { user,  logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
 
   useTokenExpiryCheck(user?.token, logout);
 
-  const isSystemAdmin = user?.userType==5;
-  const isFoodAdmin=user?.userType==6;
-
+  const isSystemAdmin = user?.userType == 5;
+  const isFoodAdmin = user?.userType == 6;
 
   return (
     <Drawer.Navigator
@@ -126,13 +151,13 @@ export default function DrawerLayout() {
         drawerActiveBackgroundColor: "transparent",
         drawerActiveTintColor: "#ffffff",
         drawerInactiveTintColor: "#333",
-        drawerLabelStyle: { fontSize: 14,  },
+        drawerLabelStyle: { fontSize: 14 },
       })}
     >
       {isFoodAdmin ? (
         // Only show Food Dashboard for Food Admin
-        <Drawer.Screen 
-          name="Food Dashboard" 
+        <Drawer.Screen
+          name="Food Dashboard"
           children={() => (
             <Suspense fallback={<LoadingScreen />}>
               <FoodDashboard />
@@ -149,8 +174,8 @@ export default function DrawerLayout() {
       ) : (
         // Show all other screens for non-Food Admin users
         <>
-          <Drawer.Screen 
-            name="Resource Allocation" 
+          <Drawer.Screen
+            name="Resource Allocation"
             children={() => (
               <Suspense fallback={<LoadingScreen />}>
                 <Resource />
@@ -164,11 +189,11 @@ export default function DrawerLayout() {
               ),
             }}
           />
-          
+
           {!isSystemAdmin && (
             <>
-              <Drawer.Screen 
-                name="Tasks" 
+              <Drawer.Screen
+                name="Tasks"
                 children={() => (
                   <Suspense fallback={<LoadingScreen />}>
                     <Task />
@@ -182,9 +207,9 @@ export default function DrawerLayout() {
                   ),
                 }}
               />
-              
-              <Drawer.Screen 
-                name="Projects" 
+
+              <Drawer.Screen
+                name="Projects"
                 children={() => (
                   <Suspense fallback={<LoadingScreen />}>
                     <Project />
@@ -193,16 +218,16 @@ export default function DrawerLayout() {
                 options={{
                   drawerIcon: ({ color }) => (
                     <View className="w-9">
-                      <FontAwesome name="tasks" size={26} color={color}/>
+                      <FontAwesome name="tasks" size={26} color={color} />
                     </View>
                   ),
                 }}
               />
             </>
           )}
-          
-          <Drawer.Screen 
-            name="Time Sheet" 
+
+          <Drawer.Screen
+            name="Time Sheet"
             children={() => (
               <Suspense fallback={<LoadingScreen />}>
                 <TimeSheet />
@@ -216,9 +241,9 @@ export default function DrawerLayout() {
               ),
             }}
           />
-          
-          <Drawer.Screen 
-            name="IT Support" 
+
+          <Drawer.Screen
+            name="IT Support"
             children={() => (
               <Suspense fallback={<LoadingScreen />}>
                 <Ticket />
@@ -232,9 +257,9 @@ export default function DrawerLayout() {
               ),
             }}
           />
-          
-          <Drawer.Screen 
-            name="Assets" 
+
+          <Drawer.Screen
+            name="Assets"
             children={() => (
               <Suspense fallback={<LoadingScreen />}>
                 <Assets />
@@ -248,9 +273,9 @@ export default function DrawerLayout() {
               ),
             }}
           />
-             {!isSystemAdmin && (
-            <Drawer.Screen 
-              name="Finance Module" 
+          {!isSystemAdmin && (
+            <Drawer.Screen
+              name="Finance Module"
               children={() => (
                 <Suspense fallback={<LoadingScreen />}>
                   <Finance />
@@ -265,9 +290,9 @@ export default function DrawerLayout() {
               }}
             />
           )}
-          
-          <Drawer.Screen 
-            name="Food" 
+
+          <Drawer.Screen
+            name="Food"
             children={() => (
               <Suspense fallback={<LoadingScreen />}>
                 <Food />
@@ -281,26 +306,6 @@ export default function DrawerLayout() {
               ),
             }}
           />
-          
-          {/* {isSystemAdmin && (
-            <Drawer.Screen 
-              name="Food Dashboard" 
-              children={() => (
-                <Suspense fallback={<LoadingScreen />}>
-                  <FoodDashboard />
-                </Suspense>
-              )}
-              options={{
-                drawerIcon: ({ color }) => (
-                  <View className="w-9">
-                    <FontAwesome name="tasks" size={26} color={color}/>
-                  </View>
-                ),
-              }}
-            />
-          )} */}
-          
-       
         </>
       )}
 
@@ -308,25 +313,21 @@ export default function DrawerLayout() {
   );
 }
 
-
-
 const styles = StyleSheet.create({
   screen: { flex: 1, justifyContent: "center", alignItems: "center" },
 
   profileSection: {
-   
     padding: 20,
     borderTopWidth: 1,
     borderTopColor: "#ddd",
     alignItems: "center",
   },
   profileContainer: {
-   
     flexDirection: "row",
     alignItems: "center",
-    justifyContent:'space-between',
-    backgroundColor:'white',
-  width:"90%",
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    width: "90%",
     marginBottom: 15,
   },
   profileImage: {
@@ -342,25 +343,19 @@ const styles = StyleSheet.create({
   },
   drawerItem: {
     flexDirection: "row",
-    // backgroundColor:'red',
     alignItems: "center",
     justifyContent: "flex-start",
     paddingVertical: 12,
     paddingHorizontal: 15,
     borderRadius: 100,
     marginBottom: 5,
-    marginLeft:10,
-    // backgroundColor:'red',
-     // Ensure left margin is consistent
-    width: "100%", // Set a consistent width for both active and inactive items
+    marginLeft: 10,
+    width: "100%",
   },
-  
   activeItem: {
     backgroundColor: "transparent",
-  margin:0
-     // Remove any background that might push it
+    margin: 0
   },
-  
   drawerGradient: {
     flexDirection: "row",
     alignItems: "center",
@@ -368,20 +363,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 15,
     borderRadius: 100,
-    marginLeft:-10,
-    width: "100%", 
-    margin:0
+    marginLeft: -10,
+    width: "100%",
+    margin: 0
   },
-  
   drawerText: {
     fontSize: 16,
-    // fontWeight: "bold",
     color: "#333",
     marginLeft: 10,
   },
   drawerActiveText: {
     fontSize: 16,
-    // fontWeight: "bold",
     color: "#fff",
     marginLeft: 10,
   },
@@ -404,13 +396,12 @@ const styles = StyleSheet.create({
   },
   waveImage: {
     width: "120%",
-    height: 400,  // Adjust height as needed
+    height: 400,
     position: "absolute",
-    objectFit:'cover',
-    opacity:1,
-    zIndex:-10,
-    right:-20,
+    objectFit: 'cover',
+    opacity: 1,
+    zIndex: -10,
+    right: -20,
     bottom: -10,
-   
   },
 });
