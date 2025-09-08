@@ -32,7 +32,7 @@ export const useFetchData = (endpoint, token) => {
   // console.log("hhhhhh",accessToken,"TOKEN",token )
   // console.log("Access Token:", accessToken);
   return useQuery({
-  queryKey: [endpoint, accessToken], 
+  queryKey: [endpoint], 
    queryFn: async () => {
       // always refresh before fetch
       const accessToken = await accessTokenGetter();
