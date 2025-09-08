@@ -13,7 +13,7 @@ const AllRequest = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [updatingStatusId, setUpdatingStatusId] = useState(null); // Track which request is being updated
   const { user , accessTokenGetter } = useContext(AuthContext);
-
+const [loadingclosed,setLoadingclosed]=useState(false)
   // Calculate dates for the API request
   const today = new Date();
   const sevenDaysAgo = new Date();
@@ -58,6 +58,7 @@ const AllRequest = () => {
 
   const handleStatusUpdate = async (newStatus) => {
     if (!selectedRequest) return;
+  setLoadingclosed(true);
     const token = await accessTokenGetter();
     
     // Set the updating status ID to show loader for this specific request
@@ -82,11 +83,14 @@ const AllRequest = () => {
         //   `Status updated to ${getStatusDetails(newStatus).text}`,
         //   [{ text: 'OK' }]
         // );
+        setLoadingclosed(false);
         setUpdatingStatusId(null); // Reset updating status
         refetch(); // Refresh data after successful update
       },
       onError: (error) => {
         // Revert on error
+        setLoadingclosed(false);
+
         setLocalRequestStatus(selectedRequest.status);
         setUpdatingStatusId(null); // Reset updating status
         Toast.error('Failed to update status');
@@ -492,14 +496,20 @@ const AllRequest = () => {
           <View className="px-6 pb-8 pt-6 border-t border-gray-200">
             <TouchableOpacity 
               className=" py-3 bg-red-800 rounded-lg items-center"
+              disabled={loadingclosed}
               onPress={() => {
                 setIsModalVisible(false);
                 setLocalRequestStatus(null);
                 setUpdatingStatusId(null);
               }}
-              disabled={updatingStatusId === selectedRequest?.Id}
+              // disabled={updatingStatusId === selectedRequest?.Id}
             >
-              <Text className=" text-white font-medium">Close</Text>
+              {loadingclosed ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+              <Text className=" text-white font-medium">Close</Text> 
+              )}
+              
             </TouchableOpacity>
           </View>
         </View>

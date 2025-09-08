@@ -60,7 +60,31 @@ export async function getNewTokenBYRefreshToken(refToken) {
 }
 
 
+export const fetchProjectList = async (accessTokenGetter) => {
+  const token = await accessTokenGetter();
+  const response = await fetch(`${API_URL}Projects/GetAllProjectNames`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response.json();
+};
 
+ export const fetchProjectDetails = async (projectId, accessTokenGetter) => {
+  const token = await accessTokenGetter();
+  const response = await fetch(`${API_URL}Projects/GetProjectDetailsById?projectId=${projectId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response.json();
+};
 
 
 export async function savePushTokenToBackend(empId, Expotoken, jwtToken) {

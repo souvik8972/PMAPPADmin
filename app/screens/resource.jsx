@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, TextInput, FlatList, ScrollView, Platform, Animated, KeyboardAvoidingView, Easing} from "react-native";
+import { View, Text, TouchableOpacity, TextInput, FlatList, ScrollView, Platform, Animated, KeyboardAvoidingView, Easing, ActivityIndicator} from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -255,22 +255,18 @@ const TaskDropdown = ({ emp }) => {
  
  
   return (
-   
     <Animated.View
-    style={[
-      {
-        transform: [{ translateY: slideAnim }],
-        opacity: fadeAnim,
-      },
-     
-    ]}
-  >
- 
-    <View style={[tw`  `,{backgroundColor:'#f9fafb'}]} >
-    <View className={`  rounded-lg `}>
- 
+      style={[
+        {
+          transform: [{ translateY: slideAnim }],
+          opacity: fadeAnim,
+        },
+      ]}
+    >
+      <View style={[tw`  `, { backgroundColor: "#f9fafb" }]}>
+        <View className={`  rounded-lg `}>
           {/* Google search bar */}
-         
+
           {/* <View className="flex-row space-x-3 items-center border border-gray-300 rounded-full   w-2/3 text-white mb-2 mt-2" style={{backgroundColor:'#B4B4B4'}}>
           <Icon name="search1" size={20} color="white" className="p-2" />
      
@@ -282,91 +278,129 @@ const TaskDropdown = ({ emp }) => {
              
             </TextInput>
           </View> */}
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} className="h-[60px] flex-grow-0 mt-2 mb-2">
-  {thisWeek && thisWeek.map((date) => (
-    <TouchableOpacity key={date.value} onPress={() => setSelectedDate(date.value)}>
-      <LinearGradient
-        colors={selectedDate === date.value ? ["#D01313", "#6A0A0A"] : ["#ffffff", "#ffffff"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{
-          borderRadius: 18,
-          marginRight: 10,
-          height: 60,
-          borderWidth: selectedDate === date.value ? 0 : 1,
-          borderColor: selectedDate === date.value ? 'transparent' : '#D1D5DB', 
-        }}
-      >
-        <View className="px-1 py-1 h-[60px] flex justify-center items-center w-[50px] rounded-full">
-        <Text className={selectedDate === date.value ? "text-white font-semibold text-sm" : "text-black text-sm"}>{date.day}</Text>
-        <Text className={selectedDate === date.value ? "text-white font-bold text-sm" : "text-black text-sm"}>{date.lebel}</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="h-[60px] flex-grow-0 mt-2 mb-2"
+          >
+            {thisWeek &&
+              thisWeek.map((date) => (
+                <TouchableOpacity
+                  key={date.value}
+                  onPress={() => setSelectedDate(date.value)}
+                >
+                  <LinearGradient
+                    colors={
+                      selectedDate === date.value
+                        ? ["#D01313", "#6A0A0A"]
+                        : ["#ffffff", "#ffffff"]
+                    }
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{
+                      borderRadius: 18,
+                      marginRight: 10,
+                      height: 60,
+                      borderWidth: selectedDate === date.value ? 0 : 1,
+                      borderColor:
+                        selectedDate === date.value ? "transparent" : "#D1D5DB",
+                    }}
+                  >
+                    <View className="px-1 py-1 h-[60px] flex justify-center items-center w-[50px] rounded-full">
+                      <Text
+                        className={
+                          selectedDate === date.value
+                            ? "text-white font-semibold text-sm"
+                            : "text-black text-sm"
+                        }
+                      >
+                        {date.day}
+                      </Text>
+                      <Text
+                        className={
+                          selectedDate === date.value
+                            ? "text-white font-bold text-sm"
+                            : "text-black text-sm"
+                        }
+                      >
+                        {date.lebel}
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
+
+          <View className="border-gray-200  pt-2">
+            {isLoading ? (
+              <View className="items-center justify-center">
+                <ActivityIndicator size="large" color="red" />
+                <Text className="text-gray-500 text-center mt-4 text-base">
+                  Loading...
+                </Text>
+              </View>
+            ) : FilterTaskData.length === 0 && !isLoading ? (
+              <Text className="text-gray-500 text-center mt-4 text-base">
+                No tasks available
+              </Text>
+            ) : (
+              FilterTaskData.map((task) => (
+                <View
+                  key={task.Task_Id}
+                  className="bg-white rounded-xl mb-3 px-4 py-3"
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.8,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}
+                >
+                  <View className="flex-row justify-between items-center mb-4">
+                    <Text
+                      className="text-base font-semibold text-gray-900 flex-1 mr-2"
+                      numberOfLines={1}
+                    >
+                      {task.Task_Title}
+                    </Text>
+                    <Text className="text-[11px] font-medium text-white bg-blue-500 px-2 py-0.5 rounded-md">
+                      #{task.Task_Id}
+                    </Text>
+                  </View>
+
+                  <View className="flex-row flex-wrap gap-2">
+                    <View className="bg-green-100 px-2 py-1 rounded-lg">
+                      <Text className="text-sm text-green-800 font-semibold">
+                        Planned: {task.Working_hours}h
+                      </Text>
+                    </View>
+
+                    <View className="px-2 bg-green-100 py-1 rounded-lg">
+                      <Text
+                        className="text-sm font-semibold"
+                        style={{ color: "#213448" }}
+                      >
+                        Logged: {task.Logged_hours}h
+                      </Text>
+                    </View>
+
+                    <View className="px-2 py-1 rounded-full">
+                      <Text className="text-sm font-semibold">
+                        👤{" "}
+                        {`${task.Taskowner?.split(" ")[0]} ${
+                          task.Taskowner?.split(" ")[1]?.[0] || ""
+                        }`}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))
+            )} 
+
+           
+          </View>
         </View>
-      </LinearGradient>
-    </TouchableOpacity>
-  ))}
-</ScrollView>
- 
- 
-     
-     <View className="border-gray-200  pt-2">
-     
-     {FilterTaskData.length === 0 && !isLoading ? (
-  <Text className="text-gray-500 text-center mt-4 text-base">
-    No tasks available
-  </Text>
-) : (
-  FilterTaskData.map((task) => (
-    <View
-      key={task.Task_Id}
-      className="bg-white rounded-xl mb-3 px-4 py-3"
-      style={{
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 4,
-        elevation: 3,
-      }}
-    >
-      <View className="flex-row justify-between items-center mb-4">
-        <Text
-          className="text-base font-semibold text-gray-900 flex-1 mr-2"
-          numberOfLines={1}
-        >
-          {task.Task_Title}
-        </Text>
-        <Text className="text-[11px] font-medium text-white bg-blue-500 px-2 py-0.5 rounded-md">
-          #{task.Task_Id}
-        </Text>
       </View>
-
-      <View className="flex-row flex-wrap gap-2">
-        <View className="bg-green-100 px-2 py-1 rounded-lg">
-          <Text className="text-sm text-green-800 font-semibold">
-          Planned: {task.Working_hours}h
-          </Text>
-        </View>
-
-        <View className="px-2 bg-green-100 py-1 rounded-lg">
-          <Text className="text-sm font-semibold" style={{ color: '#213448' }}>
-            Logged: {task.Logged_hours}h
-          </Text>
-        </View>
-
-        <View className="px-2 py-1 rounded-full">
-          <Text className="text-sm font-semibold">
-             👤 {`${task.Taskowner?.split(' ')[0]} ${task.Taskowner?.split(' ')[1]?.[0] || ''}`}
-          </Text>
-        </View>
-      </View>
-    </View>
-  ))
-)}
-
-</View>
- 
- 
-    </View>
-    </View>
     </Animated.View>
   );
 };

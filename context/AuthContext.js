@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
 import { getAuthInfo, saveAuthInfo, removeAuthInfo,checkTokenExpiration, getRefreshToken } from "../utils/auth"; // Updated to reflect changes
 import { getNewTokenBYRefreshToken, savePushTokenToBackend } from "@/services/api";
+import { router } from "expo-router";
 
 export const AuthContext = createContext(null);
 
@@ -57,6 +58,8 @@ export function AuthProvider({ children }) {
 
       }
       await removeAuthInfo();
+
+     
   //  console.log(user,"User")
       
     //  console.log("Logout button pressed 1");
@@ -86,6 +89,12 @@ export function AuthProvider({ children }) {
    if (checkTokenExpiration(auth_info?.exp)){
     console.log("Token expired, refreshing... from context");
     const refToken= await getRefreshToken();
+    if(!refToken) {
+      await logout();
+      console.log("No refresh token available, redirecting to login");
+       router.replace('/login');
+      // return null;
+    }
      const newToken = await getNewTokenBYRefreshToken(refToken);
      if (newToken) {
        await saveAuthInfo(newToken.accessToken, newToken.refreshToken);

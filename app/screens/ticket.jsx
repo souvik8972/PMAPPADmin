@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Modal, TextInput, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Modal, TextInput, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
@@ -11,9 +11,10 @@ import { usePostData } from '@/ReactQuery/hooks/usePostData';
 import RetryButton from '@/components/Retry';
 import { API_URL } from '@env';
 import {isTokenValid} from '@/utils/functions/checkTokenexp';
+import { Toast } from 'toastify-react-native';
 
 const IssueTracker = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, accessTokenGetter } = useContext(AuthContext);
   const token = user?.token || null;
   const isAdmin = user?.userType == 5;
   
@@ -28,7 +29,7 @@ const IssueTracker = () => {
   const [openSubType, setOpenSubType] = useState(false);
   const [openSeverity, setOpenSeverity] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-
+  const [submitting, setSubmitting] = useState(false);
   // States for update issue modal
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState(null);
@@ -72,9 +73,9 @@ const IssueTracker = () => {
   useEffect(() => {
     if (categoryData && categoryData.ticket_issues_Category) {
       // Format categories for dropdown
-      const formattedCategories = categoryData.ticket_issues_Category.map((cat, idx) => ({
+      const formattedCategories = categoryData.ticket_issues_Category.map(cat => ({
         label: cat.Issue_Type,
-          value: `${cat.Id}-${idx}`,
+        value: cat.Id,
         original: cat
       }));
       setCategories(formattedCategories);
@@ -88,16 +89,12 @@ const IssueTracker = () => {
       
       setLoadingSubcategories(true);
       try {
-        const tokenvalid = await isTokenValid(user, logout);
-        if (!tokenvalid) {
-          alert("Session expired. Please log in again.");
-          return;
-        }
+        const newToken = await accessTokenGetter();
         
         const response = await fetch(`${API_URL}Ticket/GetSubIssuesCategory?issueId=${type}`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${user.token}`,
+            "Authorization": `Bearer ${newToken}`,
             "Content-Type": "application/json",
           },
         });
@@ -109,17 +106,17 @@ const IssueTracker = () => {
         const subcategoryData = await response.json();
         
         if (subcategoryData && subcategoryData.ticket_Subissues_Category) {
-          const formattedSubcategories = subcategoryData.ticket_Subissues_Category.map(sub => ({
+          const formattedSubcategories = subcategoryData.ticket_Subissues_Category.map((sub,index) => ({
             label: sub.Subcategory,
-            value: sub.Id,
+            value: `${sub.Id}-${index}`,
             parentId: sub.ParentIssueType,
             original: sub
           }));
           setFilteredSubcategories(formattedSubcategories);
         }
       } catch (err) {
-        console.error("Error fetching subcategories:", err);
-        alert("Failed to load subcategories");
+        // console.error("Error fetching subcategories:", err);
+        Toast.error("Failed to load subcategories");
       } finally {
         setLoadingSubcategories(false);
       }
@@ -130,6 +127,28 @@ const IssueTracker = () => {
     // Reset subType when type changes
     setSubType(null);
   }, [type]);
+
+  // Close other dropdowns when one opens
+  useEffect(() => {
+    if (openType) {
+      setOpenSubType(false);
+      setOpenSeverity(false);
+    }
+  }, [openType]);
+
+  useEffect(() => {
+    if (openSubType) {
+      setOpenType(false);
+      setOpenSeverity(false);
+    }
+  }, [openSubType]);
+
+  useEffect(() => {
+    if (openSeverity) {
+      setOpenType(false);
+      setOpenSubType(false);
+    }
+  }, [openSeverity]);
 
   const toggleExpand = (issueId) => {
     setExpandedIssueId(expandedIssueId === issueId ? null : issueId);
@@ -169,30 +188,38 @@ const IssueTracker = () => {
   };
 
   const handleSubmit = async () => {
+setSubmitting(true);
+const token =await accessTokenGetter();
+
+
     try {
       const issueData = {
         IssueType: type,
-        Subcategory: subType,
+        selectedSubIssue:  parseInt(subType.split("-")[0]) || null, // in api the subtype is 2 time present so i have addaed index after - to make it unique now here i am removing it
         Severity: severity,
         Issue_Description: description,
       };
+      console.log(issueData,"IssueData")
 
       submitMutate({
         data: {}, 
-        token: user.token, 
+        token:token,
         queryParams: issueData,
       }, {
         onSuccess: () => {
-          alert("Ticket Submitted Successfully");
+          Toast.success("Ticket Submitted Successfully",{position: "top"});
           setModalVisible(false);
           setDescription('');
           setType(null);
           setSubType(null);
           setSeverity(null);
           refetch(); 
+          setSubmitting(false);
         },
         onError: (error) => {
-          alert("Failed to submit ticket.");
+          Toast.error("Failed to submit ticket.",error);
+          console.log(error);
+          setSubmitting(false);
         }
       });
     } catch (err) {
@@ -202,11 +229,13 @@ const IssueTracker = () => {
 
   const handleUpdateSubmit = async () => {
     try {
-      const tokenvalid = await isTokenValid(user, logout);
-      if (!tokenvalid) {
-        alert("Session expired. Please log in again.");
-        return;
-      }
+      setSubmitting(true);
+const token =await accessTokenGetter();
+      // const tokenvalid = await isTokenValid(user, logout);
+      // if (!tokenvalid) {
+      //   alert("Session expired. Please log in again.");
+      //   return;
+      // }
     
       if (!selectedIssue || !updateStatus || !updateReason) return;
   
@@ -221,7 +250,7 @@ const IssueTracker = () => {
       const response = await fetch(fullUrl, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${user.token}`,
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
@@ -230,18 +259,28 @@ const IssueTracker = () => {
       if (!response.ok) {
         throw new Error("Failed to update issue");
       }
-  
-      alert("Issue updated successfully");
+
+      Toast.success("Issue updated successfully");
       setUpdateModalVisible(false);
       setUpdateStatus(null);
       setUpdateReason("");
       setExpandedIssueId(null);
+       setSubmitting(false);
+      // setSelectedIssue(null);
       refetch();
     } catch (err) {
       console.error("Error updating issue:", err);
-      alert("Failed to update issue");
+      Toast.error("Failed to update issue");
     }
   };
+
+  const handleCancelModal=()=>{
+    setModalVisible(false);
+     setDescription('');
+          setType(null);
+          setSubType(null);
+          setSeverity(null);
+  }
 
   const isSubmitDisabled = type === null || severity === null || !description;
   const isUpdateDisabled = !updateStatus || !updateReason;
@@ -264,7 +303,7 @@ const IssueTracker = () => {
 
   return (
     <View className="flex-1 p-5 pt-0 bg-white">
-      <Text className="text-lg font-bold text-center mb-6 up text-black">Ticket Tracker</Text>
+      {/* <Text className="text-lg font-bold text-center mb-6 up text-black">Ticket Tracker</Text> */}
 
       <TouchableOpacity className="rounded-lg items-center mb-4" onPress={() => setModalVisible(true)}>
         <LinearGradient
@@ -414,114 +453,209 @@ const IssueTracker = () => {
           className="flex-1"
         >
           <View className="flex-1 justify-center items-center bg-black/50">
-            <View className="w-4/5 bg-white p-5 rounded-lg">
-              <Text className="text-xl font-bold text-center text-black mb-3">Report an Issue</Text>
-              
-              <View className="z-50 mb-4">
-                <DropDownPicker
-                  open={openType}
-                  value={type}
-                  items={categories}
-                  setOpen={setOpenType}
-                  setValue={setType}
-                  placeholder="Select issue type"
-                  placeholderStyle={{ color: 'gray' }}
-                  style={{ borderColor: 'gray' }}
-                  textStyle={{ color: 'black' }}
-                  dropDownContainerStyle={{ 
-                    zIndex: 3000, 
-                    elevation: 3000,
-                    borderColor: 'gray'
-                  }}
-                />
-              </View>
-
-              <View className="z-40 mb-4">
-                {loadingSubcategories ? (
-                  <View className="border border-gray-300 p-3 rounded-lg items-center">
-                    <ActivityIndicator size="small" color="#D01313" />
-                    <Text className="text-gray-500 mt-1">Loading subcategories...</Text>
-                  </View>
-                ) : (
-                  <DropDownPicker
-                    open={openSubType}
-                    value={subType}
-                    items={filteredSubcategories}
-                    setOpen={setOpenSubType}
-                    setValue={setSubType}
-                    placeholder="Select subcategory"
-                    placeholderStyle={{ color: 'gray' }}
-                    style={{ borderColor: 'gray' }}
-                    textStyle={{ color: 'black' }}
-                    dropDownContainerStyle={{ 
-                      zIndex: 2000, 
-                      elevation: 2000,
-                      borderColor: 'gray'
-                    }}
-                    disabled={!type}
-                  />
-                )}
-              </View>
-              
-              <View className="z-40 mb-4">
-                <DropDownPicker
-                  open={openSeverity}
-                  value={severity}
-                  items={[
-                    { label: 'Low', value: 1 },
-                    { label: 'Medium', value: 2 },
-                    { label: 'High', value: 3 },
-                  ]}
-                  setOpen={setOpenSeverity}
-                  setValue={setSeverity}
-                  placeholder="Select severity"
-                  placeholderStyle={{ color: 'gray' }}
-                  style={{ borderColor: 'gray' }}
-                  textStyle={{ color: 'black' }}
-                  dropDownContainerStyle={{ 
-                    zIndex: 1000, 
-                    elevation: 1000,
-                    borderColor: 'gray'
-                  }}
-                />
-              </View>
-
-              <TextInput
-                className="border border-gray-300 p-2 h-24 rounded-lg text-black mt-3"
-                placeholder="Describe your issue..."
-                placeholderTextColor="gray"
-                value={description}
-                onChangeText={setDescription}
-                multiline
-                textAlignVertical="top"
-              />
-
-              <View className="flex-row justify-center mt-4">
-                <TouchableOpacity
-                  className="p-3 rounded-lg items-center mr-4"
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Text className="text-gray-700 font-bold">Cancel</Text>
-                </TouchableOpacity>
+            <View className="w-4/5 bg-white p-5 rounded-lg ">
+              <ScrollView
+                nestedScrollEnabled={true}
+                keyboardShouldPersistTaps="always"
+                showsVerticalScrollIndicator={false}
+              >
+                <Text className="text-xl font-bold text-center text-black mb-3">
+                  Report an Issue
+                </Text>
                 
-                <TouchableOpacity
-                  onPress={handleSubmit}
-                  disabled={isSubmitDisabled}
-                  style={{ opacity: isSubmitDisabled ? 0.5 : 1 }}
-                >
-                  <LinearGradient
-                    colors={["#D01313", "#6A0A0A"]}
-                    style={{
-                      padding: 12,
-                      borderRadius: 9999,
-                      width: 120,
-                      alignItems: 'center',
+                {/* Issue Type */}
+                <View className="mb-4" style={{zIndex: openType ? 6000 : 1}}>
+                  <View className="mb-4" style={{zIndex: openType ? 6000 : 1}}>
+  <DropDownPicker
+    open={openType}
+    value={type}
+    items={categories}
+    setOpen={setOpenType}
+    setValue={setType}
+    placeholder="Select issue type"
+    placeholderStyle={{ color: 'gray' }}
+    style={{ 
+      borderColor: 'gray',
+      zIndex: openType ? 6000 : 1,
+      backgroundColor: 'white',
+    }}
+    textStyle={{ 
+      color: 'black',
+      fontSize: 14,
+    }}
+    dropDownContainerStyle={{
+      borderColor: 'gray',
+      backgroundColor: 'white',
+      zIndex: 6000,
+      elevation: 6000,
+      overflow:'scroll',
+position:'static',
+      // backgroundColor: 'red',
+      // maxHeight: 1000,
+    }}
+    itemStyle={{
+      justifyContent: 'flex-start',
+    }}
+    selectedItemContainerStyle={{
+      backgroundColor: '#F9E6E6',
+    }}
+    selectedItemLabelStyle={{
+      color: '#D01313',
+      fontWeight: 'bold',
+    }}
+    labelStyle={{
+      color: 'black',
+      fontSize: 14,
+    }}
+    // listItemContainerStyle={{
+    //   height: 40,
+    // }}
+    listItemLabelStyle={{
+      color: '#333',
+      fontSize: 14,
+    }}
+    listMode="SCROLLVIEW"
+    scrollViewProps={{
+      nestedScrollEnabled: true,
+    }}
+    onOpen={() => {
+      setOpenSubType(false);
+      setOpenSeverity(false);
+    }}
+  />
+</View>
+                </View>
+
+                {/* Subcategory */}
+                {type &&  <View className="mb-4" style={{zIndex: openSubType ? 5000 : 1}}>
+                  {loadingSubcategories ? (
+                    <View className="border border-gray-300 p-3 rounded-lg items-center">
+                      <ActivityIndicator size="small" color="#D01313" />
+                      <Text className="text-gray-500 mt-1">Loading subcategories...</Text>
+                    </View>
+                  ) : (
+                    <DropDownPicker
+                      open={openSubType}
+                      value={subType}
+                      items={filteredSubcategories}
+                      setOpen={setOpenSubType}
+                      setValue={setSubType}
+                      placeholder="Select subcategory"
+                      placeholderStyle={{ color: 'gray' }}
+                      style={{ 
+                        borderColor: 'gray',
+                        zIndex: openSubType ? 5000 : 1,
+                      }}
+                      textStyle={{ color: 'black' }}
+                      dropDownContainerStyle={{
+      borderColor: 'gray',
+      backgroundColor: 'white',
+      zIndex: 5000,
+      elevation: 5000,
+      overflow:'scroll',
+position:'static',
+      // backgroundColor: 'red',
+      // maxHeight: 1000,
+    }}
+                      disabled={!type}
+                      listMode="SCROLLVIEW"
+                        portal={true}
+                      scrollViewProps={{
+                        nestedScrollEnabled: true,
+                      }}
+                      onOpen={() => {
+                        setOpenType(false);
+                        setOpenSeverity(false);
+                      }}
+                    />
+                  )}
+                </View>}
+               
+
+                {/* Severity */}
+                <View className="mb-4" style={{zIndex: openSeverity ? 4000 : 1}}>
+                  <DropDownPicker
+                    open={openSeverity}
+                    value={severity}
+                    items={[
+                      { label: 'Low', value: 1 },
+                      { label: 'Medium', value: 2 },
+                      { label: 'High', value: 3 },
+                    ]}
+                    setOpen={setOpenSeverity}
+                    setValue={setSeverity}
+                    placeholder="Select severity"
+                    placeholderStyle={{ color: 'gray' }}
+                    style={{ 
+                      borderColor: 'gray',
+                      zIndex: openSeverity ? 4000 : 1,
                     }}
+                    textStyle={{ color: 'black' }}
+                    dropDownContainerStyle={{
+      borderColor: 'gray',
+      backgroundColor: 'white',
+      zIndex: 6000,
+      elevation: 6000,
+      overflow:'scroll',
+position:'static',
+      // backgroundColor: 'red',
+      // maxHeight: 1000,
+    }}
+                    listMode="SCROLLVIEW"
+                    scrollViewProps={{
+                      nestedScrollEnabled: true,
+                    }}
+                    onOpen={() => {
+                      setOpenType(false);
+                      setOpenSubType(false);
+                    }}
+                  />
+                </View>
+
+                {/* Description */}
+                <TextInput
+                  className="border border-gray-300 p-2 h-24 rounded-lg text-black mt-3"
+                  placeholder="Describe your issue..."
+                  placeholderTextColor="gray"
+                  value={description}
+                  onChangeText={setDescription}
+                  multiline
+                  textAlignVertical="top"
+                />
+
+                {/* Buttons */}
+                <View className="flex-row justify-center mt-4">
+                  <TouchableOpacity
+                    className="p-3 rounded-lg items-center mr-4"
+                    onPress={() => handleCancelModal()}
                   >
-                    <Text className="text-white font-bold">Submit</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
+                    <Text className="text-gray-700 font-bold">Cancel</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    onPress={handleSubmit}
+                    disabled={isSubmitDisabled}
+                    style={{ opacity: isSubmitDisabled ? 0.5 : 1 }}
+                  >
+                    <LinearGradient
+                      colors={["#D01313", "#6A0A0A"]}
+                      style={{
+                        padding: 12,
+                        borderRadius: 9999,
+                        width: 120,
+                        alignItems: 'center',
+                      }}
+                    >
+                      {submitting ? (
+                        <ActivityIndicator color="white" />
+                      ) : (
+                        <Text className="text-white font-bold">Submit</Text>
+                      )}
+                      {/*<ActivityIndicator color="white" />*/}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
             </View>
           </View>
         </KeyboardAvoidingView>
@@ -562,6 +696,11 @@ const IssueTracker = () => {
                     placeholderStyle={{ color: 'gray' }}
                     style={{ borderColor: 'gray' }}
                     textStyle={{ color: 'black' }}
+                    dropDownContainerStyle={{
+                      zIndex: 5000,
+                      elevation: 5000,
+                    }}
+                    listMode="SCROLLVIEW"
                   />
                 </View>
 
@@ -601,7 +740,14 @@ const IssueTracker = () => {
                         alignItems: 'center',
                       }}
                     >
-                      <Text className="text-white font-bold">Update</Text>
+                      {submitting ? (
+                        <ActivityIndicator color="white" />
+                      ) : (
+                        <Text className="text-white font-bold">Update</Text>
+                      )}
+                      {/*<ActivityIndicator color="white" />*/}
+                      
+                      {/* <Text className="text-white font-bold">Update</Text> */}
                     </LinearGradient>
                   </TouchableOpacity>
                 </View>

@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         width: '100%',
-        height: '20%', // Adjust this value to control how much of the bottom is covered
+        height: '30%', // Adjust this value to control how much of the bottom is covered
         backgroundColor: 'white',
         opacity: 1,
     },

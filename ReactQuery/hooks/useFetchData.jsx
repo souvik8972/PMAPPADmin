@@ -30,16 +30,12 @@ export const useFetchData = (endpoint, token) => {
   // console.log("hhhhhh",accessToken,"TOKEN",token )
   // console.log("Access Token:", accessToken);
   return useQuery({
-    queryKey: [endpoint+"1"], // Unique key for caching
-   queryFn: async () => {
-    
-      return fetchData({ endpoint, token: accessToken });
-    },
-    enabled: !!accessToken, // Only fetch if token exists
-   staleTime: 0,       // Data is always stale → always refetch
-  cacheTime: 0,       // No cache kept at all
+  queryKey: [endpoint, accessToken], 
+  queryFn: async () => fetchData({ endpoint, token: accessToken }),
+  enabled: !!accessToken, 
+  staleTime: 0,        
   refetchOnMount: true,
   refetchOnWindowFocus: true,
+});
 
-  });
 };
