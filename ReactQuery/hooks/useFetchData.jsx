@@ -23,25 +23,18 @@ const fetchData = async ({ endpoint, token }) => {
   return response.json();
 };
 
-export const useFetchData = (endpoint, token) => {
-  // useRedirectIfTokenExpired(token)
-  const {accessTokenGetter} = useContext(AuthContext);
-  // console.log("Fetching data from:", endpoint);
-// const randomNum = Math.floor(Math.random() * 1000); 
-  const accessToken = useRefreshToken(token,endpoint);
-  // console.log("hhhhhh",accessToken,"TOKEN",token )
-  // console.log("Access Token:", accessToken);
+export const useFetchData = (endpoint) => {
+  const { accessTokenGetter } = useContext(AuthContext);
+
   return useQuery({
-  queryKey: [endpoint, accessToken], 
-   queryFn: async () => {
-      // always refresh before fetch
+    queryKey: [endpoint],
+    queryFn: async () => {
       const accessToken = await accessTokenGetter();
       return fetchData({ endpoint, token: accessToken });
     },
-  enabled: !!accessToken, 
-  staleTime: 0,        
-  refetchOnMount: true,
-  refetchOnWindowFocus: true,
-});
-
+    enabled: true,      
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
 };
