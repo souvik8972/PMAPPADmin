@@ -16,6 +16,7 @@ import { deleteTask } from "../../ReactQuery/hooks/deleteTask";
 import { API_URL } from '@env';
 import {isTokenValid} from '@/utils/functions/checkTokenexp';
 import  { Toast } from 'toastify-react-native'
+import { fi } from "date-fns/locale";
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
 // Memoized Task Item Component
@@ -151,7 +152,7 @@ const TaskItem = React.memo(({
 });
 
 export default function TaskScreen() {
-  const { user,logout } = useContext(AuthContext);
+  const { user,logout,accessTokenGetter } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [selectedRange, setSelectedRange] = useState({ startDate: new Date(), endDate: null });
@@ -163,6 +164,7 @@ export default function TaskScreen() {
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const ActionType = 0;
   const token = user?.token;
 
@@ -203,15 +205,17 @@ export default function TaskScreen() {
     
 
     try {
-        const tokenvalid= await isTokenValid(user,logout)
-     if(!tokenvalid) {
-       Toast.error("Session expired. Please log in again.");
-        return;
-      }
+        // const tokenvalid= await isTokenValid(user,logout)
+    //  if(!tokenvalid) {
+    //    Toast.error("Session expired. Please log in again.");
+    //     return;
+    //   }
+
       setLoadingDetails(true);
+       const accessToken = await accessTokenGetter();
       const response = await fetch(taskDetailsEndpoint(taskId), {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
         }
       });
@@ -237,10 +241,14 @@ export default function TaskScreen() {
 
   const confirmDelete = async (id) => {
     if (!id) return;
+
+    
     
     try {
-      const result = await deleteTask(id, token);
-      
+      setIsDeleting(true);
+      const accessToken = await accessTokenGetter();
+      const result = await deleteTask(id, accessToken);
+
       if (result.success) {
         setBasicTaskList(prev => prev.filter(task => task.Task_Id !== id));
         setTaskDetails(prev => {
@@ -258,6 +266,8 @@ export default function TaskScreen() {
       
       setDeleteModalVisible(false);
       setTaskToDelete(null);
+    }finally {
+      setIsDeleting(false);
     }
   };
 
@@ -418,7 +428,11 @@ export default function TaskScreen() {
                 style={[styles.modalButton, styles.deleteButton]}
                 onPress={() => confirmDelete(taskToDelete)}
               >
-                <Text style={styles.deleteButtonText}>Delete</Text>
+                {isDeleting ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={styles.deleteButtonText}>Delete</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>

@@ -9,11 +9,23 @@ import Loading from './loading';
 // import { scheduleDailyNotification } from '../utils/notifications';
 import { initNotificationListeners, registerForPushNotificationsAsync, removeNotificationListeners } from '@/services/notifications';
 import Landing from './Landing';
+import { useRefreshToken } from '../utils/auth';
+import { use } from 'react';
 
 
 const { width, height } = Dimensions.get('window');
 
 const Index = () => {
+// const {user}=useContext(AuthContext)
+// // const accessToken = useRefreshToken(user?.token);
+
+// // useEffect(()=>{
+// //   console.log("Refreshed Access Token:", accessToken,user?.token);
+// // },[])
+
+
+
+
 
   const [loading ,setLoading]=useState(true)
   return (

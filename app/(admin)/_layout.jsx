@@ -34,45 +34,20 @@ const LoadingScreen = () => (
 );
 
 const CustomDrawerContent = (props) => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, logoutWithOutTokenRemove } = useContext(AuthContext);
   const router = useRouter();
   const { state, navigation } = props;
   const isAdmin = user?.userType == 5;
-
-  /**
-   * Function to check token expiry before navigation
-   */
-  const checkTokenBeforeNavigation = useCallback(async (routeName) => {
-    if (!user?.token) return;
-
-    // console.log("Checking token before navigation");
-    try {
-      const currentTime = Date.now() / 1000;
-      // Check if token exists and has expired
-      if (user?.exp && currentTime > user.exp) {
-        Toast.error("Session expired. Please log in again.");
-
-        await logout();
-        router.replace('/login');
-        return false; // Prevent navigation
-      }
-      return true; // Allow navigation
-    } catch (error) {
-      console.error('Token validation error:', error);
-      return true; // Allow navigation in case of error
-    }
-  }, [user, logout, router]);
-
+const [logoutInProgress, setLogoutInProgress] = React.useState(false);
   const handleLogout = async () => {
+    setLogoutInProgress(true);
     await logout()
+    setLogoutInProgress(false);
     router.replace('/login');
   };
 
   const handleNavigation = async (routeName) => {
-    const canNavigate = await checkTokenBeforeNavigation(routeName);
-    if (canNavigate) {
-      navigation.navigate(routeName);
-    }
+    navigation.navigate(routeName);
   };
 
   return (
@@ -121,7 +96,10 @@ const CustomDrawerContent = (props) => {
             style={styles.logoutGradient}
           >
             <Feather name="log-out" size={22} color="white" style={{ marginRight: 8 }} />
-            <Text style={styles.logoutText}>Logout</Text>
+            {logoutInProgress ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) :  <Text style={styles.logoutText}>Logout</Text>}
+           
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -136,9 +114,13 @@ const CustomDrawerContent = (props) => {
 };
 
 export default function DrawerLayout() {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logoutWithOutTokenRemove } = useContext(AuthContext);
 
-  useTokenExpiryCheck(user?.token, logout);
+  // Remove useTokenExpiryCheck from here to prevent it from running on tab changes
+  // Instead, you should implement token expiry checking in a more appropriate place:
+  // 1. In your AuthContext provider
+  // 2. In a top-level component that doesn't re-render on navigation
+  // 3. Or use an axios interceptor for API calls
 
   const isSystemAdmin = user?.userType == 5;
   const isFoodAdmin = user?.userType == 6;
@@ -309,7 +291,6 @@ export default function DrawerLayout() {
           />
         </>
       )}
-
     </Drawer.Navigator>
   );
 }

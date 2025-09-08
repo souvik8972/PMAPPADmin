@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useRedirectIfTokenExpired } from '../../utils/auth';
+import { useRedirectIfTokenExpired, useRefreshToken } from '../../utils/auth';
 
 import { API_URL } from '@env';
 
@@ -21,11 +21,12 @@ const fetchData = async ({ endpoint, token }) => {
 };
 
 export const useFetchOnClick = (endpoint, token,check=false) => {
-   useRedirectIfTokenExpired(token)
+    const accessToken = useRefreshToken(token,endpoint);
+
   return useQuery({
     queryKey: [endpoint], // Unique key for caching
-    queryFn: () => fetchData({ endpoint, token }),
-    enabled: check, 
+    queryFn: () => fetchData({ endpoint, token: accessToken }),
+    enabled: check,
     staleTime: 60 * 1000, // 1 minute (data stays fresh for 1 min)
     cacheTime: 1 * 60 * 1000, // Optional: Keep data in cache for 1 mins (default)
 

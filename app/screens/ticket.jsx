@@ -7,7 +7,7 @@ import { Image } from 'react-native';
 import { useFetchData } from '@/ReactQuery/hooks/useFetchData'
 import { AuthContext } from '@/context/AuthContext';
 import { usePostData } from '@/ReactQuery/hooks/usePostData';
-import { usePostDataParam } from '@/ReactQuery/hooks/usePostDataParam';
+
 import RetryButton from '@/components/Retry';
 import { API_URL } from '@env';
 import {isTokenValid} from '@/utils/functions/checkTokenexp';
@@ -21,9 +21,11 @@ const IssueTracker = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [issues, setIssues] = useState([]);
   const [type, setType] = useState(null);
+  const [subType, setSubType] = useState(null);
   const [severity, setSeverity] = useState(null);
   const [description, setDescription] = useState('');
   const [openType, setOpenType] = useState(false);
+  const [openSubType, setOpenSubType] = useState(false);
   const [openSeverity, setOpenSeverity] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -35,7 +37,14 @@ const IssueTracker = () => {
   const [openStatus, setOpenStatus] = useState(false);
   const [expandedIssueId, setExpandedIssueId] = useState(null);
 
+  // States for categories and subcategories
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [filteredSubcategories, setFilteredSubcategories] = useState([]);
+  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
+
   const { data, isLoading, error, refetch, isFetching } = useFetchData("Ticket/GetAllTickets", token);
+  const { data: categoryData, isLoading: categoryLoading } = useFetchData("Ticket/GetIssuesCategory", token);
 
   const { mutate: submitMutate, isPending: isSubmitPending } = usePostData('Ticket/RaiseTicket', ["Ticket/GetAllTickets"]);
  
@@ -44,6 +53,7 @@ const IssueTracker = () => {
       const formattedIssues = data.ticketingIssuesClient.map(issue => ({
         id: issue.Issue_Id.toString(),
         type: issue.Issue_Type,
+        subType: issue.Subcategory || 'Not specified',
         severity: issue.Severity,
         description: issue.Issue_Description.replace(/"/g, ''),
         status: issue.Status,
@@ -59,6 +69,68 @@ const IssueTracker = () => {
     }
   }, [data]);
 
+  useEffect(() => {
+    if (categoryData && categoryData.ticket_issues_Category) {
+      // Format categories for dropdown
+      const formattedCategories = categoryData.ticket_issues_Category.map((cat, idx) => ({
+        label: cat.Issue_Type,
+          value: `${cat.Id}-${idx}`,
+        original: cat
+      }));
+      setCategories(formattedCategories);
+    }
+  }, [categoryData]);
+
+  // Fetch subcategories when type changes
+  useEffect(() => {
+    const fetchSubcategories = async () => {
+      if (!type) return;
+      
+      setLoadingSubcategories(true);
+      try {
+        const tokenvalid = await isTokenValid(user, logout);
+        if (!tokenvalid) {
+          alert("Session expired. Please log in again.");
+          return;
+        }
+        
+        const response = await fetch(`${API_URL}Ticket/GetSubIssuesCategory?issueId=${type}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch subcategories");
+        }
+        
+        const subcategoryData = await response.json();
+        
+        if (subcategoryData && subcategoryData.ticket_Subissues_Category) {
+          const formattedSubcategories = subcategoryData.ticket_Subissues_Category.map(sub => ({
+            label: sub.Subcategory,
+            value: sub.Id,
+            parentId: sub.ParentIssueType,
+            original: sub
+          }));
+          setFilteredSubcategories(formattedSubcategories);
+        }
+      } catch (err) {
+        console.error("Error fetching subcategories:", err);
+        alert("Failed to load subcategories");
+      } finally {
+        setLoadingSubcategories(false);
+      }
+    };
+    
+    fetchSubcategories();
+    
+    // Reset subType when type changes
+    setSubType(null);
+  }, [type]);
+
   const toggleExpand = (issueId) => {
     setExpandedIssueId(expandedIssueId === issueId ? null : issueId);
   };
@@ -72,11 +144,15 @@ const IssueTracker = () => {
   }, []);
 
   const issueIcons = {
-    'Hardware': 'hardware-chip-outline',
-    'Software': 'logo-windows',
-    'Server Access': 'server-outline',
-    'Internet': 'globe',
-    'Other': 'help-circle',
+    'Hardware Issues': 'hardware-chip-outline',
+    'Software Issues': 'logo-windows',
+    'Network Issues': 'wifi-outline',
+    'Account & Access Management': 'key-outline',
+    'Service Requests': 'document-text-outline',
+    'Incident Management': 'warning-outline',
+    'Change Management': 'swap-horizontal-outline',
+    'Security': 'shield-checkmark-outline',
+    'General Help & Support': 'help-circle-outline',
   };
 
   const severityColors = {
@@ -96,6 +172,7 @@ const IssueTracker = () => {
     try {
       const issueData = {
         IssueType: type,
+        Subcategory: subType,
         Severity: severity,
         Issue_Description: description,
       };
@@ -110,6 +187,7 @@ const IssueTracker = () => {
           setModalVisible(false);
           setDescription('');
           setType(null);
+          setSubType(null);
           setSeverity(null);
           refetch(); 
         },
@@ -168,7 +246,7 @@ const IssueTracker = () => {
   const isSubmitDisabled = type === null || severity === null || !description;
   const isUpdateDisabled = !updateStatus || !updateReason;
 
-  if (isLoading || isFetching) {
+  if (isLoading || isFetching || categoryLoading) {
     return (
       <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#D01313" />
@@ -244,9 +322,12 @@ const IssueTracker = () => {
                       <Text className="text-sm font-semibold text-gray-700">{item.employeeName}</Text>:<Text className="text-sm font-semibold text-gray-700">#{item.id}</Text>}
                      
                       <Text className="text-sm  text-gray-500">{item.type}</Text>
+                      {item.subType !== 'Not specified' && (
+                        <Text className="text-xs text-gray-400">{item.subType}</Text>
+                      )}
                     </View>
                   </View>
-                  <View className="flex-row items-center gap-2">
+                  <View className="flex-col items-end gap-2">
                     <Text
                       className={`px-2 py-1 rounded-lg text-xs font-semibold ${severityColors[item.severity] || 'bg-gray-200 text-gray-800'}`}
                     >
@@ -340,13 +421,7 @@ const IssueTracker = () => {
                 <DropDownPicker
                   open={openType}
                   value={type}
-                  items={[
-                    { label: 'Hardware', value: 1 },
-                    { label: 'Software', value: 2 },
-                    { label: 'Server Access', value: 3 },
-                    { label: 'Internet', value: 4 },
-                    { label: 'Other', value: 5 },
-                  ]}
+                  items={categories}
                   setOpen={setOpenType}
                   setValue={setType}
                   placeholder="Select issue type"
@@ -361,6 +436,33 @@ const IssueTracker = () => {
                 />
               </View>
 
+              <View className="z-40 mb-4">
+                {loadingSubcategories ? (
+                  <View className="border border-gray-300 p-3 rounded-lg items-center">
+                    <ActivityIndicator size="small" color="#D01313" />
+                    <Text className="text-gray-500 mt-1">Loading subcategories...</Text>
+                  </View>
+                ) : (
+                  <DropDownPicker
+                    open={openSubType}
+                    value={subType}
+                    items={filteredSubcategories}
+                    setOpen={setOpenSubType}
+                    setValue={setSubType}
+                    placeholder="Select subcategory"
+                    placeholderStyle={{ color: 'gray' }}
+                    style={{ borderColor: 'gray' }}
+                    textStyle={{ color: 'black' }}
+                    dropDownContainerStyle={{ 
+                      zIndex: 2000, 
+                      elevation: 2000,
+                      borderColor: 'gray'
+                    }}
+                    disabled={!type}
+                  />
+                )}
+              </View>
+              
               <View className="z-40 mb-4">
                 <DropDownPicker
                   open={openSeverity}
@@ -377,8 +479,8 @@ const IssueTracker = () => {
                   style={{ borderColor: 'gray' }}
                   textStyle={{ color: 'black' }}
                   dropDownContainerStyle={{ 
-                    zIndex: 2000, 
-                    elevation: 2000,
+                    zIndex: 1000, 
+                    elevation: 1000,
                     borderColor: 'gray'
                   }}
                 />

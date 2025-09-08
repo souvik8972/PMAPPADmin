@@ -8,6 +8,19 @@ import { useFetchData } from '@/ReactQuery/hooks/useFetchData';
 import FoodLoader from '@/components/FoodLoader';
 import FoodLoading from '@/components/FoodLoading';
 // import AssetLoading from '@/components/AssetLoading';
+
+// Submit Loader Component
+const SubmitLoader = () => {
+  return (
+    <View className="absolute inset-0 bg-black/50 justify-center items-center z-50">
+      <View className="bg-white p-6 rounded-xl w-72 items-center">
+        <ActivityIndicator size="large" color="#D01313" />
+        <Text className="text-gray-700 mt-4 font-medium">Submitting your response...</Text>
+      </View>
+    </View>
+  );
+};
+
 const FoodComponent = () => {
   const [selectedValue, setSelectedValue] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -16,12 +29,12 @@ const FoodComponent = () => {
   const [recordId, setRecordId] = useState(0);
   const [targetDate, setTargetDate] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [showSubmitLoader, setShowSubmitLoader] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const scaleAnim = useState(new Animated.Value(0.9))[0];
 
-  const { user } = useContext(AuthContext);
+  const { user, accessTokenGetter } = useContext(AuthContext);
   
-
   const calculateTargetDate = useCallback(() => {
     const now = new Date();
     const noonToday = new Date(now);
@@ -72,8 +85,11 @@ const FoodComponent = () => {
     });
   }, [refetch]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
+    const token = await accessTokenGetter();
     if (selectedValue) {
+      setShowSubmitLoader(true); // Show loader
+      
       Animated.sequence([
         Animated.timing(scaleAnim, {
           toValue: 1.05,
@@ -99,7 +115,7 @@ const FoodComponent = () => {
         postFoodData(
           { 
             data: null,
-            token: user?.token,
+            token: token,
             queryParams 
           },
           {
@@ -110,10 +126,12 @@ const FoodComponent = () => {
               if (recordId === 0 && response?.id) {
                 setRecordId(response.id);
               }
+              setShowSubmitLoader(false); // Hide loader on success
               // Refresh data after submission
               refetch();
             },
             onError: (error) => {
+              setShowSubmitLoader(false); // Hide loader on error
               // console.log('API Error:', error);
             }
           }
@@ -163,15 +181,9 @@ const FoodComponent = () => {
     }).start();
   }, []);
 
-if (isFetching && !refreshing) {
-  return (
-         <FoodLoading/>
-    // <View className="flex-1 items-center justify-center bg-white">
-    //   <ActivityIndicator size="large" color="#FF6347" /> 
-      
-    // </View>
-  );
-}
+  if (isFetching && !refreshing) {
+    return <FoodLoading/>;
+  }
 
   return (
     <ScrollView
@@ -189,6 +201,9 @@ if (isFetching && !refreshing) {
         style={{ opacity: fadeAnim }}
         className="flex-1 items-center bg-white justify-center p-5 pt-0"
       >
+        {/* Submit Loader */}
+        {showSubmitLoader && <SubmitLoader />}
+        
         {/* Header with logo */}
         <View className="w-full h-[140px] mb-4 justify-center items-center">
           <Image 
@@ -245,11 +260,10 @@ if (isFetching && !refreshing) {
               <Text className="text-xl font-semibold text-center text-gray-800 p-6 pb-2">
                 Office Attendance & Lunch Preference
               </Text>
-             <Text className="text-sm text-gray-500 text-center mb-6">
-  Please let us know your plans for{' '}
-  <Text className="font-bold text-red-700 ">{getDisplayDate()}</Text>
-</Text>
-
+              <Text className="text-sm text-gray-500 text-center mb-6">
+                Please let us know your plans for{' '}
+                <Text className="font-bold text-red-700 ">{getDisplayDate()}</Text>
+              </Text>
 
               {/* Radio Buttons */}
               <View className="justify-center p-4 gap-6">

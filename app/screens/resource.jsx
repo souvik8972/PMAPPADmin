@@ -26,7 +26,7 @@ const TABS = [{"Tech":1}, {"Creative":2}, {"Content":3}, {"PM":4}, ];
   const {user}= useContext(AuthContext)
  
  
-  const TOKEN=user.token||null;
+  const TOKEN=user.token;
   const teamId = TABS.find((tab) => activeTab in tab)?.[activeTab]||1;
   const {data,isLoading,isError} = useFetchData(`Resource/GetTeamMembers?teamId=${teamId}`, TOKEN)
  const today = new Date();
@@ -139,11 +139,11 @@ const TeamMember = ({ item, selectedDropdown, setSelectedDropdown  ,isLoading}) 
  
   if(isLoading){
     return  <ScrollView showsVerticalScrollIndicator={false}>
-    {[1, 2, 3,4].map((index) => (
-     <View key={index} className="m-1 mb-4 mt-4 bg-white p-4 rounded-lg">
+    {[1, 2, 3,4,6].map((index) => (
+     <View key={index} className="m-1 mb-4 mt-4 animate-pulse bg-gray-200 p-4 rounded-lg">
      <ShimmerPlaceholder
-       style={{ width: '100%', height: 60, borderRadius: 8, marginBottom: 8 }}
-       shimmerColors={['#EBEBEB', '#D9D9D9', '#EBEBEB']}
+       style={{ width: '100%', height: 50, borderRadius: 8, marginBottom: 8 }}
+       shimmerColors={['white', 'red', 'red']}
        autoRun={true}
      />
    </View>

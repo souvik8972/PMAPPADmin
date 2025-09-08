@@ -33,7 +33,7 @@ LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
 export default function TaskScreen() {
-  const { user, logout } = useContext(AuthContext);
+  const { user,accessTokenGetter, logout } = useContext(AuthContext);
   const flatListRef = useRef(null);
   const itemRefs = useRef({});
   const inputRefs = useRef({});
@@ -173,14 +173,16 @@ export default function TaskScreen() {
     }
   
     setIsProcessing(true);
-  
+
     try {
-      const tokenvalid= await isTokenValid(user,logout)
-     if(!tokenvalid) {
-        // alert("Session expired. Please log in again.");
-        Toast.error("Session expired. Please log in again.");
-        return;
-      }
+    //   const tokenvalid= await isTokenValid(user,logout)
+    //  if(!tokenvalid) {
+    //     // alert("Session expired. Please log in again.");
+    //     Toast.error("Session expired. Please log in again.");
+    //     return;
+    //   }
+    const token = await accessTokenGetter();
+
       const response = await fetch(
         `${API_URL}Task/SendActualHours?TimelogId=${task.LogId}&TaskId=${task.Task_Id}&Emp_Id=${user.empId}&logDate=${encodeURIComponent(selectedDate)}&Log=${logValue}&Billing_type=${task.Billing_Type}&Notes=Na`,
         {
@@ -188,7 +190,7 @@ export default function TaskScreen() {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': `Bearer ${user.token}`
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({}) 
         }

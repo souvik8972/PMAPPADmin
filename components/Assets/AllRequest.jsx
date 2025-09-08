@@ -1,16 +1,18 @@
-import { View, Text, TouchableOpacity, Modal, ScrollView, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, ScrollView, ActivityIndicator,  RefreshControl } from 'react-native';
 import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { FontAwesome, AntDesign } from '@expo/vector-icons';
 import { useFetchData } from '@/ReactQuery/hooks/useFetchData';
 import { AuthContext } from '@/context/AuthContext';
 import { usePostData } from '@/ReactQuery/hooks/usePostData';
+import { Toast } from 'toastify-react-native';
 
 const AllRequest = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [localRequestStatus, setLocalRequestStatus] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const { user } = useContext(AuthContext);
+  const [updatingStatusId, setUpdatingStatusId] = useState(null); // Track which request is being updated
+  const { user , accessTokenGetter } = useContext(AuthContext);
 
   // Calculate dates for the API request
   const today = new Date();
@@ -54,36 +56,40 @@ const AllRequest = () => {
     }
   }, [selectedRequest]);
 
-  const handleStatusUpdate = (newStatus) => {
+  const handleStatusUpdate = async (newStatus) => {
     if (!selectedRequest) return;
+    const token = await accessTokenGetter();
+    
+    // Set the updating status ID to show loader for this specific request
+    setUpdatingStatusId(selectedRequest.Id);
     
     // Optimistically update local state
     setLocalRequestStatus(newStatus);
     
     updateStatus({
       data: null,
-      token: user?.token,
+      token: token,
       queryParams: {
         reqid: selectedRequest.Id,
         status: newStatus
       }
     }, {
       onSuccess: () => {
-        Alert.alert(
-          'Success',
-          `Status updated to ${getStatusDetails(newStatus).text}`,
-          [{ text: 'OK' }]
-        );
+
+        Toast.success(`Status updated to ${getStatusDetails(newStatus).text}`)
+        // Alert.alert(
+        //   'Success',
+        //   `Status updated to ${getStatusDetails(newStatus).text}`,
+        //   [{ text: 'OK' }]
+        // );
+        setUpdatingStatusId(null); // Reset updating status
         refetch(); // Refresh data after successful update
       },
       onError: (error) => {
         // Revert on error
         setLocalRequestStatus(selectedRequest.status);
-        Alert.alert(
-          'Error',
-          'Failed to update status',
-          [{ text: 'OK' }]
-        );
+        setUpdatingStatusId(null); // Reset updating status
+        Toast.error('Failed to update status');
       }
     });
   };
@@ -260,6 +266,7 @@ const AllRequest = () => {
         onRequestClose={() => {
           setIsModalVisible(false);
           setLocalRequestStatus(null);
+          setUpdatingStatusId(null);
         }}
     >
         <View className="flex-1 bg-white mb-6">
@@ -304,26 +311,32 @@ const AllRequest = () => {
                       </View>
                     </View>
                     
-                    <View className="items-end bg-red-400">
+                    <View className="items-end">
                       <View className="flex-row items-center">
-                        <View 
-                          className="px-3 py-1 rounded-full" 
-                          style={{ 
-                            backgroundColor: getStatusDetails(getCurrentStatus()).bgColor,
-                            shadowColor: getStatusDetails(getCurrentStatus()).color,
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.2,
-                            shadowRadius: 4,
-                            elevation: 3
-                          }}
-                        >
-                          <Text 
-                            className="text-xs font-bold uppercase tracking-wider" 
-                            style={{ color: getStatusDetails(getCurrentStatus()).color }}
+                        {updatingStatusId === selectedRequest.Id ? (
+                          <View className="px-3 py-1 rounded-full bg-gray-100">
+                            <ActivityIndicator size="small" color="#6B7280" />
+                          </View>
+                        ) : (
+                          <View 
+                            className="px-3 py-1 rounded-full" 
+                            style={{ 
+                              backgroundColor: getStatusDetails(getCurrentStatus()).bgColor,
+                              shadowColor: getStatusDetails(getCurrentStatus()).color,
+                              shadowOffset: { width: 0, height: 2 },
+                              shadowOpacity: 0.2,
+                              shadowRadius: 4,
+                              elevation: 3
+                            }}
                           >
-                            {getStatusDetails(getCurrentStatus()).text}
-                          </Text>
-                        </View>
+                            <Text 
+                              className="text-xs font-bold uppercase tracking-wider" 
+                              style={{ color: getStatusDetails(getCurrentStatus()).color }}
+                            >
+                              {getStatusDetails(getCurrentStatus()).text}
+                            </Text>
+                          </View>
+                        )}
                       </View>
                     </View>
                   </View>
@@ -404,9 +417,9 @@ const AllRequest = () => {
                           : {borderColor: '#e5e7eb', backgroundColor: 'white'}
                       ]}
                       onPress={() => handleStatusUpdate(1)}
-                      disabled={isUpdatingStatus}
+                      disabled={isUpdatingStatus || updatingStatusId === selectedRequest.Id}
                     >
-                      {isUpdatingStatus && getCurrentStatus() === 1 ? (
+                      {updatingStatusId === selectedRequest.Id && getCurrentStatus() === 1 ? (
                         <ActivityIndicator size="small" color="#F97316" />
                       ) : (
                         <>
@@ -429,9 +442,9 @@ const AllRequest = () => {
                           : {borderColor: '#e5e7eb', backgroundColor: 'white'}
                       ]}
                       onPress={() => handleStatusUpdate(2)}
-                      disabled={isUpdatingStatus}
+                      disabled={isUpdatingStatus || updatingStatusId === selectedRequest.Id}
                     >
-                      {isUpdatingStatus && getCurrentStatus() === 2 ? (
+                      {updatingStatusId === selectedRequest.Id && getCurrentStatus() === 2 ? (
                         <ActivityIndicator size="small" color="#10B981" />
                       ) : (
                         <>
@@ -454,9 +467,9 @@ const AllRequest = () => {
                           : {borderColor: '#e5e7eb', backgroundColor: 'white'}
                       ]}
                       onPress={() => handleStatusUpdate(3)}
-                      disabled={isUpdatingStatus}
+                      disabled={isUpdatingStatus || updatingStatusId === selectedRequest.Id}
                     >
-                      {isUpdatingStatus && getCurrentStatus() === 3 ? (
+                      {updatingStatusId === selectedRequest.Id && getCurrentStatus() === 3 ? (
                         <ActivityIndicator size="small" color="#7C3AED" />
                       ) : (
                         <>
@@ -482,7 +495,9 @@ const AllRequest = () => {
               onPress={() => {
                 setIsModalVisible(false);
                 setLocalRequestStatus(null);
+                setUpdatingStatusId(null);
               }}
+              disabled={updatingStatusId === selectedRequest?.Id}
             >
               <Text className=" text-white font-medium">Close</Text>
             </TouchableOpacity>

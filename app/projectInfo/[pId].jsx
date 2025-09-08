@@ -8,6 +8,7 @@ import { useFetchData } from '../../ReactQuery/hooks/useFetchData';
 import { AuthContext } from '../../context/AuthContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Platform } from 'react-native';
+import { ActivityIndicator } from 'react-native-paper';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -107,15 +108,20 @@ const ProjectDetails = () => {
   };
 
   if (loading) {
-    return (
-      <SafeAreaView edges={['top']} style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          {/* Loading skeleton UI remains the same */}
-          {/* ... */}
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
+  return (
+    <SafeAreaView edges={['top']} style={styles.container}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        contentContainerStyle={[styles.scrollContent, { flex: 1, justifyContent: "center", alignItems: "center" }]}
+      >
+        <ActivityIndicator size="large" color="green" />
+        <Text style={{ marginTop: 12, fontSize: 16, color: "#6B7280" }}>
+          Loading...
+        </Text>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
 
   if (!project || Object.keys(project).length === 0) {
     return (

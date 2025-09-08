@@ -17,7 +17,7 @@ export const loginUser = async ({ email, password }) => {
     if (!response.ok) {
       throw new Error(data.message || 'Invalid email or password');
     }
-  
+  console.log("Login successful:", data);
     return data; 
   };
   
@@ -39,6 +39,29 @@ export const loginUser = async ({ email, password }) => {
   
     return data; 
   };
+
+export async function getNewTokenBYRefreshToken(refToken) {
+
+  const response = await fetch(`${API_URL}Auth/refresh`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify( refToken ),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to refresh token');
+  }
+
+  return data;
+}
+
+
+
+
 
 export async function savePushTokenToBackend(empId, Expotoken, jwtToken) {
   console.log("Start-1111",Expotoken);

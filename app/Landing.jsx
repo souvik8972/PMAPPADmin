@@ -9,15 +9,24 @@ import Loading from './loading';
 // import { useNotificationPermission } from '../ReactQuery/hooks/useNotificationPermission';
 // import { scheduleDailyNotification } from '../utils/notifications';
 import { initNotificationListeners, registerForPushNotificationsAsync, removeNotificationListeners } from '@/services/notifications';
+import { use } from 'react';
+import { se } from 'date-fns/locale';
+import { ActivityIndicator } from 'react-native-paper';
 
 
 const { width, height } = Dimensions.get('window');
 
 const Landing = () => {
 
-  const [loading ,setLoading]=useState(true)
+  
+
+  const [loading ,setLoading]=useState(false)
  
-const {user}=useContext(AuthContext)
+const {user,accessTokenGetter}=useContext(AuthContext)
+
+
+
+
  const [expoToken, setExpoToken] = useState(null);
 
  const {setExpoTokenToSend} = useContext(AuthContext)
@@ -47,10 +56,11 @@ const {user}=useContext(AuthContext)
   }, []);
 
   
-const handleClick = () => {
- 
-  
-  if (!user|| user?.checkTokenExpiration) {
+const handleClick = async () => {
+ setLoading(true);
+  const token  = await accessTokenGetter();
+  if (!user||!token) {
+    console.log("No user or token expired, navigating to login",user);
     router.replace('/(auth)/login');
     return;
   }
@@ -60,6 +70,7 @@ const handleClick = () => {
   } else {
     router.replace('(admin)');
   }
+  setLoading(false);
 };
 
   return (
@@ -90,7 +101,7 @@ const handleClick = () => {
           end={{ x: 1, y: 0 }}
           style={styles.gradientButton}
         >
-          <Text style={styles.buttonText}>Get Started</Text>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Get Started</Text>}
         </LinearGradient>
       </Pressable>
     </View>

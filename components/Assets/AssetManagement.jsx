@@ -26,6 +26,18 @@ import { Toast } from "toastify-react-native";
 const windowWidth = Dimensions.get("window").width;
 const itemWidth = (windowWidth - 60) / 3;
 
+// Submit Loader Component
+const SubmitLoader = () => {
+  return (
+    <View style={styles.submitLoaderContainer}>
+      <View style={styles.submitLoaderContent}>
+        <ActivityIndicator size="large" color="#D01313" />
+        <Text style={styles.submitLoaderText}>Submitting your request...</Text>
+      </View>
+    </View>
+  );
+};
+
 const ShimmerItem = () => (
   <View style={[styles.shimmerItem, { width: itemWidth }]}>
     <View style={styles.shimmerIcon} />
@@ -35,8 +47,8 @@ const ShimmerItem = () => (
 
 const AssetManagement = () => {
   // console.log("AssetManagement");
-  const { mutate } = usePostData("Assests/SendAssestdetails", ["Assests/GetAllAssests"]);
-  const { user } = useContext(AuthContext);
+  const { mutate, isLoading: isSubmitting } = usePostData("Assests/SendAssestdetails", ["Assests/GetAllAssests"]);
+  const { user, accessTokenGetter } = useContext(AuthContext);
   const navigation = useNavigation();
 
   const { data, isLoading, error, refetch } = useFetchDataNoCache(
@@ -50,6 +62,7 @@ const AssetManagement = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showSubmitLoader, setShowSubmitLoader] = useState(false);
 
   // Pull to refresh handler
   const onRefresh = useCallback(() => {
@@ -119,14 +132,15 @@ const AssetManagement = () => {
 
   const handleSubmit = () => {
     if (selectedAssets.length === 0) {
-      // alert("Please select at least one asset.");
-      Toast.success('Please select at least one asset.');
+      Toast.warn('Please select at least one asset.');
       return;
     }
     setModalVisible(true);
   };
 
-  const handleModalSubmit = () => {
+  const handleModalSubmit = async () => {
+    const token = await accessTokenGetter();
+     setModalVisible(false);
     if (!textInput.trim()) {
       Toast.error("Please enter some text before submitting.");
       return;
@@ -140,8 +154,10 @@ const AssetManagement = () => {
 
     console.log("Submitting payload:", payload);
 
+    setShowSubmitLoader(true); // Show loader
+
     mutate(
-      { data: payload, token: user.token },
+      { data: payload, token: token },
       {
         onSuccess: () => {
           const updatedAssets = assets.map((asset) =>
@@ -151,9 +167,11 @@ const AssetManagement = () => {
           setModalVisible(false);
           setTextInput("");
           setSelectedAssets([]);
+          setShowSubmitLoader(false); // Hide loader
           Toast.success("Asset checkout submitted successfully.");
         },
         onError: (error) => {
+          setShowSubmitLoader(false); // Hide loader on error
           Toast.error("Failed to submit asset checkout.");
         },
       }
@@ -186,8 +204,11 @@ const AssetManagement = () => {
   }
 
   return (
-<>
-          <View className="flex  mt-8  justify-center items-center" style={styles.buttonContainer}>
+    <>
+      {/* Submit Loader */}
+      {showSubmitLoader && <SubmitLoader />}
+      
+      <View className="flex  mt-8  justify-center items-center" style={styles.buttonContainer}>
         <TouchableOpacity onPress={handleSubmit} activeOpacity={0.8}>
           <LinearGradient
             colors={
@@ -209,74 +230,78 @@ const AssetManagement = () => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-    <ScrollView 
-      showsVerticalScrollIndicator={false} 
-      contentContainerStyle={styles.container}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          colors={['#D01313']} // Android
-          tintColor="#D01313" // iOS
-        />
-      }
-    >
-
-
-      <View style={styles.assetsGrid}>
-        {assets.map((item) => (
-          <RenderItem
-            key={item.id}
-            item={item}
-            selectedAssets={selectedAssets}
-            handlePress={handlePress}
-            itemWidth={itemWidth}
+      
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#D01313']}
+            tintColor="#D01313"
           />
-        ))}
-      </View>
-
-      {/* Modal */}
-      <Modal visible={modalVisible} transparent animationType="fade">
-       
-  <KeyboardAvoidingView 
-    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    className="flex-1"
-  >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Reason for Checkout</Text>
-            <TextInput
-              value={textInput}
-              onChangeText={setTextInput}
-              placeholder="Enter reason..."
-              style={styles.modalInput}
-              placeholderTextColor="#9CA3AF"
-              multiline
+        }
+      >
+        <View style={styles.assetsGrid}>
+          {assets.map((item) => (
+            <RenderItem
+              key={item.id}
+              item={item}
+              selectedAssets={selectedAssets}
+              handlePress={handlePress}
+              itemWidth={itemWidth}
             />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                onPress={handleModalSubmit}
-                style={styles.submitButtonWrapper}
-              >
-                <LinearGradient
-                  colors={["#D01313", "#6A0A0A"]}
-                  style={styles.submitButton}
-                >
-                  <Text style={styles.submitButtonText}>Submit</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleCancelModal}
-                style={styles.cancelButton}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          ))}
         </View>
-        </KeyboardAvoidingView>
-      </Modal>
-    </ScrollView>
+
+        {/* Modal */}
+        <Modal visible={modalVisible} transparent animationType="fade">
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            className="flex-1"
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Reason for Checkout</Text>
+                <TextInput
+                  value={textInput}
+                  onChangeText={setTextInput}
+                  placeholder="Enter reason..."
+                  style={styles.modalInput}
+                  placeholderTextColor="#9CA3AF"
+                  multiline
+                />
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    onPress={handleModalSubmit}
+                    style={styles.submitButtonWrapper}
+                    disabled={isSubmitting}
+                  >
+                    <LinearGradient
+                      colors={["#D01313", "#6A0A0A"]}
+                      style={[styles.submitButton, isSubmitting && styles.disabledButton]}
+                    >
+                      {isSubmitting ? (
+                        <ActivityIndicator color="#fff" size="small" />
+                      ) : (
+                        <Text style={styles.submitButtonText}>Submit</Text>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleCancelModal}
+                    style={styles.cancelButton}
+                    disabled={isSubmitting}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+      </ScrollView>
     </>
   );
 };
@@ -286,7 +311,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: "white",
     paddingHorizontal: 20,
-    // paddingTop: 20,
     paddingBottom: 48,
   },
   loadingContainer: {
@@ -295,7 +319,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     paddingHorizontal: 16,
-    
+  },
+  // Submit Loader Styles
+  submitLoaderContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  submitLoaderContent: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    minWidth: 200,
+  },
+  submitLoaderText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#374151',
+    fontWeight: '500',
   },
   shimmerContainer: {
     flexDirection: "row",
@@ -355,7 +403,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   disabledButton: {
-    opacity: 1,
+    opacity: 0.7,
   },
   buttonText: {
     color: "#fff",

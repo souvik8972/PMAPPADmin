@@ -9,33 +9,74 @@ import {
   Platform,
   Alert,
   ScrollView,
-  SafeAreaView
+  SafeAreaView,
+  ActivityIndicator
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import LottieView from 'lottie-react-native';
 
 // Main OTP Verification component
 const OTPVerification = () => {
+  const params = useLocalSearchParams();
+  const email = params.email;
+
   // State to store the OTP digits (initially an array of 6 empty strings)
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   // State to track if OTP is being resent
   const [isResending, setIsResending] = useState(false);
-  // State for the countdown timer
-  const [timer, setTimer] = useState(0);
+  // State to track if OTP is being verified
+  const [isVerifying, setIsVerifying] = useState(false);
+  // State for the countdown timer (120 seconds = 2 minutes)
+  const [timer, setTimer] = useState(120);
   // Ref to manage focus between OTP input fields
   const inputRefs = useRef([]);
   // Ref to store the interval ID
   const timerIntervalRef = useRef(null);
 
-  // Effect to clean up interval on component unmount
+  // Effect to start timer on component mount
   useEffect(() => {
+    startTimer();
+    
+    // Clean up interval on component unmount
     return () => {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
       }
     };
   }, []);
+
+  // Function to format time as minutes:seconds
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  // Function to start the countdown timer
+  const startTimer = () => {
+    // Clear any existing interval
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+    
+    // Reset timer to 120 seconds
+    setTimer(120);
+    
+    // Start countdown timer
+    timerIntervalRef.current = setInterval(() => {
+      setTimer(prev => {
+        // Clear interval and stop timer when it reaches 0
+        if (prev <= 1) {
+          clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
+          return 0;
+        }
+        // Decrement timer by 1 second
+        return prev - 1;
+      });
+    }, 1000); // Run every second
+  };
 
   // Function to handle text input in OTP fields
   const handleChangeText = (text, index) => {
@@ -85,7 +126,7 @@ const OTPVerification = () => {
   };
 
   // Function to verify the entered OTP
-  const handleVerify = () => {
+  const handleVerify = async () => {
     // Join OTP array into a single string
     const enteredOtp = otp.join('');
     // Validate that all 6 digits are entered
@@ -94,49 +135,111 @@ const OTPVerification = () => {
       return;
     }
 
-    // Here you would typically verify the OTP with your backend API
-    Alert.alert('Success', 'OTP verified successfully!');
-    router.replace('/CreateNewPassword');
-    // After successful verification, navigate to next screen
-    // router.replace('/reset-password');
+    setIsVerifying(true);
+    
+    try {
+      // Make API call to verify OTP
+      const response = await verifyOtp(email, parseInt(enteredOtp));
+      
+      if (response.success) {
+        Alert.alert('Success', 'OTP verified successfully!');
+        // Navigate to create new password screen with email parameter
+        router.replace({
+          pathname: '/CreateNewPassword',
+          params: { email: email }
+        });
+      } else {
+        Alert.alert('Error', response.message || 'Invalid OTP. Please try again.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+      console.error('API Error:', error);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  // API call to verify OTP
+  const verifyOtp = async (email, otp) => {
+    try {
+      const response = await fetch(
+        'https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/Auth/VerifyOtp',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            otp: otp
+          })
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      throw error;
+    }
   };
 
   // Function to handle resending OTP
-  const handleResend = () => {
+  const handleResend = async () => {
     // Don't allow resending if timer is still active
     if (timer > 0) return;
     
-    // Clear any existing interval
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-    }
-    
     // Set resending state to true (shows loading text)
     setIsResending(true);
-    // Reset timer to 30 seconds
-    setTimer(30);
     
-    // Simulate API call to resend OTP (setTimeout mimics network delay)
-    setTimeout(() => {
-      // Show success message
-      Alert.alert('Success', 'New OTP has been sent to your email');
+    try {
+      // Make API call to resend OTP
+      const response = await validateEmail(email);
+      
+      if (response.success) {
+        // Show success message
+        Alert.alert('Success', 'New OTP has been sent to your email');
+        // Start the timer again
+        startTimer();
+      } else {
+        Alert.alert('Error', response.message || 'Failed to resend OTP. Please try again.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to resend OTP. Please try again.');
+      console.error('API Error:', error);
+    } finally {
       // Reset resending state
       setIsResending(false);
+    }
+  };
+
+  // API call to validate email (resend OTP)
+  const validateEmail = async (email) => {
+    try {
+      const response = await fetch(
+        `https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/Auth/ValidateEmail?email=${encodeURIComponent(email)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       
-      // Start countdown timer
-      timerIntervalRef.current = setInterval(() => {
-        setTimer(prev => {
-          // Clear interval and stop timer when it reaches 0
-          if (prev <= 1) {
-            clearInterval(timerIntervalRef.current);
-            timerIntervalRef.current = null;
-            return 0;
-          }
-          // Decrement timer by 1 second
-          return prev - 1;
-        });
-      }, 1000); // Run every second
-    }, 1500); // 1.5 second delay to simulate network request
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error validating email:', error);
+      throw error;
+    }
   };
 
   // Function to navigate back to previous screen
@@ -169,7 +272,7 @@ const OTPVerification = () => {
           <View style={styles.header}>
             <Text style={styles.title}>OTP Verification</Text>
             <Text style={styles.subtitle}>
-              Enter the 6-digit code sent to your email address
+              Enter the 6-digit code sent to your email address: <Text style={{fontWeight:'bold',color:'#D01313'}}>{email}</Text>
             </Text>
           </View>
 
@@ -187,19 +290,28 @@ const OTPVerification = () => {
                 maxLength={index === 0 ? 6 : 1} // Allow pasting in first input
                 ref={(ref) => (inputRefs.current[index] = ref)} // Store reference to input
                 selectTextOnFocus // Select all text when input is focused
+                editable={!isVerifying} // Disable editing while verifying
               />
             ))}
           </View>
 
           {/* Verify OTP button with gradient background */}
-          <TouchableOpacity onPress={handleVerify} style={styles.buttonContainer}>
+          <TouchableOpacity 
+            onPress={handleVerify} 
+            style={styles.buttonContainer}
+            disabled={isVerifying}
+          >
             <LinearGradient
               colors={["#D01313", "#6A0A0A"]} // Red gradient matching your theme
               start={{ x: 0, y: 0 }} // Gradient starts from left
               end={{ x: 1, y: 0 }} // Gradient ends at right
-              style={styles.gradientButton}
+              style={[styles.gradientButton, isVerifying && styles.disabledButton]}
             >
-              <Text style={styles.verifyButtonText}>Verify OTP</Text>
+              {isVerifying ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.verifyButtonText}>Verify OTP</Text>
+              )}
             </LinearGradient>
           </TouchableOpacity>
 
@@ -216,13 +328,17 @@ const OTPVerification = () => {
                 (timer > 0 || isResending) && styles.resendLinkDisabled // Apply disabled style when needed
               ]}>
                 {/* Show appropriate text based on state */}
-                {isResending ? 'Sending...' : ` Resend ${timer > 0 ? `(${timer}s)` : ''}`}
+                {isResending ? 'Sending...' : `Resend ${timer > 0 ? `(${formatTime(timer)})` : ''}`}
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* Back to login button */}
-          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={handleBack}
+            disabled={isVerifying}
+          >
             <Text style={styles.backButtonText}>Back to Login</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -318,6 +434,9 @@ const styles = StyleSheet.create({
     padding: 18, // Padding inside button
     alignItems: 'center', // Center text horizontally
     borderRadius: 10, // Rounded corners
+  },
+  disabledButton: {
+    opacity: 0.7, // Dim the button when disabled
   },
   verifyButtonText: {
     color: '#FFFFFF', // White text color

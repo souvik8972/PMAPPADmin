@@ -8,7 +8,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { parseJwt } from '../../utils/auth';
 import { API_URL } from '@env';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-
+import  { Toast } from 'toastify-react-native'
 
 
 
@@ -16,14 +16,16 @@ const Login = () => {
   console.log("My API URL:", API_URL);
   
 
-  //   const [email, setEmail] = useState('system_admin@medtrixhealthcare.com');
-  // const [password, setPassword] = useState('hello123');
+    const [email, setEmail] = useState('system_admin@medtrixhealthcare.com');
+  const [password, setPassword] = useState('hello123');
   //    const [email, setEmail] = useState('souvik.d@medtrixhealthcare.com');
-  // const [password, setPassword] = useState('lavgZzsS');
+  // const [password, setPassword] = useState('712123@daS');
   //    const [email, setEmail] = useState('vignesh.vc@medtrixhealthcare.com');
   // const [password, setPassword] = useState('vyl7IvKM');
-   const [password, setPassword] = useState('hello@123');
-    const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
+  //  const [password, setPassword] = useState('hello@123');
+  //   const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
+      // const [password, setPassword] = useState('');
+    // const [email, setEmail] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
   const { login } = useContext(AuthContext);
@@ -32,13 +34,14 @@ const Login = () => {
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
-      console.log("Login successful", data.token);
-      const userData = parseJwt(data.token);
+      console.log("Login successful", data.accessToken);
+      const userData = parseJwt(data.accessToken);
       console.log("User data from token:", userData);
-savePushTokenToBackend(userData.EmpId,expoTokenToSend||"",data.token)
-     console.log("chececece",expoTokenToSend)
+      savePushTokenToBackend(userData.EmpId, expoTokenToSend || "", data.accessToken);
+      //  console.log("chececece",expoTokenToSend)
 
-      login(data.token, userData).then(() => {
+
+      login(data, userData).then(() => {
         if (userData?.UserType == "3") {
           router.replace('/(tabs)');
         } else {
@@ -47,7 +50,9 @@ savePushTokenToBackend(userData.EmpId,expoTokenToSend||"",data.token)
       });
     },
     onError: (error) => {
-      console.error("Login failed", error);
+   Toast.error("Invalid email or password", {
+  position: "top"   
+});
       setError({
         email: error.message,
         password: error.message,

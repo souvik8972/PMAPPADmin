@@ -11,7 +11,8 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  ActivityIndicator
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,9 +20,10 @@ import LottieView from 'lottie-react-native';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSend = () => {
-    Keyboard.dismiss(); // Dismiss keyboard first
+  const handleSend = async () => {
+    Keyboard.dismiss(); 
     
     if (!email) {
       Alert.alert('Error', 'Please enter your email address');
@@ -33,10 +35,53 @@ const ForgotPassword = () => {
       return;
     }
     
+    setIsLoading(true);
+    
+    try {
+      // Make API call to validate email
+      const response = await validateEmail(email);
+      
+      if (response.success) {
+        // If email is valid, navigate to OTP verification page and pass the email
+        router.push({
+          pathname: '/(forgotPassword)/OTPVerification',
+          params: { email: email }
+        });
+        Alert.alert('Success', `Password reset instructions sent to ${email}`);
+      } else {
+        Alert.alert('Error', response.message || 'Email validation failed');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to validate email. Please try again.');
+      console.error('API Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    router.push('/(forgotPassword)/OTPVerification');
-    // Here you would typically make an API call to your backend
-    Alert.alert('Success', `Password reset link sent to ${email}`);
+  // API call to validate email
+  const validateEmail = async (email) => {
+    try {
+      const response = await fetch(
+        `https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/Auth/ValidateEmail?email=${encodeURIComponent(email)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error validating email:', error);
+      throw error;
+    }
   };
 
   const isValidEmail = (email) => {
@@ -45,7 +90,7 @@ const ForgotPassword = () => {
   };
 
   const handleBack = () => {
-    Keyboard.dismiss(); // Dismiss keyboard first
+    Keyboard.dismiss(); 
     router.back();
   };
 
@@ -77,7 +122,6 @@ const ForgotPassword = () => {
             </View>
 
             <View style={styles.inputContainer}>
-              {/* <Text style={styles.label}>Email Address</Text> */}
               <TextInput
                 style={styles.input}
                 placeholder="Enter your email"
@@ -89,21 +133,34 @@ const ForgotPassword = () => {
                 autoCorrect={false}
                 returnKeyType="done"
                 onSubmitEditing={handleSend}
+                editable={!isLoading}
               />
             </View>
 
-            <TouchableOpacity onPress={handleSend} style={styles.buttonContainer}>
+            <TouchableOpacity 
+              onPress={handleSend} 
+              style={styles.buttonContainer}
+              disabled={isLoading}
+            >
               <LinearGradient
                 colors={["#D01313", "#6A0A0A"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={styles.gradientButton}
+                style={[styles.gradientButton, isLoading && styles.disabledButton]}
               >
-                <Text style={styles.sendButtonText}>Send Reset Link</Text>
+                {isLoading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.sendButtonText}>Send Reset Link</Text>
+                )}
               </LinearGradient>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+            <TouchableOpacity 
+              style={styles.backButton} 
+              onPress={handleBack}
+              disabled={isLoading}
+            >
               <Text style={styles.backButtonText}>Back to Login</Text>
             </TouchableOpacity>
           </ScrollView>
@@ -129,7 +186,6 @@ const styles = StyleSheet.create({
   animationContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    // marginBottom: 20,
     marginLeft: 40,
     height: 200,
   },
@@ -142,7 +198,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize:20,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#6A0A0A',
     marginBottom: 15,
@@ -158,12 +214,6 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 30,
-  },
-  label: {
-    fontSize: 16,
-    color: '#1E293B',
-    marginBottom: 10,
-    fontWeight: '600',
   },
   input: {
     backgroundColor: '#FFFFFF',
@@ -194,6 +244,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
   },
+  disabledButton: {
+    opacity: 0.7,
+  },
   sendButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
@@ -202,11 +255,7 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 16,
     alignItems: 'center',
-    // borderWidth: 1,
-    // borderColor: '#E2E8F0',
     borderRadius: 10,
-    
-    // backgroundColor: '#FFFFFF',
   },
   backButtonText: {
     color: 'gray',

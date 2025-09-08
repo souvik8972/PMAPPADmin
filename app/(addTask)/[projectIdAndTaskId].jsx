@@ -26,14 +26,16 @@ import { AuthContext } from "../../context/AuthContext";
 import { format, isWeekend, addDays } from 'date-fns';
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import  { Toast } from 'toastify-react-native'
+import { useRefreshToken } from "../../utils/auth";
 export default AddEditTask = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const ids = route.params?.projectIdAndTaskId?.split("-") || [];
   const [projectId, taskId, actionType, BId] = ids;
   const isEditMode = taskId;
-  const { user } = useContext(AuthContext);
-  
+  const { user, accessTokenGetter } = useContext(AuthContext);
+  const accessToken = useRefreshToken(user?.token);
+
   // State for form fields
   const [taskName, setTaskName] = useState("");
   const [client, setClient] = useState(null);
@@ -72,7 +74,7 @@ export default AddEditTask = () => {
   // Employee working hours state
   const [employeeWorkingHours, setEmployeeWorkingHours] = useState({});
   const [loadingHours, setLoadingHours] = useState(false);
-
+const [buttonLoading,setButtonLoading]=useState(false);
   // Animation interpolation
   const rotateInterpolate = rotateAnim.interpolate({
     inputRange: [0, 1],
@@ -81,19 +83,19 @@ export default AddEditTask = () => {
 
   // Use the usePostData hook
   const { mutate: submitTask, isPending: isSubmitPending } = usePostData('Task/CreateTask', ["Task/GetTasks"]);
-  
+
   // Fetch task details
   const { data, isLoading, refetch } = useFetchData(
     isEditMode 
       ? `Task/getTaskDetailsByProjectId?ProjectId=${projectId}&ActionType=${actionType}&TaskId=${taskId}&Bid=${BId}`
       : `Task/getTaskDetailsByProjectId?ProjectId=${projectId}&ActionType=1&Bid=${BId || 0}`,
-    user.token
+    accessToken
   );
 
   // Fetch allocation time if in edit mode
   const { data: allocationTime, isLoading: allocationLoader } = useFetchData(
     isEditMode ? `Task/getTaskHoursDetailsByID?taskid=${taskId}` : null,
-    user.token
+    accessToken
   );
 
   // Function to fetch employee working hours
@@ -104,7 +106,7 @@ export default AddEditTask = () => {
         `https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/Task/GetEmpTaskWorkingHours?emp_id=${empId}&startdate=${format(startDate, 'MM/dd/yyyy')}&endDate=${format(endDate, 'MM/dd/yyyy')}`,
         {
           headers: {
-            'Authorization': `Bearer ${user.token}`
+            'Authorization': `Bearer ${accessToken}`
           }
         }
       );
@@ -129,7 +131,7 @@ export default AddEditTask = () => {
     } finally {
       setLoadingHours(false);
     }
-  }, [user.token]);
+  }, []);
 
   // Fetch working hours when dates or team members change
   useEffect(() => {
@@ -367,7 +369,9 @@ export default AddEditTask = () => {
   };
 
   // Form submission
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
+
+
     // Validate required fields
   if (!taskName) {
     Toast.error("Please enter a task name");
@@ -388,7 +392,8 @@ export default AddEditTask = () => {
     Toast.error("Please add at least one team member");
     return;
   }
-
+setButtonLoading(true);
+  const token =await accessTokenGetter();
   // Validate hours don't exceed available hours
   let hasExceededHours = false;
   const MAX_HOURS = 9;
@@ -421,6 +426,7 @@ export default AddEditTask = () => {
   });
   
   if (hasExceededHours) {
+    setButtonLoading(false);
     Toast.warn(
       "Some team members have hours that exceed their available capacity"
     );
@@ -465,19 +471,23 @@ export default AddEditTask = () => {
     Originalempids: originalId,
     employees
   };
+  // console.log("Submitting task data:", taskData);
 
   submitTask(
     { 
       data: taskData,
-      token: user?.token 
+      token: token
     },
     {
       onSuccess: (data) => {
         Toast.success( isEditMode ? "Task updated successfully" : "Task created successfully");
+        setButtonLoading(false);
         navigation.goBack();
       },
       onError: (error) => {
         console.error("Submission failed:", error);
+        setButtonLoading(false);
+
         Toast.error("Error", error.message || "Failed to submit task");
       }
     }
@@ -871,7 +881,7 @@ export default AddEditTask = () => {
                     height: 56
                   }}
                 >
-                  {isSubmitPending ? (
+                  {isSubmitPending || buttonLoading ? (
                     <ActivityIndicator size="small" color="#fff" />
                   ) : (
                     <>

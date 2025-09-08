@@ -8,14 +8,16 @@ import EvilIcons from '@expo/vector-icons/EvilIcons';
 import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../context/AuthContext";
 import { API_URL } from '@env';
-import {isTokenValid} from '@/utils/functions/checkTokenexp';
-import  { Toast } from 'toastify-react-native'
-const fetchProjectList = async (token,user,logout) => {
-    const tokenvalid= await isTokenValid(user,logout)
-     if(!tokenvalid) {
-        Toast.error("Session expired. Please log in again.");
-        return;
-      }
+// import {isTokenValid} from '@/utils/functions/checkTokenexp';
+// import  { Toast } from 'toastify-react-native'
+import { useRefreshToken } from "../../utils/auth";
+const fetchProjectList = async (accessTokenGetter) => {
+    // const tokenvalid= await isTokenValid(user,logout)
+    //  if(!tokenvalid) {
+    //     Toast.error("Session expired. Please log in again.");
+    //     return;
+    //   }
+    const token = await accessTokenGetter();
   const response = await fetch(`${API_URL}Projects/GetAllProjectNames`, {
     headers: {
       'Authorization': `Bearer ${token}`
@@ -27,7 +29,8 @@ const fetchProjectList = async (token,user,logout) => {
   return response.json();
 };
 
-const fetchProjectDetails = async (projectId, token) => {
+const fetchProjectDetails = async (projectId, accessTokenGetter) => {
+  const token = await accessTokenGetter();
   const response = await fetch(`${API_URL}Projects/GetProjectDetailsById?projectId=${projectId}`, {
     headers: {
       'Authorization': `Bearer ${token}`
@@ -40,6 +43,8 @@ const fetchProjectDetails = async (projectId, token) => {
   return response.json();
 };
 const ProjectSkeleton = () => {
+
+
   return (
     <View className="bg-white rounded-xl shadow-xl border border-gray-100 mb-4 overflow-hidden">
       {/* Header skeleton */}
@@ -84,12 +89,13 @@ const ProjectSkeleton = () => {
 };
 
 export default function ProjectList() {
-  const { user,logout  } = useContext(AuthContext);
+  const { user,logout,accessTokenGetter  } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
   const token = user?.token;
   const [projectDetails, setProjectDetails] = useState({});
   const [loadingDetails, setLoadingDetails] = useState({});
   const [expandedProjects, setExpandedProjects] = useState({});
+  const accessToken = useRefreshToken(user?.token);
 
   // Fetch all projects
   const { 
@@ -100,8 +106,8 @@ export default function ProjectList() {
     refetch
   } = useQuery({
     queryKey: ['projectList'],
-    queryFn: () => fetchProjectList(token,user,logout),
-    enabled: !!token
+    queryFn: () => fetchProjectList(accessTokenGetter),
+    enabled: !!accessToken
   });
 
   // Filter projects based on search query
@@ -122,7 +128,7 @@ export default function ProjectList() {
     if (!projectDetails[projectId] && expandedProjects[projectId] !== true) {
       try {
         setLoadingDetails(prev => ({ ...prev, [projectId]: true }));
-        const details = await fetchProjectDetails(projectId, token);
+        const details = await fetchProjectDetails(projectId, accessTokenGetter);
         console.log(details,"details")
         setProjectDetails(prev => ({
           ...prev,
@@ -149,14 +155,14 @@ export default function ProjectList() {
     return (
       <View className="flex-1 p-4 pt-0 bg-gray-100">
         {/* Search Bar Skeleton */}
-        <View className="flex-row items-center border border-gray-300 shadow-lg rounded-[12px] h-[60px] p-2 my-4 bg-white">
-          <View className="flex-1 h-8 bg-gray-200 rounded" />
-          <View className="w-8 h-8 bg-gray-200 rounded-full mr-2" />
+        <View className="flex-row items-center border border-gray-300 shadow-lg animate-pulse rounded-[12px] h-[60px] p-2 my-4 bg-white">
+          <View className="flex-1 h-8 bg-gray-200 animate-pulse  rounded" />
+          <View className="w-8 h-8 bg-gray-200 animate-pulse  rounded-full mr-2" />
         </View>
         
         <View className="flex flex-row justify-between mb-3 items-center">
-          <View className="h-5 w-1/4 bg-gray-200 rounded" />
-          <View className="h-3 w-1/3 bg-gray-200 rounded" />
+          <View className="h-5 w-1/4 bg-gray-200 animate-pulse  rounded" />
+          <View className="h-3 w-1/3 bg-gray-200 animate-pulse  rounded" />
         </View>
         
         {/* Render multiple skeleton items */}

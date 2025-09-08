@@ -1,7 +1,6 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Keyboard } from 'react-native';
-
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import Header from '../../components/Header';
@@ -18,17 +17,23 @@ import Food from '../screens/food';
 import Home from '../screens/Timesheet';
 import Resource from '../screens/resource';
 import Ticket from '../screens/ticket';
-import useTokenExpiryCheck from "../../hooks/useTokenExpiryCheck";
 
 const Tab = createBottomTabNavigator();
 
 export default function TabLayout() {
-  const { user, logout } = useContext(AuthContext);
-  
-  // Check token expiry on app state changes (background to foreground)
-  useTokenExpiryCheck(user?.token, logout);
-  
+  const { user, accessTokenGetter } = useContext(AuthContext);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const handleTabChange = useCallback(async (state) => {
+    if (state) {
+      const currentRoute = state.routes[state.index];
+      const routeName = currentRoute.name;
+      
+      // console.log(`Tab changed to: ${routeName}`);
+      await accessTokenGetter();
+      // Call your custom function here
+      // yourCustomFunction(routeName);
+    }
+  }, []);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
@@ -44,47 +49,22 @@ export default function TabLayout() {
     };
   }, []);
 
-  /**
-   * Function to check token expiry on tab change
-   * This will be called every time a tab is pressed
-   */
-  const checkTokenOnTabChange = async () => {
-    console.log(`Checking token on tab change`);
-    if (!user?.token) return;
-    
-    try {
-      const currentTime = Date.now() / 1000;
-      // Check if token exists and has expired
-      if (user?.exp && currentTime > user.exp) {
-        await logout();
-      }
-    } catch (error) {
-      console.error('Token validation error:', error);
-    }
-  };
-
   return (
     <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
       <Header />
 
       <Tab.Navigator
-        tabBar={(props) => !isKeyboardVisible && (
-          <MyTabBar 
-            {...props} 
-            // Add onTabPress handler to check token on each tab press
-            onTabPress={checkTokenOnTabChange}
-          />
-        )}
+        tabBar={(props) => !isKeyboardVisible && <MyTabBar {...props} />}
         screenOptions={{
           headerShown: false,
         }}
         sceneContainerStyle={{
           flex: 1,
         }}
-        // Add listener for tab changes to check token
-        screenListeners={{
-          tabPress: (e) => {
-            checkTokenOnTabChange();
+         screenListeners={{
+          state: (e) => {
+    
+            handleTabChange(e.data.state);
           },
         }}
       >

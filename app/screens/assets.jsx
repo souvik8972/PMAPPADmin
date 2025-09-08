@@ -6,7 +6,7 @@ import { AuthContext } from '@/context/AuthContext';
 import AllRequest from "../../components/Assets/AllRequest";
 
 const AssetsScreen = () => {
-  const { user } = useContext(AuthContext);
+  const { user, accessTokenGetter } = useContext(AuthContext);
   const isSystemAdmin = user?.userType == 5;
   const [activeTab, setActiveTab] = useState(0);
   const [indicatorPosition] = useState(new Animated.Value(0));

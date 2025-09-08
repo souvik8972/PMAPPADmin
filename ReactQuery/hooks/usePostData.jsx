@@ -27,6 +27,7 @@ const postData = async ({ endpoint, data, token, queryParams = {} }) => {
 
 export const usePostData = (endpoint, invalidateQueries = []) => {
   const queryClient = useQueryClient();
+  
 
  // ✅ Pass queryParams through mutationFn
 return useMutation({
