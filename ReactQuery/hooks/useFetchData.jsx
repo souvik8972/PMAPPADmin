@@ -28,11 +28,11 @@ export const useFetchData = (endpoint, token) => {
   const {accessTokenGetter} = useContext(AuthContext);
   // console.log("Fetching data from:", endpoint);
 // const randomNum = Math.floor(Math.random() * 1000); 
-  // const accessToken = useRefreshToken(token,endpoint);
+  const accessToken = useRefreshToken(token,endpoint);
   // console.log("hhhhhh",accessToken,"TOKEN",token )
   // console.log("Access Token:", accessToken);
   return useQuery({
-  queryKey: [endpoint], 
+  queryKey: [endpoint, accessToken], 
    queryFn: async () => {
       // always refresh before fetch
       const accessToken = await accessTokenGetter();
