@@ -72,7 +72,7 @@ const handleClick = async () => {
     }
 
     // Decide route based on user type
-    if (user.userType === 3) {
+    if (user.userType == 3) {
       router.replace('(tabs)');
     } else {
       router.replace('(admin)');

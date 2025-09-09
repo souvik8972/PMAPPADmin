@@ -1,6 +1,6 @@
 import React, { createContext, useEffect, useState } from "react";
 import { getAuthInfo, saveAuthInfo, removeAuthInfo,checkTokenExpiration, getRefreshToken } from "../utils/auth"; // Updated to reflect changes
-import { getNewTokenBYRefreshToken, savePushTokenToBackend } from "@/services/api";
+import { getNewTokenBYRefreshToken, removeExpoToken, savePushTokenToBackend } from "@/services/api";
 import { router } from "expo-router";
 
 export const AuthContext = createContext(null);
@@ -52,9 +52,10 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      const auth_info = await getAuthInfo();
-      if(auth_info?.token){
-      await savePushTokenToBackend(auth_info?.empId, "", auth_info?.token);
+      const token = await accessTokenGetter();
+      if(token){
+      await removeExpoToken(user.empId, expoTokenToSend||"", token);
+    console.log("Expo token removed from backend");
 
       }
       await removeAuthInfo();
@@ -64,7 +65,9 @@ export function AuthProvider({ children }) {
       
     //  console.log("Logout button pressed 1");
     } catch (error) {
-      // console.error("Failed to remove token:", error);
+        await removeAuthInfo();
+      console.error("Failed to remove token:", error);
+      router.replace('/login');
       throw error;
     }
   };
