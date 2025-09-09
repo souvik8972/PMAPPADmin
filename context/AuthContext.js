@@ -84,7 +84,7 @@ export function AuthProvider({ children }) {
 
   const accessTokenGetter=async()=>{
     const auth_info = await getAuthInfo();
-    console.log("Token expired, refreshing... from context outside");
+    console.log("Token checking,  from context outside");
 
    if (checkTokenExpiration(auth_info?.exp)){
     console.log("Token expired, refreshing... from context");
@@ -93,7 +93,7 @@ export function AuthProvider({ children }) {
       await logout();
       console.log("No refresh token available, redirecting to login");
        router.replace('/login');
-      // return null;
+      return null;
     }
      const newToken = await getNewTokenBYRefreshToken(refToken);
      if (newToken) {

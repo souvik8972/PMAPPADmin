@@ -57,21 +57,34 @@ const {user,accessTokenGetter}=useContext(AuthContext)
 
   
 const handleClick = async () => {
- setLoading(true);
-  const token  = await accessTokenGetter();
-  if (!user||!token) {
-    console.log("No user or token expired, navigating to login",user);
+  try {
+    setLoading(true);
+
+    if (!user) {
+      router.replace('/(auth)/login');
+      return;
+    }
+
+    const token = await accessTokenGetter();
+    if (!token) {
+      router.replace('/(auth)/login');
+      return;
+    }
+
+    // Decide route based on user type
+    if (user.userType === 3) {
+      router.replace('(tabs)');
+    } else {
+      router.replace('(admin)');
+    }
+  } catch (error) {
+    // console.error("Error in handleClick:", error);
     router.replace('/(auth)/login');
-    return;
+  } finally {
+    setLoading(false);
   }
-  
-  if (user.userType == 3) {
-    router.replace('(tabs)');
-  } else {
-    router.replace('(admin)');
-  }
-  setLoading(false);
 };
+
 
   return (
      <SafeAreaView   style={styles.container}>
