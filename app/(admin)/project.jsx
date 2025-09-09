@@ -78,16 +78,16 @@ export default function ProjectList() {
     return (
       <View className="flex-1 p-4 pt-0 bg-gray-100">
         {/* Search Bar Skeleton */}
-        <View className="flex-row items-center border border-gray-300 shadow-lg animate-pulse rounded-[12px] h-[60px] p-2 my-4 bg-white">
-          <View className="flex-1 h-8 bg-gray-200 animate-pulse rounded" />
-          <View className="w-8 h-8 bg-gray-200 animate-pulse rounded-full mr-2" />
+        <View className="flex-row items-center border border-gray-300 shadow-lg  rounded-[12px] h-[60px] p-2 my-4 bg-white">
+          <View className="flex-1 h-8 bg-gray-200  rounded" />
+          <View className="w-8 h-8 bg-gray-200  rounded-full mr-2" />
         </View>
         
         <View className="flex flex-row justify-between mb-3 items-center">
-          <View className="h-5 w-1/4 bg-gray-200 animate-pulse rounded" />
-          <View className="h-3 w-1/3 bg-gray-200 animate-pulse rounded" />
+          <View className="h-5 w-1/4 bg-gray-200  rounded" />
+          <View className="h-3 w-1/3 bg-gray-200  rounded" />
         </View>
-        
+        {/* <Text className="text-gray-500 text-center">Loading Projects...</Text> */}
         {/* Render multiple skeleton items */}
         {[...Array(5)].map((_, index) => (
           <ProjectSkeleton key={index} />

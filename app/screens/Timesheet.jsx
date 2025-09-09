@@ -233,7 +233,7 @@ export default function TaskScreen() {
         activeOpacity={0.8}
         style={{
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
+          //shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 3,
@@ -273,7 +273,7 @@ export default function TaskScreen() {
                 </View>
                 <View style={{
                   shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
+                  //shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.1,
                   shadowRadius: 4,
                   elevation: 3,
@@ -300,7 +300,7 @@ export default function TaskScreen() {
                 <View
                   style={{
                     shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
+                    //shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.1,
                     shadowRadius: 4,
                     elevation: 3,

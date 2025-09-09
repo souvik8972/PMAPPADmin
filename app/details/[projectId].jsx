@@ -300,7 +300,7 @@ const ProjectDetails = () => {
           width: "100%",
           flex: 1,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: -4 },
+          //shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.3,
           shadowRadius: 20,
           elevation: 10,
@@ -356,7 +356,7 @@ const ProjectDetails = () => {
                       borderColor: "#e5e7eb",
                       elevation: 3,
                       shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 2 },
+                      //shadowOffset: { width: 0, height: 2 },
                       shadowOpacity: 1,
                       shadowRadius: 8,
                     }}

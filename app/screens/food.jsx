@@ -213,7 +213,7 @@ const FoodComponent = () => {
               height: '100%', 
               resizeMode: 'contain',
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
+              //shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 4,
             }}  
@@ -224,7 +224,7 @@ const FoodComponent = () => {
         <View className="bg-white p-6 rounded-xl w-full flex-1 shadow-sm min-h-[400px]"
           style={{
             shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
+            //shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.08,
             shadowRadius: 6,
             elevation: 3,
@@ -318,7 +318,7 @@ const FoodComponent = () => {
                           borderRadius: 8, 
                           alignItems: 'center',
                           shadowColor: '#D01313',
-                          shadowOffset: { width: 0, height: 2 },
+                          //shadowOffset: { width: 0, height: 2 },
                           shadowOpacity: 0.2,
                           shadowRadius: 4,
                           elevation: 3,
@@ -348,7 +348,7 @@ const FoodComponent = () => {
               className="bg-white p-6 rounded-xl shadow-lg w-80"
               style={{
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
+                //shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.1,
                 shadowRadius: 8,
                 transform: [{

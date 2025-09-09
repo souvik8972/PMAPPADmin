@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 25,
     shadowColor: '#D01313',
-    shadowOffset: { width: 0, height: 4 },
+    //shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,

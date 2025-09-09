@@ -22,10 +22,10 @@ const Login = () => {
   // const [password, setPassword] = useState('712123@daS');
   //    const [email, setEmail] = useState('vignesh.vc@medtrixhealthcare.com');
   // const [password, setPassword] = useState('vyl7IvKM');
-   const [password, setPassword] = useState('hello@123');
-    const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
-      // const [password, setPassword] = useState('');
-    // const [email, setEmail] = useState('');
+  //  const [password, setPassword] = useState('hello@123');
+  //   const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
+      const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
   const { login } = useContext(AuthContext);
@@ -95,7 +95,7 @@ const Login = () => {
           <View className="bg-[#F0F0F0] p-6 pt-8 pb-8 w-full min-h-[400px] justify-between z-[10] max-w-lg rounded-[20px] shadow-lg"
             style={{
               shadowColor: "#091E42",
-              shadowOffset: { width: 0, height: 4 },
+              //shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.25,
               shadowRadius: 8,
               elevation: 4,
@@ -127,7 +127,7 @@ const Login = () => {
                   borderWidth: error.email && error.email !== 'Invalid email or password' ? 1 : 0,
                   borderColor: error.email && error.email !== 'Invalid email or password' ? "red" : "transparent",
                   shadowColor: "rgba(0, 0, 0, 0.4)",
-                  shadowOffset: { width: 0, height: 2 },
+                  //shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.4,
                   shadowRadius: 4,
                   elevation: 3,
@@ -151,7 +151,7 @@ const Login = () => {
                   borderWidth: error.password && error.password !== 'Invalid email or password' ? 1 : 0,
                   borderColor: error.password && error.password !== 'Invalid email or password' ? "red" : "transparent",
                   shadowColor: "rgba(0, 0, 0, 1)",
-                  shadowOffset: { width: 0, height: 2 },
+                  //shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.4,
                   shadowRadius: 4,
                   elevation: 3,

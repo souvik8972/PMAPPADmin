@@ -167,7 +167,7 @@ const Client = () => {
           ...Platform.select({
             ios: {
               shadowColor: "#000",
-              shadowOffset: { width: 0, height: -4 },
+              //shadowOffset: { width: 0, height: -4 },
               shadowOpacity: 0.1,
               shadowRadius: 10,
               backgroundColor: "transparent",
@@ -239,7 +239,7 @@ const TaskList = ({ projects, clientId, loading }) => {
                 className="bg-white p-5 mb-4 rounded-xl flex-row justify-between items-center shadow-sm border border-gray-100"
                 style={{
                   shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 1 },
+                  //shadowOffset: { width: 0, height: 1 },
                   shadowOpacity: 0.05,
                   shadowRadius: 3,
                   elevation: 2,
@@ -284,7 +284,7 @@ const TaskList = ({ projects, clientId, loading }) => {
               borderRadius: 50,
               padding: 16,
               shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
+              //shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 6,
               elevation: 5,

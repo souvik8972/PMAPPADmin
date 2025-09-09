@@ -175,9 +175,9 @@ const IssueTracker = () => {
   };
 
   const severityColors = {
-    1: "bg-green-200 text-green-800",
-    2: "bg-yellow-200 text-yellow-800",
-    3: "bg-red-200 text-red-800",
+   "Low": "bg-green-200 text-green-800",
+   "Medium": "bg-yellow-200 text-yellow-800",
+   "High": "bg-red-200 text-red-800",
   };
 
   const statusColors = {
@@ -370,7 +370,7 @@ const token =await accessTokenGetter();
                     <Text
                       className={`px-2 py-1 rounded-lg text-xs font-semibold ${severityColors[item.severity] || 'bg-gray-200 text-gray-800'}`}
                     >
-                      {item.severity === 1 ? 'Low' : item.severity === 2 ? 'Medium' : 'High'}
+                      {item.severity }
                     </Text>
                     <Text
                       className={`px-3 py-1 rounded-lg text-xs font-semibold ${statusColors[item.status] || 'bg-gray-200 text-gray-800'}`}

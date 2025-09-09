@@ -112,7 +112,7 @@ const Finance = () => {
                 borderColor: "#E5E7EB",
                 width: 180,
                 shadowColor: "#000",
-                shadowOffset: { width: 0, height: 1 },
+                //shadowOffset: { width: 0, height: 1 },
                 shadowOpacity: 0.05,
                 shadowRadius: 1,
               }
@@ -146,7 +146,7 @@ const Finance = () => {
                   backgroundColor: "white",
                   maxHeight: '60%',
                   shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
+                  //shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.1,
                   shadowRadius: 20,
                 }

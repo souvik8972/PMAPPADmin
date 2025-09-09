@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold', // Bold text
     color: '#6A0A0A', // Dark red text color
     shadowColor: '#000', // Shadow color
-    shadowOffset: { width: 0, height: 1 }, // Shadow position
+    //shadowOffset: { width: 0, height: 1 }, // Shadow position
     shadowOpacity: 0.05, // Shadow transparency
     shadowRadius: 3, // Shadow blur radius
     elevation: 2, // Android shadow
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   otpInputFocused: {
     borderColor: '#D01313', // Red border when input has value
     shadowColor: '#D01313', // Red shadow when input has value
-    shadowOffset: { width: 0, height: 2 }, // Slightly larger shadow
+    //shadowOffset: { width: 0, height: 2 }, // Slightly larger shadow
     shadowOpacity: 0.2, // More visible shadow
     shadowRadius: 4, // Slightly larger blur radius
     elevation: 3, // Android shadow elevation
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden', // Clip gradient to rounded corners
     marginBottom: 25, // Space below button
     shadowColor: '#D01313', // Red shadow color
-    shadowOffset: { width: 0, height: 4 }, // Shadow position
+    //shadowOffset: { width: 0, height: 4 }, // Shadow position
     shadowOpacity: 0.3, // Shadow transparency
     shadowRadius: 8, // Shadow blur radius
     elevation: 5, // Android shadow

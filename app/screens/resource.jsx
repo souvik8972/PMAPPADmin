@@ -350,7 +350,7 @@ const TaskDropdown = ({ emp }) => {
                   className="bg-white rounded-xl mb-3 px-4 py-3"
                   style={{
                     shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
+                    //shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.8,
                     shadowRadius: 4,
                     elevation: 3,
