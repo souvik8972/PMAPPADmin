@@ -17,6 +17,7 @@ import {
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import LottieView from 'lottie-react-native';
+import { Toast } from 'toastify-react-native';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -26,12 +27,13 @@ const ForgotPassword = () => {
     Keyboard.dismiss(); 
     
     if (!email) {
-      Alert.alert('Error', 'Please enter your email address');
+      // Alert.alert('Error', 'Please enter your email address');
+      Toast.error('Please enter your email address', { position: 'top' });
       return;
     }
     
     if (!isValidEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      Toast.error('Please enter a valid email address', { position: 'top' });
       return;
     }
     
@@ -47,13 +49,14 @@ const ForgotPassword = () => {
           pathname: '/(forgotPassword)/OTPVerification',
           params: { email: email }
         });
-        Alert.alert('Success', `Password reset instructions sent to ${email}`);
+        Toast.success(`Password reset instructions sent to ${email}`, { position: 'top' });
+        // Alert.alert('Success', `Password reset instructions sent to ${email}`);
       } else {
-        Alert.alert('Error', response.message || 'Email validation failed');
+        Toast.error(response.message || 'Email validation failed', { position: 'top' });
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to validate email. Please try again.');
-      console.error('API Error:', error);
+      Toast.error('Failed to validate email. Please try again.', { position: 'top' });
+      // console.error('API Error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -73,14 +76,15 @@ const ForgotPassword = () => {
       );
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // throw new Error(`HTTP error! status: ${response.status}`);
+        
       }
       
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error validating email:', error);
-      throw error;
+      // console.error('Error validating email:', error);
+      // throw error;
     }
   };
 

@@ -22,15 +22,15 @@ const Login = () => {
   // const [password, setPassword] = useState('712123@daS');
   //    const [email, setEmail] = useState('vignesh.vc@medtrixhealthcare.com');
   // const [password, setPassword] = useState('vyl7IvKM');
-  //  const [password, setPassword] = useState('hello@123');
-  //   const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
-      const [password, setPassword] = useState('');
-    const [email, setEmail] = useState('');
+   const [password, setPassword] = useState('hello@123');
+    const [email, setEmail] = useState('shijin.p@medtrixhealthcare.com');
+    //   const [password, setPassword] = useState('');
+    // const [email, setEmail] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ email: '', password: '' });
   const { login } = useContext(AuthContext);
   const { user,expoTokenToSend } = useContext(AuthContext);
-
+const [showError,setShowError]=useState(false)
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
@@ -50,9 +50,11 @@ const Login = () => {
       });
     },
     onError: (error) => {
-   Toast.error("Invalid email or password", {
-  position: "top"   
-});
+//    Toast.error("Invalid email or password", {
+//   position: "top"   
+// });
+
+setShowError(true)
       setError({
         email: error.message,
         password: error.message,
@@ -103,13 +105,14 @@ const Login = () => {
             }}>
             
             {/* Error message at the very top */}
-            {error.email === 'Invalid email or password' && (
+            
+            
+            <Text className="text-[24px] font-semibold mb-4 text-center text-gray-800">Project Management Portal</Text>
+            {showError && (
               <Text className="text-red-700 text-center mt-1 mb-4 font-medium text-lg">
                 Invalid email or password
               </Text>
             )}
-            
-            <Text className="text-[24px] font-semibold mb-4 text-center text-gray-800">Project Management Portal</Text>
 
             <View className="mb-4">
               <Text className="text-gray-700 text-[15px] pl-1 font-medium mb-1">Email</Text>
@@ -119,6 +122,7 @@ const Login = () => {
                 placeholderTextColor={error.email ? "red" : "#D3D3D3"}
                 value={email}
                 onChangeText={(text) => {
+                  setShowError(false)
                   setEmail(text);
                   setError((prev) => ({ ...prev, email: '' }));
                 }}
@@ -144,6 +148,7 @@ const Login = () => {
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
+                  setShowError(false);
                   setError((prev) => ({ ...prev, password: '' }));
                 }}
                 className="bg-white h-[50px] p-3 rounded-[12px] text-gray-700"

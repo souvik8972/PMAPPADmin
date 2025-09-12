@@ -8,9 +8,9 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { Link, useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { ScrollView } from "react-native";
@@ -23,6 +23,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { FontAwesome } from "@expo/vector-icons";
 import { deleteTask } from "../../ReactQuery/hooks/deleteTask";
 import { Toast } from "toastify-react-native";
+
 const ProjectDetails = () => {
   const [showModal, setShowModal] = useState(false);
   const [deleteTaskId, setDeleteTaskId] = useState(null);
@@ -31,9 +32,9 @@ const ProjectDetails = () => {
   const { user, accessTokenGetter } = useContext(AuthContext);
   const { projectId } = useLocalSearchParams();
   const router = useRouter();
+  const [forceRefreshDetails, setForceRefreshDetails] = useState(false);
 
   const handleDeleteTask = (taskId) => {
-    // console.log("Task ID:", taskId);
     setDeleteTaskId(taskId);
     setShowModal(true);
   };
@@ -70,6 +71,18 @@ const ProjectDetails = () => {
   } = useFetchData(
     `Projects/GetAllTaskNamesProjectId?projectId=${projectId}`,
     user.token
+  );
+
+  // Use focus effect to detect when screen comes back into focus
+  useFocusEffect(
+    useCallback(() => {
+      setForceRefreshDetails(true);
+      
+      // If there's a selected task, refetch its details
+      if (selectedTaskId) {
+        fetchTaskDetails(selectedTaskId, true);
+      }
+    }, [selectedTaskId])
   );
 
   const confirmDelete = async () => {
@@ -111,16 +124,33 @@ const ProjectDetails = () => {
     !!selectedTaskId
   );
 
-  // Handle task click
+  // Modified fetchTaskDetails function to handle force refresh
+  const fetchTaskDetails = async (taskId, forceRefresh = false) => {
+    // Only skip fetch if NOT forcing refresh AND details already exist
+    if (!forceRefresh && taskDetails && !forceRefreshDetails) return;
+    
+    try {
+      await refetchTaskDetails();
+      
+      // Reset force refresh flag after successful fetch
+      if (forceRefreshDetails) {
+        setForceRefreshDetails(false);
+      }
+    } catch (error) {
+      console.error("Error fetching task details:", error);
+    }
+  };
+
+  // Handle task click - always fetch details
   const handleTaskClick = async (taskId, index) => {
-    // console.log()
     if (activeIndex === index) {
       setActiveIndex(null);
       setSelectedTaskId(null);
     } else {
       setActiveIndex(index);
       setSelectedTaskId(taskId);
-      await refetchTaskDetails();
+      await fetchTaskDetails(taskId, true);
+      console.log("Task details fetched for task ID:", taskId);
     }
   };
 
@@ -300,7 +330,6 @@ const ProjectDetails = () => {
           width: "100%",
           flex: 1,
           shadowColor: "#000",
-          //shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.3,
           shadowRadius: 20,
           elevation: 10,
@@ -356,7 +385,6 @@ const ProjectDetails = () => {
                       borderColor: "#e5e7eb",
                       elevation: 3,
                       shadowColor: "#000",
-                      //shadowOffset: { width: 0, height: 2 },
                       shadowOpacity: 1,
                       shadowRadius: 8,
                     }}

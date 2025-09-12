@@ -15,6 +15,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import LottieView from 'lottie-react-native';
+import { Toast } from 'toastify-react-native';
 
 // Main OTP Verification component
 const OTPVerification = () => {
@@ -131,7 +132,7 @@ const OTPVerification = () => {
     const enteredOtp = otp.join('');
     // Validate that all 6 digits are entered
     if (enteredOtp.length !== 6) {
-      Alert.alert('Error', 'Please enter the complete 6-digit OTP');
+      Toast.error('Please enter the complete 6-digit OTP', { position: 'top' });
       return;
     }
 
@@ -142,17 +143,17 @@ const OTPVerification = () => {
       const response = await verifyOtp(email, parseInt(enteredOtp));
       
       if (response.success) {
-        Alert.alert('Success', 'OTP verified successfully!');
+        Toast.success('OTP verified successfully!', { position: 'top' });
         // Navigate to create new password screen with email parameter
         router.replace({
           pathname: '/CreateNewPassword',
           params: { email: email }
         });
       } else {
-        Alert.alert('Error', response.message || 'Invalid OTP. Please try again.');
+        Toast.error(response.message || 'Invalid OTP. Please try again.', { position: 'top' });
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+      Toast.error('Failed to verify OTP. Please try again.', { position: 'top' });
       console.error('API Error:', error);
     } finally {
       setIsVerifying(false);
@@ -202,14 +203,14 @@ const OTPVerification = () => {
       
       if (response.success) {
         // Show success message
-        Alert.alert('Success', 'New OTP has been sent to your email');
+        Toast.success('New OTP has been sent to your email', { position: 'top' });
         // Start the timer again
         startTimer();
       } else {
-        Alert.alert('Error', response.message || 'Failed to resend OTP. Please try again.');
+        Toast.error(response.message || 'Failed to resend OTP. Please try again.', { position: 'top' });
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to resend OTP. Please try again.');
+      Toast.error('Failed to resend OTP. Please try again.', { position: 'top' });
       console.error('API Error:', error);
     } finally {
       // Reset resending state

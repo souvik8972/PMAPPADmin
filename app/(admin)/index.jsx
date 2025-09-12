@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback, useMemo } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert, StyleSheet, Modal } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -8,7 +8,7 @@ import en from 'react-native-paper-dates/lib/module/translations/en'
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Feather from "@expo/vector-icons/Feather";
 import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
-import { Link } from "expo-router";
+import { Link, useFocusEffect } from "expo-router";
 import { format } from "date-fns";
 import { useFetchData } from "../../ReactQuery/hooks/useFetchData";
 import { AuthContext } from "../../context/AuthContext";
@@ -19,8 +19,8 @@ import  { Toast } from 'toastify-react-native'
 import { fi } from "date-fns/locale";
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
-// Memoized Task Item Component
-const TaskItem = React.memo(({ 
+// Task Item Component
+const TaskItem = ({ 
   item, 
   isSelected, 
   details, 
@@ -62,7 +62,6 @@ const TaskItem = React.memo(({
               
                 <View className="mb-4">
                   <View className="flex-row items-center mb-2">
-                    {/* <Feather name="users" size={16} color="#EC1C24" /> */}
                     <Text className="text-sm font-medium text-gray-500">Assigned to:</Text>
                   </View>
                   <View className="flex-row flex-wrap gap-2">
@@ -96,7 +95,6 @@ const TaskItem = React.memo(({
                 </View>
                 <View className="">
                 <View className="flex-row items-center">
-                  {/* <Feather name="user" size={16} color="#EC1C24" /> */}
                   <Text className="text-sm font-medium text-gray-500">Task Owner:</Text>
                 </View>
                 <View className="flex-row flex-wrap gap-2 mt-2">
@@ -112,12 +110,10 @@ const TaskItem = React.memo(({
                 
                 <View className="flex-row items-center gap-1">
                   <View className="flex-col items-start gap-1">
-                    {/* <Feather name="calendar" size={16} color="#64748B" /> */}
                     <Text className="text-sm font-medium text-gray-500">Start</Text>
                     <Text className="text-sm font-semibold" >{details.Start_Date} -</Text>
                   </View>
                   <View className="flex-col items-start gap-1">
-                    {/* <Feather name="calendar" size={16} color="#64748B" /> */}
                     <Text className="text-sm font-medium text-gray-500">End</Text>
                     <Text className="text-sm font-semibold" >{details.End_Date}</Text>
                   </View>
@@ -149,7 +145,7 @@ const TaskItem = React.memo(({
       )}
     </TouchableOpacity>
   );
-});
+};
 
 export default function TaskScreen() {
   const { user,logout,accessTokenGetter } = useContext(AuthContext);
@@ -165,6 +161,7 @@ export default function TaskScreen() {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [forceRefreshDetails, setForceRefreshDetails] = useState(false);
   const ActionType = 0;
   const token = user?.token;
 
@@ -178,41 +175,44 @@ export default function TaskScreen() {
 
   const { data: basicTaskData, isLoading: loadingBasicTasks, refetch: refetchBasicTasks } = useFetchData(basicTaskEndpoint, token);
 
-  // Memoize filtered tasks
-  const memoizedFilteredTasks = useMemo(() => {
-    if (searchQuery.trim() === "") {
-      return basicTaskList;
-    }
-    return basicTaskList.filter(task =>
-      task.Task_Title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.Task_Id.toString().includes(searchQuery)
-    );
-  }, [searchQuery, basicTaskList]);
+  // Use focus effect to detect when screen comes back into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      // When screen comes back into focus, set flag to force refresh details
+      setForceRefreshDetails(true);
+      
+      // If there's a selected task, refetch its details
+      if (selectedTaskId) {
+        fetchTaskDetails(selectedTaskId, true);
+      }
+    }, [selectedTaskId])
+  );
 
   useEffect(() => {
     if (basicTaskData?._Tasks) {
+      console.log("Basic Task Data:", basicTaskData._Tasks);
       setBasicTaskList(basicTaskData._Tasks || []);
     }
   }, [basicTaskData]);
 
   useEffect(() => {
-    setFilteredTasks(memoizedFilteredTasks);
-  }, [memoizedFilteredTasks]);
+    if (searchQuery.trim() === "") {
+      setFilteredTasks(basicTaskList);
+    } else {
+      setFilteredTasks(basicTaskList.filter(task =>
+        task.Task_Title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.Task_Id.toString().includes(searchQuery)
+      ));
+    }
+  }, [searchQuery, basicTaskList]);
 
-  const fetchTaskDetails = useCallback(async (taskId) => {
-    if (taskDetails[taskId]) return;
+  const fetchTaskDetails = async (taskId, forceRefresh = false) => {
+    // If not forcing refresh and details already exist, return
+    if (!forceRefresh && taskDetails[taskId] && !forceRefreshDetails) return;
     
-    
-
     try {
-        // const tokenvalid= await isTokenValid(user,logout)
-    //  if(!tokenvalid) {
-    //    Toast.error("Session expired. Please log in again.");
-    //     return;
-    //   }
-
       setLoadingDetails(true);
-       const accessToken = await accessTokenGetter();
+      const accessToken = await accessTokenGetter();
       const response = await fetch(taskDetailsEndpoint(taskId), {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -227,23 +227,26 @@ export default function TaskScreen() {
           [taskId]: data.task_data[0]
         }));
       }
+      
+      // Reset force refresh flag after successful fetch
+      if (forceRefreshDetails) {
+        setForceRefreshDetails(false);
+      }
     } catch (error) {
       console.error('Error fetching task details:', error);
     } finally {
       setLoadingDetails(false);
     }
-  }, [taskDetails, token]);
+  };
 
-  const handleDelete = useCallback((taskId) => {
+  const handleDelete = (taskId) => {
     setTaskToDelete(taskId);
     setDeleteModalVisible(true);
-  }, []);
+  };
 
   const confirmDelete = async (id) => {
     if (!id) return;
 
-    
-    
     try {
       setIsDeleting(true);
       const accessToken = await accessTokenGetter();
@@ -257,6 +260,11 @@ export default function TaskScreen() {
           return newDetails;
         });
         
+        // If the deleted task was selected, clear the selection
+        if (selectedTaskId === id) {
+          setSelectedTaskId(null);
+        }
+        
         setDeleteModalVisible(false);
         setTaskToDelete(null);
         Toast.success(result.message);
@@ -266,24 +274,28 @@ export default function TaskScreen() {
       
       setDeleteModalVisible(false);
       setTaskToDelete(null);
-    }finally {
+    } finally {
       setIsDeleting(false);
     }
   };
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = () => {
     setIsRefreshing(true);
-    refetchBasicTasks().finally(() => setIsRefreshing(false));
-  }, [refetchBasicTasks]);
+    // Clear task details cache when refreshing
+    setTaskDetails({});
+    setSelectedTaskId(null);
+    refetchBasicTasks().then((data) => {
+      console.log("Refreshed task list", data.data?._Tasks);
+    }).finally(() => setIsRefreshing(false));
+  };
 
-  const handleTaskPress = useCallback((taskId) => {
+  const handleTaskPress = (taskId) => {
     setSelectedTaskId(prevId => prevId === taskId ? null : taskId);
-    if (!taskDetails[taskId]) {
-      fetchTaskDetails(taskId);
-    }
-  }, [taskDetails, fetchTaskDetails]);
+    // Always fetch details when task is pressed, even if they exist
+    fetchTaskDetails(taskId, true);
+  };
 
-  const renderItem = useCallback(({ item }) => (
+  const renderItem = ({ item }) => (
     <TaskItem
       item={item}
       isSelected={selectedTaskId === item.Task_Id}
@@ -293,9 +305,9 @@ export default function TaskScreen() {
       onDelete={handleDelete}
       ActionType={ActionType}
     />
-  ), [selectedTaskId, taskDetails, loadingDetails, handleTaskPress, handleDelete, ActionType]);
+  );
 
-  const onDateConfirm = useCallback((params) => {
+  const onDateConfirm = (params) => {
     setDatePickerOpen(false);
     if (params.startDate) {
       const startDate = params.startDate;
@@ -311,9 +323,11 @@ export default function TaskScreen() {
 
       setSelectedRange({ startDate, endDate });
       setBasicTaskList([]); // Clear previous tasks before loading new ones
+      setTaskDetails({}); // Clear task details cache
+      setSelectedTaskId(null); // Clear selected task
       refetchBasicTasks();
     }
-  }, [refetchBasicTasks]);
+  };
 
   return (
     <View style={styles.container}>
@@ -404,6 +418,7 @@ export default function TaskScreen() {
         />
       )}
 
+
       {/* Delete Confirmation Modal */}
       <Modal
         animationType="fade"
@@ -457,12 +472,10 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     marginBottom: 16,
     shadowColor: '#000',
-    //shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
     height:45,
-  
   },
   searchIcon: {
     marginRight: 12,
@@ -481,7 +494,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     shadowColor: '#000',
-    //shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,

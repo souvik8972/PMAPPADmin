@@ -18,6 +18,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import LottieView from 'lottie-react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Toast } from 'toastify-react-native';
 
 const CreateNewPassword = () => {
   const params = useLocalSearchParams();
@@ -74,18 +75,20 @@ const CreateNewPassword = () => {
     Keyboard.dismiss();
     
     if (!formData.password || !formData.confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Toast.error('Please fill in all fields', { position: 'top' });
+      //
+      // Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Toast.error('Passwords do not match', { position: 'top' });
       return;
     }
 
     // Validate password meets all requirements
     if (!validatePassword(formData.password)) {
-      Alert.alert('Error', 'Password does not meet all requirements');
+      Toast.error('Password does not meet all requirements', { position: 'top' });
       return;
     }
 
@@ -96,18 +99,20 @@ const CreateNewPassword = () => {
       const response = await changePassword(email, formData.password);
       
       if (response.success) {
-        Alert.alert('Success', 'Password has been reset successfully');
+        Toast.success('Password has been reset successfully', { position: 'top' });
+        // Alert.alert('Success', 'Password has been reset successfully');
         
         // Navigate to login screen after successful password reset
         setTimeout(() => {
           router.replace('/(auth)/login');
         }, 1500);
       } else {
-        Alert.alert('Error', response.message || 'Failed to reset password');
+        // Alert.alert('Error', response.message || 'Failed to reset password');
+        Toast.error(response.message || 'Failed to reset password', { position: 'top' });
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to reset password. Please try again.');
-      console.error('API Error:', error);
+      Toast.error('Failed to reset password. Please try again.', { position: 'top' });
+      // console.error('API Error:', error);
     } finally {
       setIsLoading(false);
     }

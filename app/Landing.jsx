@@ -12,6 +12,7 @@ import { initNotificationListeners, registerForPushNotificationsAsync, removeNot
 import { use } from 'react';
 import { se } from 'date-fns/locale';
 import { ActivityIndicator } from 'react-native-paper';
+import { checkMaintenanceStatus } from '../services/api';
 
 
 const { width, height } = Dimensions.get('window');
@@ -55,10 +56,18 @@ const {user,accessTokenGetter}=useContext(AuthContext)
     };
   }, []);
 
-  
+ 
+
 const handleClick = async () => {
   try {
     setLoading(true);
+
+        const isApiAvailable = await checkMaintenanceStatus();
+        // console.log("API Availability:", isApiAvailable);
+         if (!isApiAvailable) {
+        router.replace('/(maintenance)/Error');
+        return;
+      }
 
     if (!user) {
       router.replace('/(auth)/login');

@@ -129,7 +129,7 @@ export async function removeExpoToken(empId, Expotoken, jwtToken) {
 
   try {
     const response = await fetch(
-      `https://projectmanagement.medtrixhealthcare.com/ProjectManagmentApi/api/Notifications/Logout`,
+      `${API_URL}Notifications/Logout`,
       {
         method: 'POST',
         headers: {
@@ -160,3 +160,24 @@ export async function removeExpoToken(empId, Expotoken, jwtToken) {
     throw error;
   }
 }
+
+
+  export async function checkMaintenanceStatus() {
+    try {
+      const response = await fetch(
+        `${API_URL}Auth/apiIntermediate`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const data = await response.json();
+      return data.success; 
+    } catch (error) {
+      // console.error('Error checking maintenance status:', error);
+      return false; 
+    }
+  };
