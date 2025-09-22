@@ -15,8 +15,8 @@
       "backgroundColor": "#FFFFFF"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.souvik8582.pmtool",
+      "supportsTablet": false,
+      "bundleIdentifier": "com.medtrix.medtrixpmtool",
       "buildNumber": "1.0.0",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.souvik8582.pmtool",
+      "package": "com.medtrix.medtrixpmtool",
       "googleServicesFile": "./google-services.json",
       "versionCode": 1
     },

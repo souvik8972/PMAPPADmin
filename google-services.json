@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:162017625321:android:55aeaa98a039ec97e81c78",
+        "android_client_info": {
+          "package_name": "com.medtrix.medtrixpmtool"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSVJ8b-31abQiEUgx-nzL7TBgadku5-tk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:162017625321:android:f4b38e0fa8319518e81c78",
         "android_client_info": {
           "package_name": "com.souvik8582.pmtool"
@@ -26,6 +45,4 @@
     }
   ],
   "configuration_version": "1"
-  
 }
-
